@@ -1,0 +1,14 @@
+{% extends "base_site.html" %}
+
+{% block content %}
+
+<h3>Windows Servers</h3>
+{% for server in win_servers%}
+	<li><a href="/servers/{{ server.id }}/">{{ server.name }}</a></li>
+{% endfor %}
+
+<h3>Linux Servers</h3>
+{% for server in linux_servers%}
+	<li><a href="/servers/{{ server.id }}/">{{ server.name }}</a></li>
+{% endfor %}
+{% endblock %}
