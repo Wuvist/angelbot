@@ -10,7 +10,7 @@ Copyright (c) 2010 . All rights reserved.
 server_types = {"win": 1, "linux": 2}
 
 logins = {
-    "mac" : {"host": "127.0.0.1", "type": "linux", "username": r"Wuvist", "password" : ""},
-    "moserver" : {"host": "192.168.1.12", "type": "linux", "username": "mozat", "password" : ""},
-    "moserverwin" : {"host": "192.168.1.13", "type": "windows", "username": "administrator", "password" : ""}
+    "mac" : {"host": "127.0.0.1", "type": "linux", "username": r"Wuvist", "password" : "piggyrun"},
+    "moserver" : {"host": "192.168.1.12", "type": "linux", "username": "mozat", "password" : "mozat"},
+    "moserverwin" : {"host": "192.168.1.13", "type": "windows", "username": "administrator", "password" : "mozat01"}
  }

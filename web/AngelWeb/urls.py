@@ -20,6 +20,9 @@ urlpatterns = patterns('',
     (r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login'),
     (r'^servers/(\d+)/$', 'servers.views.show'),
     (r'^servers/(\d+)/exe/(\d+)$', 'servers.views.execute_cmd'),
-    (r'^rrd/$', 'servers.views.rrd'),
-    
+    (r'^rrd/$', 'servers.views.rrd_list'),    
+    (r'^rrd/img$', 'servers.views.rrd_img'),
+    (r'^rrd/(\d+)/$', 'servers.views.rrd_show'),
+    (r'^rrd/(\d+)/create$', 'servers.views.rrd_create'),    
+    (r'^dashboard/(\d+)/$', 'servers.views.dashboard_show'),
 )
