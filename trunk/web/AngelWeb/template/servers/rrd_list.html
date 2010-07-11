@@ -1,0 +1,12 @@
+{% extends "base_site.html" %}
+{% load rrd_extras %}
+
+
+{% block content %}
+
+<h1>RRD files</h1>
+<h2>Rrds</h2>
+{% for rrd in rrds %}
+	<li><a href="/rrd/{{ rrd.id }}/">{{ rrd.name }}</a> ({{ rrd.des }}) {{ rrd|show_rrd|safe }}
+{% endfor %}
+{% endblock %}

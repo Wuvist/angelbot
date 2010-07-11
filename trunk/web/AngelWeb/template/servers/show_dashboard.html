@@ -1,0 +1,35 @@
+{% extends "base_site.html" %}
+{% load rrd_extras %}
+
+{% block content %}
+
+<h1>{{ dashboard.title }}</h1>
+
+{% regroup dashboard.widget_set.all|dictsort:"category" by category as widgets %}
+	
+{% for category in widgets %}
+	<h2>{{ category.grouper }}</h2>
+	<table>
+	<tr>
+		<th>Name</th>
+		<th>Status</th>
+		<th>Graph</th>
+	</tr>
+	{% for widget in category.list %}
+	<tr>
+		<td>{{ widget.title }}</td>
+		<td>
+		{% if widget.widget_type == "1" %}
+			{{ widget|show_widget_with_current_value }}
+		{% endif %}
+		{% if widget.widget_type == "2" %}
+			{{ widget|show_widget_with_current_and_past_value }}
+		{% endif %}
+		</td>
+		<td><a href="">View</a></td>
+	</tr>
+	{% endfor %}
+</table>
+{% endfor %}
+
+{% endblock %}

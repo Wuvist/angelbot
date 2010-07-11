@@ -1,0 +1,10 @@
+{% extends "base_site.html" %}
+
+{% block content %}
+<div><a href="/rrd/">RRD List</a></div>
+<h1>{{ rrd.name }}</h1>
+<div>{{ rrd.des }}</div>
+<pre id="result">
+{{ info }}
+</pre>
+{% endblock %}

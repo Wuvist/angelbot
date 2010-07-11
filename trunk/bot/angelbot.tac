@@ -38,8 +38,20 @@ class Foo(Resource):
             reactor.connectTCP(server_info["host"], 23, telnet.TelnetFactory(server_info, cmd, cb, end_cb))
         return server.NOT_DONE_YET
 
+
+
 class rrd(Resource):
     def render_GET(self, request):
+        
+        def current_rounded_time():
+            import time
+            timestamp = int(time.time())
+            reminder = timestamp % 60
+            timestamp = timestamp - reminder
+            if reminder > 30:
+                timestamp = timestamp + 60
+            return timestamp
+            
         rrd = request.args["rrd"][0] + ".rrd"
         ds = request.args["ds"][0]
         value = request.args["v"][0]
@@ -47,7 +59,7 @@ class rrd(Resource):
         import rrdtool
         rrdtool.update(RRD_PATH + rrd , 
         "-t", ds,
-        'N:%s' % (value))
+        '%d:%s' % (current_rounded_time(), value))
         return "OK"
         
 
