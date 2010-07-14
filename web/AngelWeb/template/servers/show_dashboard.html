@@ -27,7 +27,7 @@ th {width:100px;}
 		<th>Yesterday</th>
 		<th>Last Week</th>
 		<th>Graph</th>
-		<th>Restart</th>
+		<th>Action</th>
 	</tr>
 	{% endif %}
 	{% for widget in category.list %}
@@ -40,7 +40,11 @@ th {width:100px;}
 			{{ widget|show_widget_with_current_and_past_value|safe }}
 		{% endif %}
 		<td><a href="/rrd/{{ widget.rrd_id }}/widget/{{ widget.id }}/graph" target="_blank">View</a></td>
-		<td><a href="">Restart</a></td>	
+		<td>
+			{% if widget.cmd %}
+				<a href="">Execute</a>
+			{% endif %}
+		</td>
 	</tr>
 	{% endfor %}
 </table>
