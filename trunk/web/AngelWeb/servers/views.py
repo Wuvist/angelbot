@@ -16,6 +16,16 @@ def show(request, server_id):
         "cmds":cmds
         })
     return render_to_response('servers/show.html',c)
+
+@login_required()
+def show_cmd(request, server_id, cmd_id):
+    server = get_object_or_404(Server, id=server_id)
+    cmd = get_object_or_404(Cmd, id=cmd_id)
+    c = RequestContext(request, 
+        {"server":server,
+        "cmd":cmd
+        })
+    return render_to_response('servers/show_cmd.html',c)
     
 @login_required()
 def dashboard_show(request, dashboard_id):
@@ -119,7 +129,7 @@ def rrd_create(request, rrd_id):
     cmd = 'rrdtool create %s %s' % (settings.RRD_PATH + rrd.name + ".rrd", rrd.setting.replace("\n", "").replace("\r", " "))
     p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
     stdout, stderr = p.communicate()
-    return HttpResponseRedirect("/rrd/list")
+    return HttpResponseRedirect("/rrd/")
     
 @login_required()
 def rrd_show(request, rrd_id):

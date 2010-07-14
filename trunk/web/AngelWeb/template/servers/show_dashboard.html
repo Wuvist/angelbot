@@ -42,7 +42,7 @@ th {width:100px;}
 		<td><a href="/rrd/{{ widget.rrd_id }}/widget/{{ widget.id }}/graph" target="_blank">View</a></td>
 		<td>
 			{% if widget.cmd %}
-				<a href="">Execute</a>
+				<a href="/servers/{{ widget.server_id}}/{{ widget.cmd_id }}/" target="_blank">Execute</a>
 			{% endif %}
 		</td>
 	</tr>

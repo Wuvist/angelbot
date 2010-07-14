@@ -1,0 +1,27 @@
+{% extends "base_site.html" %}
+
+{% block content %}
+
+<h1>{{ server.name }}</h1>
+<div>{{ server.remark }}</div>
+<h2>Command</h2>
+<li>{{ cmd.text }} <input type="button" value="run" onclick="exec(this, {{ cmd.id }})" /></li>
+
+<div id="cmd_result" class="display:none">
+	<pre id="result">
+	</pre>
+</div>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+<script>
+	function exec(btn, cmd_id)
+	{
+		$(btn).val("running...").attr("disabled", "true");
+		$.get("/servers/{{ server.id }}/exe/" + cmd_id, function(xml){
+			$("#cmd_result").show();
+			$("#result").html(xml);
+			$(btn).val("run").attr("disabled", "");
+		});
+	}
+</script>
+{% endblock %}
