@@ -47,8 +47,13 @@ def execute_cmd(request, server_id, cmd_id):
         response = urllib2.urlopen(req)
         result = response.read()
         return result
-    
+    log = CmdLog()
+    log.user = request.user
+    log.cmd = server.name + ": " + cmd.text
+    log.save()    
     url = settings.BOT_URL + "server=" + server.name + "&cmd=" + cmd.text.replace(" ", "%20")
+    result = fetch_page(url)
+    log.result = result.save()
 
     return HttpResponse(fetch_page(url))
 

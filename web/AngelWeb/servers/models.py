@@ -23,8 +23,11 @@ class Server(models.Model):
 class CmdLog(models.Model):
     user = models.ForeignKey(User)
     cmd = models.CharField(max_length=200)
+    result = models.TextField()    
     created_on = models.DateTimeField(auto_now_add = True)
     
+    def __unicode__(self):
+        return self.cmd
     
 class Cmd(models.Model):
     server_type = models.CharField(max_length=1, choices=SERVER_TYPE_CHOICES)
