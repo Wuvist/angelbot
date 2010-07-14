@@ -1,0 +1,35 @@
+{% extends "base_site.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="/media/css/forms.css" /> 
+<!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="/media/css/ie.css" /><![endif]-->
+
+<h1>{{ rrd.name|title }} - {{ widget.title|title }}</h1>
+<form action="" method="GET">
+<fieldset class="module aligned ">
+	<div class="form-row title"> 
+	    <div> 
+			<label for="id_date" class="required">Date:</label> 
+			<p class="datetime"><input name="date" value="{{ show_date }}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<input type="submit" value="Show Date" name="show" /> 
+			<input type="submit" value="With Yesterday" name="show"  /> 
+			<input type="submit" value="With Yesterday and last week" name="show" />
+			</p>
+	    </div> 
+	</div>
+</fieldset>
+</form>
+<img src="/rrd/img/{{ widget.id }}/?&start={{ start }}&end={{ end }}&height=480&width=1000" height="480" width="1000" />
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="/media/js/core.js"></script>
+<script type="text/javascript" src="/media/js/calendar.js"></script>
+<script type="text/javascript" src="/media/js/admin/DateTimeShortcuts.js"></script>
+<script type="text/javascript"> 
+(function($) {
+    var field = null; 
+})(django.jQuery);
+</script>
+{% endblock %}
+

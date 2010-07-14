@@ -41,17 +41,29 @@ def execute_cmd(request, server_id, cmd_id):
     url = settings.BOT_URL + "server=" + server.name + "&cmd=" + cmd.text.replace(" ", "%20")
 
     return HttpResponse(fetch_page(url))
-    
+
+
+
 @login_required()
-def rrd_img(request):
+def rrd_img(request, widget_id):
+    widget = get_object_or_404(Widget, id=widget_id)
+
+    def get_line(widget):
+        return widget.graph_def.replace("{rrd}", settings.RRD_PATH + widget.rrd.name + ".rrd").replace("\n", "").replace("\r", " ")
     from subprocess import Popen, PIPE
-    rrd = request.GET["rrd"]
     width = request.GET["width"]
     height = request.GET["height"]
-    cmd = 'rrdtool graph - -E --imgformat PNG --width %s --height %s DEF:myspeed=%s:stc:LAST:start=%d:end=%d LINE1:myspeed#FF0000' % (
-        width, height, settings.RRD_PATH + rrd + ".rrd",1275609600, 1275696000)
+    start = request.GET["start"]
+    end = request.GET["end"]
+    cmd = 'rrdtool graph - -E --imgformat PNG -e %s -s %s --width %s --height %s %s' % (
+        end, start, width, height, get_line(widget))
     p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
     stdout, stderr = p.communicate()
+    
+    if len(stderr) > 0:
+        response = HttpResponse(cmd + "\n" + stderr)
+        response["content-type"] = "text/plain"
+        return response
     response = HttpResponse(stdout)
     response["content-type"] = "image/png"
     return response
@@ -102,3 +114,28 @@ def rrd_show(request, rrd_id):
         "info": stdout + stderr
         })
     return render_to_response('servers/rrd_show.html',c)
+    
+@login_required()
+def rrd_show_widget_graph(request, rrd_id, widget_id):
+    rrd = get_object_or_404(Rrd, id=rrd_id)
+    widget = get_object_or_404(Widget, id=widget_id)
+    end = "s%2b1d"
+
+    import time
+    if request.GET.has_key("date"):
+        show_date = request.GET["date"]
+    else:
+        show_date = time.strftime("%Y-%m-%d")
+    start_time = show_date + ' 00:00'
+    start_time = time.strptime(start_time, "%Y-%m-%d %H:%M")
+    start_time = int(time.mktime(start_time))
+    start = start_time
+    
+    c = RequestContext(request,
+        {"rrd":rrd,
+        "widget": widget,
+        "show_date" : show_date,
+        "start": start,
+        "end": end,    
+        })
+    return render_to_response('servers/rrd_show_graph.html',c)

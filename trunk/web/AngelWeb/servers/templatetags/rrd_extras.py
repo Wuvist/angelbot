@@ -23,33 +23,56 @@ def get_widget_img_src(widget, width, height):
 
     return cmd
 
+def get_last_value(rrd_data):
+    return str(rrd_data[2][0][0])
 
+def check_date(info):
+    last_update = info["last_update"]
+    import time
+    past = time.time() - last_update
+    result = ""
+    if past > 180:
+        #        result += "<div class='errors'>No update for 3 mins</div>"
+        result = "<div class='errornote'>No update</div>"
+    return result
+
+@register.filter(name='show_widget_header')
+def show_widget_header(widget):
+    rrd_path = widget.rrd.path()
+    info = rrdtool.info(rrd_path)
+    last_update = str(info["last_update"])
+
+    current = rrdtool.fetch(rrd_path, "-s", last_update, "-e", "s+1", "LAST")
+    titles = map(lambda x: x.replace("_", " "), current[1])
+    return "<th>" + "</th><th>".join(titles) + "</th>"
+
+@register.filter(name='show_widget_title')
+def show_widget_title(widget):
+    rrd_path = widget.rrd.path()
+    info = rrdtool.info(rrd_path)
+
+    return widget.title + check_date(info)
 
 @register.filter(name='show_widget_with_current_value')
 def show_widget_with_current_value(widget):
     rrd_path = widget.rrd.path()
     info = rrdtool.info(rrd_path)
-    last_update = datetime.datetime.fromtimestamp(info["last_update"]).strftime("%m-%d %H:%M")
-    values = []
-    for key in info.keys():
-        if key.endswith(".last_ds"):
-            values.append(info[key])
+    last_update = str(info["last_update"])
     
-    return last_update + ": " + ",".join(values)
-
+    current = rrdtool.fetch(rrd_path, "-s", "e-2", "-e", last_update, "LAST")    
+    #return check_date(info) + get_last_value(current) + "</td>"
+    
+    return "<td>" + "</td><td>".join(map(str, current[2][0])) + "</td>"
 
 @register.filter(name='show_widget_with_current_and_past_value')
 def show_widget_with_current_and_past_value(widget):
     rrd_path = widget.rrd.path()
     info = rrdtool.info(rrd_path)
-    last_update = datetime.datetime.fromtimestamp(info["last_update"]).strftime("%m-%d %H:%M")
+    #last_update = datetime.datetime.fromtimestamp(info["last_update"]).strftime("%m-%d %H:%M")
+    last_update = str(info["last_update"])
     
-    yesterday = rrdtool.fetch(rrd_path, "-s", str(info["last_update"]) + "-1d-120", "-e", "s+1", "LAST")
-    lastweek = rrdtool.fetch(rrd_path, "-s", str(info["last_update"]) + "-1w-10", "-e", "s+1", "LAST")
+    current = rrdtool.fetch(rrd_path, "-s", last_update, "-e", "s+1", "LAST")
+    yesterday = rrdtool.fetch(rrd_path, "-s", last_update + "-1d", "-e", "s+1", "LAST")
+    lastweek = rrdtool.fetch(rrd_path, "-s", last_update + "-1w", "-e", "s+1", "LAST")
     
-    values = []
-    for key in info.keys():
-        if key.endswith(".last_ds"):
-            values.append(info[key])
-    
-    return str(info["last_update"]) + ": " + ",".join(values) + str(yesterday)+ str(lastweek)
+    return "<td>" + "</td><td>".join([get_last_value(current), get_last_value(yesterday) , get_last_value(lastweek)]) + "</td>"
