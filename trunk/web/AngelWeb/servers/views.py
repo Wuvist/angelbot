@@ -43,20 +43,53 @@ def execute_cmd(request, server_id, cmd_id):
     return HttpResponse(fetch_page(url))
 
 
-
 @login_required()
 def rrd_img(request, widget_id):
     widget = get_object_or_404(Widget, id=widget_id)
-
-    def get_line(widget):
-        return widget.graph_def.replace("{rrd}", settings.RRD_PATH + widget.rrd.name + ".rrd").replace("\n", "").replace("\r", " ")
     from subprocess import Popen, PIPE
     width = request.GET["width"]
     height = request.GET["height"]
     start = request.GET["start"]
     end = request.GET["end"]
-    cmd = 'rrdtool graph - -E --imgformat PNG -e %s -s %s --width %s --height %s %s' % (
-        end, start, width, height, get_line(widget))
+
+
+
+    def get_line(widget):
+        return widget.graph_def.replace("{rrd}", settings.RRD_PATH + widget.rrd.name + ".rrd").replace("\n", "").replace("\r", " ")
+
+    def get_line_diff(widget, diff):
+        def update_def(line):
+            line = line.strip()
+            if line.startswith("DEF:"):
+                pos = line.index("=", 4)
+                name = line[4:pos]
+                if diff == "1d":
+                    shift = " SHIFT:" + diff[1:] + name + ":86400"
+                if diff == "1w":
+                    shift = " SHIFT:" + diff[1:] + name + ":604800"
+                return line[0:4] + diff[1:] + line[4:] + ":start=%s-%s:end=%s" % (start, diff, end.replace("s+", "start+")) + shift
+            if line.startswith("LINE:"):
+                pos = line.index(":")
+                color = line.index("#")
+                if diff == "1d":
+                    return line[0:pos] + ":" + diff[1:] + line[pos+1:color] + "#fbba5c:Yesterday"
+                else:
+                    return line[0:pos] + ":" + diff[1:] + line[pos+1:color] + "#b5b5b5:LastWeek"
+
+        graph_def = widget.graph_def.split("\n")
+        graph_def = map(update_def, graph_def)
+        
+        return (" ".join(graph_def)).replace("{rrd}", settings.RRD_PATH + widget.rrd.name + ".rrd")
+
+    line = get_line(widget)
+    if request.GET.has_key("1d"):
+        line += " " + get_line_diff(widget, "1d")
+
+    if request.GET.has_key("1w"):
+        line += " " + get_line_diff(widget, "1w") 
+        
+    cmd = 'rrdtool graph - -E --imgformat PNG -s %s -e %s --width %s --height %s %s' % (
+        start, end, width, height, line)
     p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
     stdout, stderr = p.communicate()
     
@@ -120,12 +153,19 @@ def rrd_show_widget_graph(request, rrd_id, widget_id):
     rrd = get_object_or_404(Rrd, id=rrd_id)
     widget = get_object_or_404(Widget, id=widget_id)
     end = "s%2b1d"
-
+    graph_option = ""
     import time
     if request.GET.has_key("date"):
         show_date = request.GET["date"]
     else:
         show_date = time.strftime("%Y-%m-%d")
+        
+    if request.GET.has_key("show1d"):
+        graph_option += "&1d=1"
+
+    if request.GET.has_key("show1w"):
+        graph_option += "&1w=1&1d=1"
+        
     start_time = show_date + ' 00:00'
     start_time = time.strptime(start_time, "%Y-%m-%d %H:%M")
     start_time = int(time.mktime(start_time))
@@ -136,6 +176,7 @@ def rrd_show_widget_graph(request, rrd_id, widget_id):
         "widget": widget,
         "show_date" : show_date,
         "start": start,
-        "end": end,    
+        "end": end,
+        "graph_option":graph_option
         })
     return render_to_response('servers/rrd_show_graph.html',c)
