@@ -30,7 +30,7 @@ th {width:100px;}
 		<th>Action</th>
 	</tr>
 	{% endif %}
-	{% for widget in category.list|dictsort:"titl" %}
+	{% for widget in category.list|dictsort:"title" %}
 	<tr>
 		<th>{{ widget|show_widget_title|safe }}</th>
 		{% if widget.widget_type == "1" %}
