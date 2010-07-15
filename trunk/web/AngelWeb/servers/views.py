@@ -137,7 +137,8 @@ def rrd_create(request, rrd_id):
     start_time = time.strptime(start_time, "%Y-%m-%d %H:%M")
     start_time = int(time.mktime(start_time))
     
-    cmd = 'rrdtool --start %d create %s %s' % (start_time, settings.RRD_PATH + rrd.name + ".rrd", rrd.setting.replace("\n", "").replace("\r", " "))
+    cmd = 'rrdtool create %s --start %d %s' % (settings.RRD_PATH + rrd.name + ".rrd", start_time, rrd.setting.replace("\n", "").replace("\r", " "))
+    print
     p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
     stdout, stderr = p.communicate()
     return HttpResponseRedirect("/rrd/")
