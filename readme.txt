@@ -6,6 +6,15 @@ Requirements
   * twisted
   * django
 
+Overview
+========
+The angel consists of two parts:
+Angel
+Bot
+
+Angel in charge of displaying monitoring info / manipulating data etc. It's 
+
+
 
 Create  RRDs
 ============

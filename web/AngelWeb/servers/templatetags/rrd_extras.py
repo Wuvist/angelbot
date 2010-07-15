@@ -59,7 +59,7 @@ def show_widget_with_current_value(widget):
     info = rrdtool.info(rrd_path)
     last_update = str(info["last_update"])
     
-    current = rrdtool.fetch(rrd_path, "-s", "e-2", "-e", last_update, "LAST")    
+    current = rrdtool.fetch(rrd_path, "-s", last_update, "-e", "s+1", "LAST")  
     #return check_date(info) + get_last_value(current) + "</td>"
     
     return "<td>" + "</td><td>".join(map(str, current[2][0])) + "</td>"
