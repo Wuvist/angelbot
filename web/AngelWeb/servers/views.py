@@ -53,7 +53,8 @@ def execute_cmd(request, server_id, cmd_id):
     log.save()    
     url = settings.BOT_URL + "server=" + server.name + "&cmd=" + cmd.text.replace(" ", "%20")
     result = fetch_page(url)
-    log.result = result.save()
+    log.result = result
+    log.save()
 
     return HttpResponse(fetch_page(url))
 
