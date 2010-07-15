@@ -24,7 +24,10 @@ def get_widget_img_src(widget, width, height):
     return cmd
 
 def get_last_value(rrd_data):
-    return str(rrd_data[2][0][0])
+    result = str(rrd_data[2][0][0])
+    if result.endswith(".0")
+        return result[:-2]
+    return result
 
 def check_date(info):
     last_update = info["last_update"]
@@ -59,7 +62,7 @@ def show_widget_with_current_value(widget):
     info = rrdtool.info(rrd_path)
     last_update = str(info["last_update"])
     
-    current = rrdtool.fetch(rrd_path, "-s", last_update + "+1", "-e", "s+0", "LAST")  
+    current = rrdtool.fetch(rrd_path, "-s", last_update + "-1", "-e", "s+0", "LAST")  
     #return check_date(info) + get_last_value(current) + "</td>"
     
     return "<td>" + "</td><td>".join(map(str, current[2][0])) + "</td>"
@@ -71,7 +74,7 @@ def show_widget_with_current_and_past_value(widget):
     #last_update = datetime.datetime.fromtimestamp(info["last_update"]).strftime("%m-%d %H:%M")
     last_update = str(info["last_update"])
     
-    current = rrdtool.fetch(rrd_path, "-s", last_update + "+1", "-e", "s+0", "LAST")  
+    current = rrdtool.fetch(rrd_path, "-s", last_update + "-1", "-e", "s+0", "LAST")  
     yesterday = rrdtool.fetch(rrd_path, "-s", last_update + "-1d", "-e", "s+1", "LAST")
     lastweek = rrdtool.fetch(rrd_path, "-s", last_update + "-1w", "-e", "s+1", "LAST")
     
