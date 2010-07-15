@@ -54,11 +54,10 @@ class rrd(Resource):
             
         rrd = request.args["rrd"][0] + ".rrd"
         ds = request.args["ds"][0]
-        value = request.args["v"][0]
+        value = ":".join(request.args["v"])
 
         import rrdtool
         rrdtool.update(RRD_PATH + rrd , 
-        "-t", ds,
         '%d:%s' % (current_rounded_time(), value))
         return "OK"
         
