@@ -25,7 +25,7 @@ def get_widget_img_src(widget, width, height):
 
 def get_last_value(rrd_data):
     result = str(rrd_data[2][0][0])
-    if result.endswith(".0")
+    if result.endswith(".0"):
         return result[:-2]
     return result
 
