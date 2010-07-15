@@ -53,7 +53,6 @@ class rrd(Resource):
             return timestamp
             
         rrd = request.args["rrd"][0] + ".rrd"
-        ds = request.args["ds"][0]
         value = ":".join(request.args["v"])
 
         import rrdtool
