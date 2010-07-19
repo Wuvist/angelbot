@@ -58,8 +58,6 @@ def execute_cmd(request, server_id, cmd_id):
 
     return HttpResponse(fetch_page(url))
 
-
-@login_required()
 def rrd_img(request, widget_id):
     widget = get_object_or_404(Widget, id=widget_id)
     from subprocess import Popen, PIPE
@@ -143,6 +141,7 @@ def rrd_create(request, rrd_id):
     stdout, stderr = p.communicate()
     return HttpResponseRedirect("/rrd/")
     
+@login_required()
 def rrd_show(request, rrd_id):
     rrd = get_object_or_404(Rrd, id=rrd_id)
     
