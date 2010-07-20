@@ -1,0 +1,79 @@
+Title: guide
+
+Adding new server & sample widget
+
+✂------✂------✂------✂------✂------✂------✂------✂------✂------✂------
+
+This guide shows how to add a new server and a widget taking single gauge value for monitor into angelbot.
+
+Add Server
+==========
+Using http://angelbot/admin portal to add a new server definition.
+
+ :!: Only the server name is critical here.
+     server_type is for reference.
+     IP, username, password fields are actually dummy, could input anything.
+
+     Actual server login credential are currently hardcoded in bot's hosts.py file.
+
+Add RRD
+=======
+Using http://angelbot/admin portal to add a new rrd. RRD defines the data store for recording data.
+
+RRD name must be unique, it's the actual filename for RRD file created.
+
+setting field is actually the supplementing parameter passed to rrdtool when creating rrd file, for single number, input:
+--step 60
+DS:online:GAUGE:60:0:U
+RRA:LAST:0.5:1:525600
+
+--step 60: Indicate this data need to be updated every 60 seconds.
+DS & RRA defines the data store for 1 year. 525600 = 60 * 24 * 365
+
+Please refers to rrdtool documents for details: http://oss.oetiker.ch/rrdtool/doc/rrdcreate.en.html
+
+Once the rrd definition is created, visit http://angelbot/rrd/
+
+Click **create** to create actual rrd file or review its info.
+
+Add Widget
+==========
+Widget defines the how should Angel present data from a defined RRD.
+
+Again, widgets are created in admin portal.
+
+Server & Category are optional fields. Rrd and Graph def are critical here.
+
+A sample graph widget showing single line will be:
+DEF:online={rrd}:online:LAST
+LINE:online#ff8882:Online
+
+
+Above definition actually follows rrdtool's graph parameter (http://oss.oetiker.ch/rrdtool/doc/rrdgraph.en.html)
+
+{rrd} will be replaced with actual rrd file name.
+
+Updating Data
+=============
+Once a Rrd file & widget are defined, external could start sending data to bot periodically.
+
+http://angel:8080/rrd?rrd={RRD Name}&ds={Dummy ds Name}&v={Value}
+
+Above API is a simple wrapper for rrdupdate cmd: http://oss.oetiker.ch/rrdtool/doc/rrdupdate.en.html
+
+Notes:
+  * API will round current time to nearest minute.
+  * DS has multiple value could be updated using multiple v parameter like:
+    * http://angel:8080/rrd?rrd={RRD Name}&ds={Dummy ds Name}&v={Value1}&v={Value2}&v={Value3}
+
+
+
+
+
+
+
+
+
+
+
+
