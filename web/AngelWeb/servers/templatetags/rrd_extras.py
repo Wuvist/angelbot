@@ -93,7 +93,7 @@ def show_ok(value):
 def show_percent(value):
     if value:
         return "%.2f" % (value * 100) + " %"
-    else
+    else:
         return "None"
 
 @register.filter(name='show_widget_with_current_value')
