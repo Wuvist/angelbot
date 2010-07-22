@@ -85,8 +85,13 @@ def show_widget_title(widget):
 def show_int(value):
     return str(int(value))
 
+def show_ok(value):
+    if not value:
+        return "OK"
+    return "Error"
+
 def show_percent(value):
-    return str(value * 100) + "%"
+    return "%.2f" % (value * 100) + " %"
 
 @register.filter(name='show_widget_with_current_value')
 def show_widget_with_current_value(widget):
