@@ -78,7 +78,7 @@ def show_widget_with_current_value(widget):
     
     current = rrdtool.fetch(rrd_path, "-s", last_update + "-1", "-e", "s+0", "LAST")
     
-    if len(widget.data_def) > 0:
+    if widget.data_def:
         try:
             data_def = eval(widget.data_def.replace("\n", "").replace("\r", ""))
         except:
