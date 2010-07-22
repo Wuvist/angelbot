@@ -29,6 +29,22 @@ def get_last_value(rrd_data):
         return result[:-2]
     return result
 
+def format_value(field_def, value):
+    cmd = field_def[0]
+    is_error = False
+    if value != None:
+        is_warning = eval(str(value) + field_def[1])
+        if is_warning:
+            is_error = eval(str(value) + field_def[2])
+    result = eval(cmd + "(" + str(value)  + ")")
+
+    if is_error:
+        result = "<div class='errornote'>" + result + "</div>"
+    elif is_warning:
+        result = "<div class='errors'>" + result + "</div>"
+
+    return result
+
 def check_date(info, thred = 3):
     last_update = info["last_update"]
     import time
@@ -38,6 +54,8 @@ def check_date(info, thred = 3):
         #        result += "<div class='errors'>No update for 3 mins</div>"
         result = "<div class='errornote'>No update</div>"
     return result
+
+
 
 @register.filter(name='show_widget_header')
 def show_widget_header(widget):
@@ -81,17 +99,17 @@ def show_widget_with_current_value(widget):
     if widget.data_def:
         try:
             data_def = eval(widget.data_def.replace("\n", "").replace("\r", ""))
-    
             data = list(current[2][0])
             ds = current[1]
             for i in range(0, len(ds)):
                 if data_def.has_key(ds[i]):
-                    cmd = data_def[ds[i]][0]
-                    data[i] = eval(cmd + "(" + str(data[i])  + ")")
+                    field_def = data_def[ds[i]]
+                    data[i] = format_value(field_def, data[i])
                 else:
                     data[i] = str(data[i])
         except:
             return widget.data_def
+            #raise
     else:
         data = map(str, current[2][0])
     
@@ -110,4 +128,20 @@ def show_widget_with_current_and_past_value(widget):
     yesterday = rrdtool.fetch(rrd_path, "-s", last_update + "-1d", "-e", "s+1", "LAST")
     lastweek = rrdtool.fetch(rrd_path, "-s", last_update + "-1w", "-e", "s+1", "LAST")
     
-    return "<td>" + "</td><td>".join([get_last_value(current), get_last_value(yesterday) , get_last_value(lastweek)]) + "</td>"
+    current_value = current[2][0][0]
+    if widget.data_def:
+        try:
+            data_def = eval(widget.data_def.replace("\n", "").replace("\r", ""))
+            ds = (current[1][0])
+            if data_def.has_key(ds):
+                field_def = data_def[ds]
+                current_value = format_value(field_def, current_value)
+            else:
+                current_value = get_last_value(current)
+        except:
+            raise
+            return widget.data_def
+    else:
+        current_value = get_last_value(current)
+    
+    return "<td>" + "</td><td>".join([current_value, get_last_value(yesterday) , get_last_value(lastweek)]) + "</td>"
