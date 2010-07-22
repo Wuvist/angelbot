@@ -1,14 +1,27 @@
 {% extends "base_site.html" %}
 
 {% block content %}
+	<h1>Dashboards</h1>
+	<ul>
+	{% for dashboard in dashboards%}
+		<li><a href="/dashboard/{{ dashboard.id }}/">{{ dashboard.title }}</a></li>
+	{% endfor %}
+	</ul>
+	
+	{% if user.is_superuser %}
+	<h1>Servers</h1>
+		<h2>Windows Servers</h2>
+		<ul>
+		{% for server in win_servers%}
+			<li><a href="/servers/{{ server.id }}/">{{ server.name }}</a></li>
+		{% endfor %}
+		</ul>
 
-<h3>Windows Servers</h3>
-{% for server in win_servers%}
-	<li><a href="/servers/{{ server.id }}/">{{ server.name }}</a></li>
-{% endfor %}
-
-<h3>Linux Servers</h3>
-{% for server in linux_servers%}
-	<li><a href="/servers/{{ server.id }}/">{{ server.name }}</a></li>
-{% endfor %}
+		<h2>Linux Servers</h2>
+		<ul>
+		{% for server in linux_servers%}
+			<li><a href="/servers/{{ server.id }}/">{{ server.name }}</a></li>
+		{% endfor %}
+		</ul>
+	{% endif %}
 {% endblock %}

@@ -6,6 +6,8 @@ from django.template import Context, loader, RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
 from servers.models import *
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import Http404
 
 @login_required()
 def show(request, server_id):
@@ -30,6 +32,12 @@ def show_cmd(request, server_id, cmd_id):
 @login_required()
 def dashboard_show(request, dashboard_id):
     dashboard = get_object_or_404(Dashboard, id=dashboard_id)
+    if not request.user.is_superuser:
+        try:
+            dashboard.user.get(id = request.user.id)
+        except ObjectDoesNotExist:
+            raise Http404
+    
     c = RequestContext(request, 
         {"dashboard":dashboard
         })
@@ -65,6 +73,7 @@ def rrd_img(request, widget_id):
     height = request.GET["height"]
     start = request.GET["start"]
     end = request.GET["end"]
+    # TODO should refactor here
 
 
 

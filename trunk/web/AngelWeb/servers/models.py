@@ -56,7 +56,8 @@ class SeverCmd(models.Model):
 
 class Dashboard(models.Model):
     title = models.CharField(max_length=50)
-
+    user = models.ManyToManyField(User, null = True, blank=True)
+    
     def __unicode__(self):
         return self.title
 
@@ -73,7 +74,7 @@ class Widget(models.Model):
     category = models.CharField(max_length =50, null = True, blank=True)
     widget_type = models.CharField(max_length=1, choices=WIDGET_TYPE_CHOICES)
     graph_def = models.TextField(max_length =512)
-    cmd = models.ForeignKey(Cmd, null = True, blank=True)
+    data_def = models.TextField(max_length =512, null = True, blank=True)
         
     def __unicode__(self):
         return self.title
