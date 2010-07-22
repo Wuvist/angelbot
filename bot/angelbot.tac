@@ -56,8 +56,10 @@ class rrd(Resource):
         value = ":".join(request.args["v"])
 
         import rrdtool
-        rrdtool.update(RRD_PATH + rrd , 
-        '%d:%s' % (current_rounded_time(), value))
+        try:
+            rrdtool.update(RRD_PATH + rrd , '%d:%s' % (current_rounded_time(), value))
+        except:
+            return "Err"
         return "OK"
         
 
