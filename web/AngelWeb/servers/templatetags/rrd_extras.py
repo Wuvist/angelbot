@@ -85,7 +85,9 @@ def show_widget_title(widget):
     return widget.title + check_date(info, thred)
     
 def show_int(value):
-    return str(int(value))
+    if value:
+        return str(int(value))
+    return "None"
 
 def show_ok(value):
     if not value:
