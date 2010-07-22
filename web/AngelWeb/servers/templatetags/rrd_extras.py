@@ -55,7 +55,7 @@ def show_widget_title(widget):
     info = rrdtool.info(rrd_path)
     thred = 3
     
-    if len(widget.data_def) > 0:
+    if widget.data_def:
         try:
             data_def = eval(widget.data_def.replace("\n", "").replace("\r", ""))
             thred = data_def["interval"]
