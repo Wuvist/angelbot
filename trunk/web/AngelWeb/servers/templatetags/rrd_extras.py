@@ -32,6 +32,8 @@ def get_last_value(rrd_data):
 def format_value(field_def, value):
     cmd = field_def[0]
     is_error = False
+    is_warning = False
+    
     if value != None:
         is_warning = eval(str(value) + field_def[1])
         if is_warning:
