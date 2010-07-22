@@ -57,6 +57,7 @@ class SeverCmd(models.Model):
 class Dashboard(models.Model):
     title = models.CharField(max_length=50)
     user = models.ManyToManyField(User, null = True, blank=True)
+    des = models.TextField(max_length =512, null = True, blank=True)
     
     def __unicode__(self):
         return self.title

@@ -6,6 +6,9 @@
 th {width:100px;}
 </style>
 <h1>{{ dashboard.title }}</h1>
+{% if dashboard.des %}
+	<div class="system-message">{{ dashboard.des|safe }}</div>
+{% endif %}
 
 {% regroup dashboard.widget_set.all|dictsort:"category" by category as widgets %}
 	
