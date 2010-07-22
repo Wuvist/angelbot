@@ -29,12 +29,12 @@ def get_last_value(rrd_data):
         return result[:-2]
     return result
 
-def check_date(info):
+def check_date(info, thred = 3):
     last_update = info["last_update"]
     import time
     past = time.time() - last_update
     result = ""
-    if past > 180:
+    if past > (thred * 60):
         #        result += "<div class='errors'>No update for 3 mins</div>"
         result = "<div class='errornote'>No update</div>"
     return result
@@ -53,8 +53,22 @@ def show_widget_header(widget):
 def show_widget_title(widget):
     rrd_path = widget.rrd.path()
     info = rrdtool.info(rrd_path)
+    thred = 3
+    
+    if len(widget.data_def) > 0:
+        try:
+            data_def = eval(widget.data_def.replace("\n", "").replace("\r", ""))
+            thred = data_def["interval"]
+        except:
+            pass
 
-    return widget.title + check_date(info)
+    return widget.title + check_date(info, thred)
+    
+def show_int(value):
+    return str(int(value))
+
+def show_percent(value):
+    return str(value * 100) + "%"
 
 @register.filter(name='show_widget_with_current_value')
 def show_widget_with_current_value(widget):
@@ -62,10 +76,28 @@ def show_widget_with_current_value(widget):
     info = rrdtool.info(rrd_path)
     last_update = str(info["last_update"])
     
-    current = rrdtool.fetch(rrd_path, "-s", last_update + "-1", "-e", "s+0", "LAST")  
+    current = rrdtool.fetch(rrd_path, "-s", last_update + "-1", "-e", "s+0", "LAST")
+    
+    if len(widget.data_def) > 0:
+        try:
+            data_def = eval(widget.data_def.replace("\n", "").replace("\r", ""))
+        except:
+            return widget.data_def
+    
+        data = list(current[2][0])
+        ds = current[1]
+        for i in range(0, len(ds)):
+            if data_def.has_key(ds[i]):
+                cmd = data_def[ds[i]][0]
+                data[i] = eval(cmd + "(" + str(data[i])  + ")")
+            else:
+                data[i] = str(data[i])
+    else:
+        data = map(str, current[2][0])
+    
     #return check_date(info) + get_last_value(current) + "</td>"
     
-    return "<td>" + "</td><td>".join(map(str, current[2][0])) + "</td>"
+    return "<td>" + "</td><td>".join(data) + "</td>"
 
 @register.filter(name='show_widget_with_current_and_past_value')
 def show_widget_with_current_and_past_value(widget):

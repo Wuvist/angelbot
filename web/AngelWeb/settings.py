@@ -83,3 +83,4 @@ INSTALLED_APPS = (
 
 BOT_URL = 'http://localhost:8080/foo?'
 RRD_PATH = '/Users/Wuvist/source/angelbot/rrds/'
+LOGIN_REDIRECT_URL = '/'
