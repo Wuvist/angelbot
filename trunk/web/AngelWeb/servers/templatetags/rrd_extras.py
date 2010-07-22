@@ -81,17 +81,17 @@ def show_widget_with_current_value(widget):
     if widget.data_def:
         try:
             data_def = eval(widget.data_def.replace("\n", "").replace("\r", ""))
+    
+            data = list(current[2][0])
+            ds = current[1]
+            for i in range(0, len(ds)):
+                if data_def.has_key(ds[i]):
+                    cmd = data_def[ds[i]][0]
+                    data[i] = eval(cmd + "(" + str(data[i])  + ")")
+                else:
+                    data[i] = str(data[i])
         except:
             return widget.data_def
-    
-        data = list(current[2][0])
-        ds = current[1]
-        for i in range(0, len(ds)):
-            if data_def.has_key(ds[i]):
-                cmd = data_def[ds[i]][0]
-                data[i] = eval(cmd + "(" + str(data[i])  + ")")
-            else:
-                data[i] = str(data[i])
     else:
         data = map(str, current[2][0])
     
