@@ -1,0 +1,14 @@
+Widget defines the how should Angel present data from a defined RRD.
+
+Again, widgets are created in admin portal.
+
+Server & Category are optional fields. Rrd and Graph def are critical here.
+
+A sample graph widget showing single line will be:
+DEF:online={rrd}:online:LAST
+LINE:online#ff8882:Online
+
+
+Above definition actually follows rrdtool's graph parameter (http://oss.oetiker.ch/rrdtool/doc/rrdgraph.en.html)
+
+{rrd} will be replaced with actual rrd file name.

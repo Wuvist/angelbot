@@ -6,6 +6,9 @@ angelbot.py
 Created by Wuvist on 2010-06-27.
 Copyright (c) 2010 __MyCompanyName__. All rights reserved.
 """
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.curdir))
 
 from twisted.web.resource import Resource
 from twisted.web import server, resource
