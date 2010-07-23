@@ -1,0 +1,5 @@
+# daily
+schtasks /create /ru system /tn DownloadStats /tr f:\parse_download_link.py /st 00:00:10 /sc daily
+
+# every 1 min
+schtasks /create /ru system /tn CheckIIS /tr e:\update.bat /sc MINUTE /mo 5

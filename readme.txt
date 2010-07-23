@@ -4,7 +4,12 @@ Requirements
   * rrdtool
   * python 2.5+
   * twisted
-  * django
+  * django 1.2.1
+
+easy_install pyopenssl
+easy_install pycrypto
+easy_install MySQL-python
+
 
 Overview
 ========
@@ -14,6 +19,16 @@ Bot
 
 Angel in charge of displaying monitoring info / manipulating data etc. It's 
 
+Installation
+============
+
+Windows
+=======
+Cygwin is recommanded: http://www.cygwin.com/
+
+rrdtool for cygwin: http://www.cacti.net/downloads/rrdtool/win32/
+
+Native rrdtool on windows is not tried.
 
 
 Create  RRDs

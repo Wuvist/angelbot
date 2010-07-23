@@ -1,0 +1,1 @@
+iislog.py d:\iis_log\W3SVC1681428879\ex d:\web\stats\stats.txt
