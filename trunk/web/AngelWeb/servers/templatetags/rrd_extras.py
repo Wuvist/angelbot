@@ -23,13 +23,15 @@ def get_widget_img_src(widget, width, height):
 
     return cmd
 
-def get_last_value(rrd_data):
+def get_last_value(rrd_data, field_def = None):
+    if field_def:
+        return format_value(field_def, rrd_data[2][0][0], False)
     result = str(rrd_data[2][0][0])
     if result.endswith(".0"):
         return result[:-2]
     return result
 
-def format_value(field_def, value):
+def format_value(field_def, value, check_values = True):
     cmd = field_def[0]
     is_error = False
     is_warning = False
@@ -40,9 +42,9 @@ def format_value(field_def, value):
             is_error = eval(str(value) + field_def[2])
     result = eval(cmd + "(" + str(value)  + ")")
 
-    if is_error:
+    if is_error and check_values:
         result = "<div class='errornote'>" + result + "</div>"
-    elif is_warning:
+    elif is_warning and check_values:
         result = "<div class='errors'>" + result + "</div>"
 
     return result
@@ -146,6 +148,7 @@ def show_widget_with_current_and_past_value(widget):
     lastweek = rrdtool.fetch(rrd_path, "-s", last_update + "-1w", "-e", "s+1", "LAST")
     
     current_value = current[2][0][0]
+    field_def = None
     if widget.data_def:
         try:
             data_def = eval(widget.data_def.replace("\n", "").replace("\r", ""))
@@ -161,4 +164,4 @@ def show_widget_with_current_and_past_value(widget):
     else:
         current_value = get_last_value(current)
     
-    return "<td>" + "</td><td>".join([current_value, get_last_value(yesterday) , get_last_value(lastweek)]) + "</td>"
+    return "<td>" + "</td><td>".join([current_value, get_last_value(yesterday, field_def) , get_last_value(lastweek, field_def)]) + "</td>"
