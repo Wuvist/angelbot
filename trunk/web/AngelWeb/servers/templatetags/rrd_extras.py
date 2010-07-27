@@ -89,6 +89,11 @@ def show_int(value):
         return str(int(value))
     return "None"
 
+def show_float(value):
+    if value:
+        return "%.2f" % value
+    return "None"
+
 def show_ok(value):
     if not value:
         return "OK"
