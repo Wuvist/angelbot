@@ -17,7 +17,7 @@ class Server(models.Model):
     server_type = models.CharField(max_length=1, choices=SERVER_TYPE_CHOICES)
     remark = models.CharField(max_length=1000)
     def __unicode__(self):
-        return self.name    
+        return self.name + "(" + str(self.ip) + ")"
     
     
 class CmdLog(models.Model):
