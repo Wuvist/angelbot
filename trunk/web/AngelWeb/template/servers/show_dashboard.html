@@ -20,7 +20,7 @@ th {width:100px;}
 		<th></th>
 		{{ category.list.0|show_widget_header|safe|title }}
 		<th>Graph</th>
-		<th>Restart</th>
+		<th>Action</th>
 	</tr>
 	{% endif %}
 	{% if category.list.0.widget_type == "2" %}
@@ -44,8 +44,8 @@ th {width:100px;}
 		{% endif %}
 		<td><a href="/rrd/{{ widget.rrd_id }}/widget/{{ widget.id }}/graph" target="_blank">View</a></td>
 		<td>
-			{% if widget.cmd %}
-				<a href="/servers/{{ widget.server_id}}/{{ widget.cmd_id }}/" target="_blank">Execute</a>
+			{% if widget.server %}
+				<a href="/servers/{{ widget.server.id}}/" target="_blank">Execute</a>
 			{% endif %}
 		</td>
 	</tr>

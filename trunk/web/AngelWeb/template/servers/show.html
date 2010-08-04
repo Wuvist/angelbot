@@ -6,7 +6,7 @@
 <div>{{ server.remark }}</div>
 <h2>Commands</h2>
 {% for cmd in cmds %}
-	<li>{{ cmd.text }} <input type="button" value="run" onclick="exec(this, {{ cmd.id }})" /></li>
+	<li>{{ cmd.title }}: {{ cmd.cmd.text }} <input type="button" value="run" onclick="exec(this, {{ cmd.cmd.id }})" /></li>
 {% endfor %}
 
 <div id="cmd_result" class="display:none">
