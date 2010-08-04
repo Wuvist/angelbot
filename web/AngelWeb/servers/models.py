@@ -52,7 +52,7 @@ class SeverCmd(models.Model):
     title = models.CharField(max_length=256)
     
     def __unicode__(self):
-        return title
+        return self.title
 
 class Dashboard(models.Model):
     title = models.CharField(max_length=50)
