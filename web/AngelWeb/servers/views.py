@@ -12,7 +12,7 @@ from django.http import Http404
 @login_required()
 def show(request, server_id):
     server = get_object_or_404(Server, id=server_id)
-    cmds = Cmd.objects.filter(server_type=server.server_type).all()
+    cmds = server.severcmd_set.all()
     c = RequestContext(request, 
         {"server":server,
         "cmds":cmds
