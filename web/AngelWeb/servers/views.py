@@ -60,7 +60,7 @@ def execute_cmd(request, server_id, cmd_id):
     log.cmd = server.name + ": " + cmd.text
     log.save()
     from django.utils.http import urlencode as django_urlencode
-    url = settings.BOT_URL + "server=" + server.name + "&cmd=" + django_urlencode(cmd.text, doseq=True)
+    url = settings.BOT_URL + django_urlencode({"server": server.name, "cmd":cmd.text})
     result = fetch_page(url)
     log.result = result
     log.save()
