@@ -8,19 +8,19 @@
 	{% endfor %}
 	</ul>
 	
-	{% if user.is_superuser %}
+	{% if is_staff %}
 	<h1>Servers</h1>
 		<h2>Windows Servers</h2>
 		<ul>
 		{% for server in win_servers%}
-			<li><a href="/servers/{{ server.id }}/">{{ server.name }}</a></li>
+			<li><a href="/servers/{{ server.id }}/">{{ server.name }} - {{ server.ip }}</a></li>
 		{% endfor %}
 		</ul>
 
 		<h2>Linux Servers</h2>
 		<ul>
 		{% for server in linux_servers%}
-			<li><a href="/servers/{{ server.id }}/">{{ server.name }}</a></li>
+			<li><a href="/servers/{{ server.id }}/">{{ server.name }} - {{ server.ip }}</a></li>
 		{% endfor %}
 		</ul>
 	{% endif %}

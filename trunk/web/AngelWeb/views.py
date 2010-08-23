@@ -20,10 +20,14 @@ def home(request):
         dashboards = Dashboard.objects.all()
     else:
         dashboards = request.user.dashboard_set.all()
+    is_staff = False
+    if dashboards[0].id == 1:
+        is_staff = True
 
     c = RequestContext(request, 
         {"win_servers":win_servers, 
         "linux_servers": linux_servers,
-        "dashboards": dashboards
+        "dashboards": dashboards,
+        "is_staff": is_staff
         })
     return render_to_response('home.html',c)
