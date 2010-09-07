@@ -27,7 +27,7 @@ class CmdLog(models.Model):
     created_on = models.DateTimeField(auto_now_add = True)
     
     def __unicode__(self):
-        return self.cmd
+        return str(self.user) + ":" + self.cmd + "(" + str(self.created_on)  +")"
     
 class Cmd(models.Model):
     server_type = models.CharField(max_length=1, choices=SERVER_TYPE_CHOICES)
