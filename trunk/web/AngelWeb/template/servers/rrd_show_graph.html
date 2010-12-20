@@ -18,22 +18,38 @@
 			<input type="submit" value="With Yesterday" name="show1d"  /> 
 			<input type="submit" value="With Yesterday and last week" name="show1w" />
 			{% else %}
-			<input type="submit" value="Show Date" name="show" /> 			
+			<input type="submit" value="Show Date" name="show" />
 			{% endif %}
+			<input type="button" value="Download Data" id="download" name="download" />
 			</p>
 	    </div> 
 	</div>
 </fieldset>
 </form>
+
+<div id="download_div" style="display:none;width:800px">
+	<form action="/rrd/img/{{ rrd.id }}/download" method="GET">
+		<label for="id_date_start" class="required">Start:</label> 
+		<input name="start" value="{{ show_date }}" class="vDateField" type="text" id="id_date_start" size="11"><span class="datetimeshortcuts"></span>
+		<label for="id_date_end" class="required">End:</label> 
+		<input name="end" value="{{ show_date }}" class="vDateField" type="text" id="id_date_end" size="11"><span class="datetimeshortcuts"></span>
+			<input type="submit" value="Download"  />
+	</form>
+</div>
+
 <img src="/rrd/img/{{ widget.id }}/?&start={{ start }}&end={{ end }}&height=480&width=1000&{{ graph_option }}" height="480" width="1000" />
 <script type="text/javascript" src="/admin/jsi18n/"></script>
 <script type="text/javascript" src="/media/js/core.js"></script>
 <script type="text/javascript" src="/media/js/calendar.js"></script>
 <script type="text/javascript" src="/media/js/admin/DateTimeShortcuts.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
 <script type="text/javascript"> 
-(function($) {
-    var field = null; 
-})(django.jQuery);
+$(function() { 
+	$("#download").click(function(){
+		$("#download_div").toggle();		
+	});
+});
+
 </script>
 {% endblock %}
 

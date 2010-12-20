@@ -8,6 +8,7 @@ from servers.models import *
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
+from datetime import datetime
 
 @login_required()
 def show(request, server_id):
@@ -123,6 +124,64 @@ def rrd_img(request, widget_id):
         return response
     response = HttpResponse(stdout)
     response["content-type"] = "image/png"
+    return response
+
+def rrd_download(request, widget_id):
+    widget = get_object_or_404(Widget, id=widget_id)
+    from subprocess import Popen, PIPE
+    import time
+    start = str(int(time.mktime(datetime.strptime(request.GET["start"], "%Y-%m-%d").timetuple())))
+    end = str(int(time.mktime(datetime.strptime(request.GET["end"], "%Y-%m-%d").timetuple())))
+
+    if start == end:
+        end = "start+1d"
+
+ 
+    def get_line(widget):
+        return settings.RRD_PATH  + widget.rrd.name + ".rrd"
+ 
+    line = get_line(widget)
+
+ 
+    cmd = 'rrdtool fetch %s LAST -s %s -e %s' % (line, start, end)
+    p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = p.communicate()
+    if len(stderr) > 0:
+        response = HttpResponse(cmd + "\n" + stderr)
+        response["content-type"] = "text/plain"
+        return response
+    ls = stdout.split("\n")
+
+    def process_header(line):
+        data = line.split(" ")
+        result = ["date"]
+        for item in data:
+            if item:
+                result.append(item)
+        return ",".join(result)
+
+    ls[0] = process_header(ls[0])
+    
+    def process_line(line):
+        if not line:
+            return ""
+        
+        data = line.split(" ")
+        data[0] = datetime.fromtimestamp(int(data[0][:-1])).strftime("%Y-%m-%d %H:%M")
+        for i in range(1, len(data)):
+            if data[i] == 'nan':
+                data[i] = ""
+            else:
+                data[i] = str(float(data[i]))
+        return ",".join(data)
+    
+    for i in range(1, len(ls)):
+        ls[i] = process_line(ls[i])
+        
+    response = HttpResponse(ls[0] + "\n".join(ls[1:]))
+    
+    response["content-type"] = "text/csv"
+    response["content-disposition"] = "attachment; filename=" + widget.rrd.name + "_" +  request.GET["start"] + "_" + request.GET["end"] + ".csv"
     return response
 
 # rrd related features

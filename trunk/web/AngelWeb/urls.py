@@ -25,6 +25,7 @@ urlpatterns = patterns('',
     (r'^rrd/img/(\d+)/$', 'servers.views.rrd_img'),
     (r'^rrd/(\d+)/$', 'servers.views.rrd_show'),
     (r'^rrd/(\d+)/widget/(\d+)/graph$', 'servers.views.rrd_show_widget_graph'),
+    (r'^rrd/img/(\d+)/download$', 'servers.views.rrd_download'),    
     (r'^rrd/(\d+)/create$', 'servers.views.rrd_create'),    
     (r'^dashboard/(\d+)/$', 'servers.views.dashboard_show'),
 )
