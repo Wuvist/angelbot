@@ -135,12 +135,8 @@ def rrd_download(request, rrd_id):
 
     if start == end:
         end = "start+1d"
-
  
-    def get_line(widget):
-        return settings.RRD_PATH  + rrd.name + ".rrd"
- 
-    line = get_line(widget)
+    line = settings.RRD_PATH  + rrd.name + ".rrd"
 
  
     cmd = 'rrdtool fetch %s LAST -s %s -e %s' % (line, start, end)
