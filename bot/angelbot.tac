@@ -23,14 +23,14 @@ class MyResource(Resource):
     def render_GET(self, request):
         return "<html>Hello, world!</html>"
 
-class Foo(Resource):
+class execute(Resource):
     def render_GET(self, request):
         server_name = request.args["server"][0]
         cmd = request.args["cmd"]
         server_info = logins[server_name]
+        request.setHeader("content-type", "text/plain")
         
         def cb(cmd, data):
-            request.setHeader("content-type", "text/plain")
             request.write(data)
             
         def end_cb():
@@ -67,7 +67,8 @@ class rrd(Resource):
         
 
 root = MyResource()
-root.putChild("foo", Foo())
+root.putChild("foo", execute())
+root.putChild("exe", execute())
 root.putChild("rrd", rrd())
 source = root
 application = service.Application("AngelBot")
