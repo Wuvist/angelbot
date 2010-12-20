@@ -26,22 +26,27 @@ class TelnetPrinter(TelnetProtocol):
         self.data += bytes
         
         if self.logined:
+            self.factory.cb(self.current_cmd, self.data)
+
             if self.data.endswith(">"):
-                self.factory.cb(self.current_cmd, self.data)
-                self.data = ""
-                self.next_cmd()
+                self.next_Acmd()
+            self.data = ""
+
         else:            
             if self.data.endswith("login: "):
                 self.transport.write(self.factory.server["username"] + "\n")
+                self.factory.cb(self.current_cmd, self.data)
                 self.data = ""
             if self.data.endswith("password: "):
                 self.transport.write(self.factory.server["password"] + "\n")
+                self.factory.cb(self.current_cmd, self.data)
                 self.data = ""
             if self.data.endswith(">"):
                 #ensure the output is in utf8
                 self.transport.write("chcp 65001\n")
                 self.set_cmd(self.factory.cmd)
                 self.logined = True
+                self.factory.cb(self.current_cmd, self.data)
                 self.data = ""
 
 
