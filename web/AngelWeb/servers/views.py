@@ -126,8 +126,8 @@ def rrd_img(request, widget_id):
     response["content-type"] = "image/png"
     return response
 
-def rrd_download(request, widget_id):
-    widget = get_object_or_404(Widget, id=widget_id)
+def rrd_download(request, rrd_id):
+    rrd = get_object_or_404(Rrd, id=rrd_id)
     from subprocess import Popen, PIPE
     import time
     start = str(int(time.mktime(datetime.strptime(request.GET["start"], "%Y-%m-%d").timetuple())))
@@ -138,7 +138,7 @@ def rrd_download(request, widget_id):
 
  
     def get_line(widget):
-        return settings.RRD_PATH  + widget.rrd.name + ".rrd"
+        return settings.RRD_PATH  + rrd.name + ".rrd"
  
     line = get_line(widget)
 
@@ -181,7 +181,7 @@ def rrd_download(request, widget_id):
     response = HttpResponse(ls[0] + "\n".join(ls[1:]))
     
     response["content-type"] = "text/csv"
-    response["content-disposition"] = "attachment; filename=" + widget.rrd.name + "_" +  request.GET["start"] + "_" + request.GET["end"] + ".csv"
+    response["content-disposition"] = "attachment; filename=" + rrd.name + "_" +  request.GET["start"] + "_" + request.GET["end"] + ".csv"
     return response
 
 # rrd related features
@@ -205,7 +205,6 @@ def rrd_create(request, rrd_id):
     start_time = int(time.mktime(start_time))
     
     cmd = 'rrdtool create %s --start %d %s' % (settings.RRD_PATH + rrd.name + ".rrd", start_time, rrd.setting.replace("\n", "").replace("\r", " "))
-    print
     p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
     stdout, stderr = p.communicate()
     return HttpResponseRedirect("/rrd/")
