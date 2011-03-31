@@ -6,22 +6,24 @@
 <!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="/media/css/ie.css" /><![endif]-->
 
 <h1>{{ rrd.name|title }} - {{ widget.title|title }}</h1>
-<form action="" method="GET">
+<form action="" method="GET" id = "check">
 <fieldset class="module aligned ">
 	<div class="form-row title"> 
 	    <div> 
 			<label for="id_date" class="required">Date:</label> 
-			<p class="datetime"><input name="date" value="{{ show_date }}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
+			<p class="datetime"><input name="date" value="{{ show_date }}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span></p>
 			&nbsp;&nbsp;&nbsp;&nbsp;
-			{% if widget.widget_type == "2"%}
-			<input type="submit" value="Show Date" name="show" /> 
+			<h class="required">
+			{% for line in check_line_values%}	
+			<h><input type='checkbox' class='usercheck' name = {{line.line}} value = {{line.line}} {{ line.checked }} />{{line.line}}</h>&nbsp;
+			{% endfor %}
+			<h><input type='checkbox' id='chkAll' onclick='select_all()'/>All</h></h><br>
+			<h class="required">
+			<input type="submit" value = "Show Date" />
 			<input type="submit" value="With Yesterday" name="show1d"  /> 
 			<input type="submit" value="With Yesterday and last week" name="show1w" />
-			{% else %}
-			<input type="submit" value="Show Date" name="show" />
-			{% endif %}
 			<input type="button" value="Download Data" id="download" name="download" />
-			</p>
+			</h>
 	    </div> 
 	</div>
 </fieldset>
@@ -37,19 +39,44 @@
 	</form>
 </div>
 
-<img src="/rrd/img/{{ widget.id }}/?&start={{ start }}&end={{ end }}&height=480&width=1000&{{ graph_option }}" height="480" width="1000" />
+<img src="/rrd/img/{{ widget.id }}/?&start={{ start }}&end={{ end }}&height=480&width=1000&{{ graph_option }}&cl={{check_lines}}" height="480" width="1000" /></br>
 <script type="text/javascript" src="/admin/jsi18n/"></script>
 <script type="text/javascript" src="/media/js/core.js"></script>
 <script type="text/javascript" src="/media/js/calendar.js"></script>
 <script type="text/javascript" src="/media/js/admin/DateTimeShortcuts.js"></script>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+<script type="text/javascript" src="/media/js/jquery.init.js"></script> 
+<script type="text/javascript" src="/media/js/actions.min.js"></script>
+
+
 <script type="text/javascript"> 
+
 $(function() { 
 	$("#download").click(function(){
 		$("#download_div").toggle();		
 	});
 });
-
 </script>
+
+<script type = 'text/javascript'>
+$(document).ready( function(){
+$('#check input:checkbox.usercheck').click(function(){
+if (this.checked){
+if ($('#check input:checked.usercheck').length == $('#check input.usercheck').length){
+$('#chkAll')[0].checked = true;
+}
+}else{
+$('#chkAll')[0].checked = false;
+}
+});
+});
+function select_all(){
+var e = $('#chkAll')[0].checked;
+$('#check input:checkbox.usercheck').each(function(){
+this.checked = e;
+});
+}
+</script>
+
 {% endblock %}
 
