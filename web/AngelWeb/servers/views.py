@@ -75,13 +75,10 @@ def rrd_img(request, widget_id):
     height = request.GET["height"]
     start = request.GET["start"]
     end = request.GET["end"]
+    check_lines = request.GET["cl"].replace('[','').replace(']','').replace('u\'','').replace('\'','').replace(' ','').split(',')
     # TODO should refactor here
-
-
-
     def get_line(widget):
         return widget.graph_def.replace("{rrd}", settings.RRD_PATH + widget.rrd.name + ".rrd").replace("\n", "").replace("\r", " ")
-
     def get_line_diff(widget, diff):
         def update_def(line):
             line = line.strip()
@@ -103,16 +100,36 @@ def rrd_img(request, widget_id):
 
         graph_def = widget.graph_def.split("\n")
         graph_def = map(update_def, graph_def)
-        
+
         return (" ".join(graph_def)).replace("{rrd}", settings.RRD_PATH + widget.rrd.name + ".rrd")
+    
+    #line = get_line(widget)
+    #if request.GET.has_key("1d"):
+    #    line += " " + get_line_diff(widget, "1d")    
+    #if request.GET.has_key("1w"):
+    #line += " " + get_line_diff(widget, "1w")
 
-    line = get_line(widget)
-    if request.GET.has_key("1d"):
-        line += " " + get_line_diff(widget, "1d")
-
-    if request.GET.has_key("1w"):
-        line += " " + get_line_diff(widget, "1w") 
-        
+    def get_check_lines(line_diff,get_time):
+        color = get_line(widget)[get_line(widget).index("LINE:"+line_diff)+5+len(line_diff):get_line(widget).index("LINE:"+line_diff)+len(line_diff)+12] #5+7
+        line = "DEF:"+line_diff+"="+settings.RRD_PATH + widget.rrd.name + ".rrd:"+line_diff+":LAST LINE:"+line_diff+color+":"+line_diff.capitalize()
+        if get_time == "1d":
+            line += " " + "DEF:donline="+settings.RRD_PATH+widget.rrd.name+".rrd:"+line_diff+":LAST:start="+start+"-"+get_time+":end=start+1d SHIFT:donline:86400 LINE:donline#fbba5c:Yesterday"
+        elif get_time == "1w":
+            print get_time
+            one_day = " " + "DEF:donline="+settings.RRD_PATH+widget.rrd.name+".rrd:"+line_diff+":LAST:start="+start+"-1d:end=start+1d SHIFT:donline:86400 LINE:donline#fbba5c:Yesterday"
+            line += one_day + " " + "DEF:wonline="+settings.RRD_PATH+widget.rrd.name+".rrd:"+line_diff+":LAST:start="+start+"-"+get_time+":end=start+1d SHIFT:wonline:604800 LINE:wonline#b5b5b5:LastWeek"
+        return line
+    
+    if check_lines[0] == "":
+        line = get_line(widget)
+    elif request.GET.has_key("1w"):
+        line =get_check_lines(check_lines[0],"1w")
+    elif request.GET.has_key("1d"):
+        line =get_check_lines(check_lines[0],"1d")
+    else:
+        line = ""
+        for lines in check_lines:
+            line +=" " + get_check_lines(lines,"")
     cmd = 'rrdtool graph - -E --imgformat PNG -s %s -e %s --width %s --height %s %s' % (
         start, end, width, height, line)
     p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
@@ -234,11 +251,17 @@ def rrd_show(request, rrd_id):
     
 @login_required()
 def rrd_show_widget_graph(request, rrd_id, widget_id):
+    import re
+    import time
+    lines = []
+    check_lines = []
     rrd = get_object_or_404(Rrd, id=rrd_id)
     widget = get_object_or_404(Widget, id=widget_id)
+    line = widget.graph_def.replace("{rrd}", settings.RRD_PATH + widget.rrd.name + ".rrd").replace('\n','')
+    lines = re.compile( "LINE:*?(\w+).*?" ).findall(line)
     end = "s%2b1d"
     graph_option = ""
-    import time
+    
     if request.GET.has_key("date"):
         show_date = request.GET["date"]
     else:
@@ -250,10 +273,26 @@ def rrd_show_widget_graph(request, rrd_id, widget_id):
     if request.GET.has_key("show1w"):
         graph_option += "&1w=1&1d=1"
         
+    for checkbox in lines:
+        if request.GET.has_key(checkbox):
+            check_lines.append(checkbox)
+
     start_time = show_date + ' 00:00'
     start_time = time.strptime(start_time, "%Y-%m-%d %H:%M")
     start_time = int(time.mktime(start_time))
     start = start_time
+    check_line_values = []
+    
+    class check_line_value(object):
+        def __init__(self, line, checked):
+            self.line = line
+            self.checked = checked
+            
+    for line in lines:
+        if line in check_lines:
+            check_line_values.append(check_line_value(line, " checked"))
+        else:
+            check_line_values.append(check_line_value(line, " "))
     
     c = RequestContext(request,
         {"rrd":rrd,
@@ -261,6 +300,9 @@ def rrd_show_widget_graph(request, rrd_id, widget_id):
         "show_date" : show_date,
         "start": start,
         "end": end,
-        "graph_option":graph_option
+        "graph_option":graph_option,
+        "lines":lines,
+        "check_lines":check_lines,
+        "check_line_values": check_line_values,
         })
     return render_to_response('servers/rrd_show_graph.html',c)
