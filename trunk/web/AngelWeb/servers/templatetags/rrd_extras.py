@@ -49,6 +49,21 @@ def format_value(field_def, value, check_values = True):
 
     return result
 
+def format_value_def(field_def,data_rrd):
+    if data_rrd[-1] == None or False in [eval(str(x)+field_def[2]) for x in data_rrd if x != None ]:
+        try:
+            if data_rrd[-1] ==None or eval(str(data_rrd[-1])+ field_def[1]):
+                result = "<div class='errors'>" + eval(field_def[0]+"("+str(data_rrd[-1])+")") + "</div>"
+            else:
+                result = eval(field_def[0]+"("+str(data_rrd[-1])+")")
+        except:
+            result = str(field_def)
+            #result = eval(field_def[0]+"("+str(data_rrd[-1])+")") #never errors
+    else:
+        result = "<div class='errornote'>" + eval(field_def[0]+"("+str(data_rrd[-1])+")") + "</div>"
+        
+    return result
+
 def check_date(info, thred = 3):
     last_update = info["last_update"]
     import time
@@ -123,7 +138,12 @@ def show_widget_with_current_value(widget):
             for i in range(0, len(ds)):
                 if data_def.has_key(ds[i]):
                     field_def = data_def[ds[i]]
-                    data[i] = format_value(field_def, data[i])
+                    try:
+                        data_rrd = rrdtool.fetch(rrd_path, "-s", str(int(last_update)-int(field_def[3]) * 60), "-e", last_update + "-1", "LAST")
+                        data_rrd = map(lambda x:x[i],data_rrd[2])
+                        data[i] = format_value_def(field_def,data_rrd)
+                    except:
+                        data[i] = format_value(field_def, data[i])
                 else:
                     data[i] = str(data[i])
         except:
@@ -155,7 +175,12 @@ def show_widget_with_current_and_past_value(widget):
             ds = (current[1][0])
             if data_def.has_key(ds):
                 field_def = data_def[ds]
-                current_value = format_value(field_def, current_value)
+                try:
+                    data_rrd = rrdtool.fetch(rrd_path, "-s", str(int(last_update)-int(field_def[3]) * 60), "-e", last_update + "-1", "LAST")
+                    data_rrd = map(lambda x:x[0],data_rrd[2])
+                    current_value = format_value_def(field_def,data_rrd)
+                except:
+                    current_value = format_value(field_def, current_value)
             else:
                 current_value = get_last_value(current)
         except:
