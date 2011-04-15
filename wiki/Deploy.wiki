@@ -21,13 +21,12 @@ This guide will help you deploy angelbot
    *svn checkout http://angelbot.googlecode.com/svn/trunk/ angelbot
 =Configuration=
    *EEdit file angelbot/web/AngelWeb/settings.py like:
-
-      *12.DATABASE_ENGINE = 'mysql'----#  'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-      *13.DATABASE_NAME = 'angeldb'----# Or path to database file if using sqlite3.
-      *14.DATABASE_USER = 'root'----# Not used with sqlite3.
-      *15.DATABASE_PASSWORD = '' ----# Not used with sqlite3.
-      *16.DATABASE_HOST = ''-----# Set to empty string for localhost. Not used with sqlite3.
-      *17.DATABASE_PORT = ''----# Set to empty string for default. Not used with sqlite3.
+      *112.DATABASE_ENGINE = 'mysql'----#  'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+      *113.DATABASE_NAME = 'angeldb'----# Or path to database file if using sqlite3.
+      *114.DATABASE_USER = 'root'----# Not used with sqlite3.
+      *115.DATABASE_PASSWORD = '' ----# Not used with sqlite3.
+      *116.DATABASE_HOST = ''-----# Set to empty string for localhost. Not used with sqlite3.
+      *117.DATABASE_PORT = ''----# Set to empty string for default. Not used with sqlite3.
 
    *Specify your rrd path:
       *885.RRD_PATH = '/Users/Wuvist/source/angelbot/rrds/'
