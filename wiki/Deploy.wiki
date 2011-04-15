@@ -1,0 +1,11 @@
+#Example in ubuntu linux
+
+= Deploy=
+
+This guide will help you deploy angelbot
+
+= Install depend  package or software =
+
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
