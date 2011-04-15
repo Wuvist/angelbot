@@ -11,6 +11,7 @@ This guide shows how to add a new server and a widget taking single gauge value 
 This guide will help you deploy angelbot
 
 = Install depend  package or software =
+   * sudo apt-get install mysql
    * sudo apt-get install python-setuptools
    * sudo apt-get install build-essential
    * sudo easy_install pyopenssl  or  sudo apt-get install python-pyopenssl
