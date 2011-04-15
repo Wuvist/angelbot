@@ -58,4 +58,4 @@ This guide will help you deploy angelbot
    * Notes:
       * API will round current time to nearest minute.
       * DS has multiple value could be updated using multiple v parameter like:
-http://angel:8080/rrd?rrd={RRD Name}&ds={Dummy ds Name}&v={Value1}&v={Value2}&v={Value3}
+         * http://angel:8080/rrd?rrd={RRD Name}&ds={Dummy ds Name}&v={Value1}&v={Value2}&v={Value3}
