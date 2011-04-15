@@ -6,10 +6,8 @@ This guide will help you deploy angelbot
 
 = Install depend  package or software =
 
-sudo apt-get install python-setuptools
-
-sudo apt-get install build-essential
-
+sudo apt-get install python-setuptools br
+sudo apt-get install build-essential \r
 sudo easy_install pyopenssl  or  sudo apt-get install python-pyopenssl
 
 sudo apt-get install python-twisted-conch
