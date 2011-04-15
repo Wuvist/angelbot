@@ -20,11 +20,11 @@ This guide will help you deploy angelbot
 =Get code=
    *svn checkout http://angelbot.googlecode.com/svn/trunk/ angelbot
 =Configuration=
-   *edit file angelbot\web\AngelWeb\settings.py
-    MANAGERS = ADMINS
-    DATABASE_ENGINE = 'mysql'       # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-    DATABASE_NAME = 'angelweb'             # Or path to database file if using sqlite3.
-    DATABASE_USER = 'root'             # Not used with sqlite3.
-    DATABASE_PASSWORD = ''         # Not used with sqlite3.
-    DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
-    DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
+   *edit file angelbot\web\AngelWeb\settings.py like:
+
+     *DATABASE_ENGINE = 'mysql'     #  'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+     *DATABASE_NAME = 'angeldb'             # Or path to database file if using sqlite3.
+     *DATABASE_USER = 'root'             # Not used with sqlite3.
+     *DATABASE_PASSWORD = ''         # Not used with sqlite3.
+     *DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
+     *DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
