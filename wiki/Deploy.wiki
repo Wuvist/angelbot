@@ -32,7 +32,7 @@ This guide will help you deploy angelbot
       * 85.RRD_PATH = '/Users/Wuvist/source/angelbot/rrds/'
 =Run Angelbot=
    * use angelbot/web/AngelWeb/manage.py syncdb   #auto create tables;in halfway, it will ask you enter to create superadmin username&password,please enter and remember it.
-   * use angelbot/web/AngelWeb/manage.py runserver 127.0.0.1:8000   #browser enter http://127.0.0.1:8000/       you will see one light blue angelbot homepage, congratulation ! you do it! of curse you can use your superadmin username&password login.
+   * use angelbot/web/AngelWeb/manage.py runserver 127.0.0.1:8000   #browser enter http://127.0.0.1:8000/       you will see one light blue angelbot homepage, congratulation ! you do it! of course you can use your superadmin username&password login.
 =Add Server=
    * Using http://angelbot/admin portal to add a new server definition.
    * Only the server name is critical here. server_type is for reference. IP, username, password fields are actually dummy, could input anything. Actual server login credential are currently hardcoded in bot's hosts.py file.
