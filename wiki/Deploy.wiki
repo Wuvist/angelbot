@@ -44,3 +44,18 @@ This guide will help you deploy angelbot
    * Please refers to rrdtool documents for details: http://oss.oetiker.ch/rrdtool/doc/rrdcreate.en.html
    * Once the rrd definition is created, visit http://angelbot/rrd/
    * Click create to create actual rrd file or review its info.
+=Add Widget=
+   * Widget defines the how should Angel present data from a defined RRD.
+   * Again, widgets are created in admin portal.
+   * Server & Category are optional fields. Rrd and Graph def are critical here.
+   * A sample graph widget showing single line will be: DEF:online={rrd}:online:LAST LINE:online#ff8882:Online
+   * Above definition actually follows rrdtool's graph parameter (http://oss.oetiker.ch/rrdtool/doc/rrdgraph.en.html)
+   * {rrd} will be replaced with actual rrd file name.
+=Updating Data=
+   * Once a Rrd file & widget are defined, external could start sending data to bot periodically.
+   * http://angel:8080/rrd?rrd={RRD Name}&ds={Dummy ds Name}&v={Value}
+   * Above API is a simple wrapper for rrdupdate cmd: http://oss.oetiker.ch/rrdtool/doc/rrdupdate.en.html
+   * Notes:
+      * API will round current time to nearest minute.
+      * DS has multiple value could be updated using multiple v parameter like:
+http://angel:8080/rrd?rrd={RRD Name}&ds={Dummy ds Name}&v={Value1}&v={Value2}&v={Value3}
