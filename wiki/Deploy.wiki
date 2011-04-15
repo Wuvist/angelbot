@@ -5,30 +5,30 @@
 This guide will help you deploy angelbot
 
 = Install depend  package or software =
-   *sudo apt-get install python-setuptools
-   *sudo apt-get install build-essential
-   *sudo easy_install pyopenssl  or  sudo apt-get install python-pyopenssl
-   *sudo apt-get install python-twisted-conch
-   *sudo easy_install pycrypto
-   *sudo apt-get install libmysqlclient-dev
-   *sudo easy_install MySQL-python
-   *sudo apt-get install python-mysqldb
-   *sudo apt-get install rrdtool
-   *sudo apt-get install python-rrdtool
-   *sudo apt-get install OpenSSL-dev
-   *sudo apt-get install python-django
+   * sudo apt-get install python-setuptools
+   * sudo apt-get install build-essential
+   * sudo easy_install pyopenssl  or  sudo apt-get install python-pyopenssl
+   * sudo apt-get install python-twisted-conch
+   * sudo easy_install pycrypto
+   * sudo apt-get install libmysqlclient-dev
+   * sudo easy_install MySQL-python
+   * sudo apt-get install python-mysqldb
+   * sudo apt-get install rrdtool
+   * sudo apt-get install python-rrdtool
+   * sudo apt-get install OpenSSL-dev
+   * sudo apt-get install python-django
 =Get code=
-   *svn checkout http://angelbot.googlecode.com/svn/trunk/ angelbot
+   * svn checkout http://angelbot.googlecode.com/svn/trunk/ angelbot
 =Configuration=
-   *EEdit file angelbot/web/AngelWeb/settings.py like:
-      *112.DATABASE_ENGINE = 'mysql'----#  'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-      *113.DATABASE_NAME = 'angeldb'----# Or path to database file if using sqlite3.
-      *114.DATABASE_USER = 'root'----# Not used with sqlite3.
-      *115.DATABASE_PASSWORD = '' ----# Not used with sqlite3.
-      *116.DATABASE_HOST = ''-----# Set to empty string for localhost. Not used with sqlite3.
-      *117.DATABASE_PORT = ''----# Set to empty string for default. Not used with sqlite3.
+   * Edit file angelbot/web/AngelWeb/settings.py like:
+      * 12.DATABASE_ENGINE = 'mysql'----#  'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+      * 13.DATABASE_NAME = 'angeldb'----# Or path to database file if using sqlite3.
+      * 14.DATABASE_USER = 'root'----# Not used with sqlite3.
+      * 15.DATABASE_PASSWORD = '' ----# Not used with sqlite3.
+      * 16.DATABASE_HOST = ''-----# Set to empty string for localhost. Not used with sqlite3.
+      * 17.DATABASE_PORT = ''----# Set to empty string for default. Not used with sqlite3.
 
    *Specify your rrd path:
-      *885.RRD_PATH = '/Users/Wuvist/source/angelbot/rrds/'
+      * 85.RRD_PATH = '/Users/Wuvist/source/angelbot/rrds/'
 =Run angelbot=
-   *use angelbot/web/AngelWeb/manage.py syncdb  auto create tables;
+   * use angelbot/web/AngelWeb/manage.py syncdb  auto create tables;
