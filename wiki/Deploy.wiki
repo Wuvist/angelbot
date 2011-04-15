@@ -31,8 +31,7 @@ This guide will help you deploy angelbot
    * Specify your rrd path:
       * 85.RRD_PATH = '/Users/Wuvist/source/angelbot/rrds/'
 =Run angelbot=
-   * use angelbot/web/AngelWeb/manage.py syncdb   #auto create tables;
-      in halfway, it will ask you enter to create superadmin password,please enter and remember it.
+   * use angelbot/web/AngelWeb/manage.py syncdb   #auto create tables;in halfway, it will ask you enter to create superadmin password,please enter and remember it.
    * use angelbot/web/AngelWeb/manage.py runserver 127.0.0.1:8000   #browser enter http://127.0.0.1:8000/
 
       you will see one light blue angelbot homepage, congratulation ! you do it!
