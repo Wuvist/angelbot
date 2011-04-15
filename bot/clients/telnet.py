@@ -29,7 +29,7 @@ class TelnetPrinter(TelnetProtocol):
             self.factory.cb(self.current_cmd, self.data)
 
             if self.data.endswith(">"):
-                self.next_Acmd()
+                self.next_cmd()
             self.data = ""
 
         else:            
