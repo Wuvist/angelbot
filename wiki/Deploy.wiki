@@ -20,14 +20,16 @@ This guide will help you deploy angelbot
 =Get code=
    *svn checkout http://angelbot.googlecode.com/svn/trunk/ angelbot
 =Configuration=
-   *EEdit file angelbot\web\AngelWeb\settings.py like:
+   *EEdit file angelbot/web/AngelWeb/settings.py like:
 
-     *12.DATABASE_ENGINE = 'mysql'----#  'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-     *13.DATABASE_NAME = 'angeldb'----# Or path to database file if using sqlite3.
-     *14.DATABASE_USER = 'root'----# Not used with sqlite3.
-     *15.DATABASE_PASSWORD = '' ----# Not used with sqlite3.
-     *16.DATABASE_HOST = ''-----# Set to empty string for localhost. Not used with sqlite3.
-     *17.DATABASE_PORT = ''----# Set to empty string for default. Not used with sqlite3.
+      *12.DATABASE_ENGINE = 'mysql'----#  'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+      *13.DATABASE_NAME = 'angeldb'----# Or path to database file if using sqlite3.
+      *14.DATABASE_USER = 'root'----# Not used with sqlite3.
+      *15.DATABASE_PASSWORD = '' ----# Not used with sqlite3.
+      *16.DATABASE_HOST = ''-----# Set to empty string for localhost. Not used with sqlite3.
+      *17.DATABASE_PORT = ''----# Set to empty string for default. Not used with sqlite3.
 
    *Specify your rrd path:
-      *85.RRD_PATH = '/Users/Wuvist/source/angelbot/rrds/'
+      *885.RRD_PATH = '/Users/Wuvist/source/angelbot/rrds/'
+=Run angelbot=
+   *use angelbot/web/AngelWeb/manage.py syncdb  auto create tables;
