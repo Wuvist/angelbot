@@ -20,7 +20,7 @@ This guide will help you deploy angelbot
 =Get code=
    *svn checkout http://angelbot.googlecode.com/svn/trunk/ angelbot
 =Configuration=
-   *Edit file angelbot\web\AngelWeb\settings.py like:
+   *EEdit file angelbot\web\AngelWeb\settings.py like:
 
      *DATABASE_ENGINE = 'mysql'     #  'postgresql', 'mysql', 'sqlite3' or 'oracle'.
      *DATABASE_NAME = 'angeldb'             # Or path to database file if using sqlite3.
