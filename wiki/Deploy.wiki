@@ -6,6 +6,15 @@ This guide will help you deploy angelbot
 
 = Install depend  package or software =
 
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+sudo apt-get install python-setuptools
+sudo apt-get install build-essential
+sudo easy_install pyopenssl  or  sudo apt-get install python-pyopenssl
+sudo apt-get install python-twisted-conch
+sudo easy_install pycrypto
+sudo apt-get install libmysqlclient-dev
+sudo easy_install MySQL-python
+sudo apt-get install python-mysqldb
+sudo apt-get install rrdtool
+sudo apt-get install python-rrdtool
+sudo apt-get install OpenSSL-dev
+sudo apt-get install python-django
