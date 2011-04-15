@@ -1,8 +1,9 @@
 Title: guide
 =Deploy=
+=====2011/03/28 - 2011/04/03=====
    *svn checkout codes:
-
 svn checkout http://angelbot.googlecode.com/svn/trunk/
+   
 Adding new server & sample widget
 
 This guide shows how to add a new server and a widget taking single gauge value for monitor into angelbot.
