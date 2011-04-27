@@ -5,41 +5,37 @@
 <link rel="stylesheet" type="text/css" href="/media/css/forms.css" /> 
 <!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="/media/css/ie.css" /><![endif]-->
 
-<h1>{{ rrd.name|title }} - {{ widget.title|title }}</h1>
+<h1>{{ widget.category|title}} - {{ widget.title|title }} - {{ widget.rrd.name|title }}</h1>
 <form action="" method="GET" id = "check">
 <fieldset class="module aligned ">
 	<div class="form-row title"> 
-	    <div> 
-			<label for="id_date" class="required">Date:</label> 
-			<p class="datetime"><input name="date" value="{{ show_date }}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span></p>
-			&nbsp;&nbsp;&nbsp;&nbsp;
+	    <div>
+			{{ warn|safe  }}
+			<label for="id_date" class="required">Date:</label>
+            <p class="datetime">Start Date: <input name="start" value={{ start }} class="vDateField" type="text" id="id_date_start" size="10" >Time:
+			<input name="start1" value={{ start1 }} class="vTimeField" type="text" id="id_date_start_1" size="8" /> </p>
+			<p class="datetime">End &nbsp;&nbsp;Date: <input name="end" value={{ end }} class="vDateField" type="text" id="id_date_end" size="10" />Time:
+			<input name="end1" value={{ end1 }} class="vTimeField" type="text" id="id_date_end_1" size="8" />&nbsp; Unit:
+			<select name="ptime" value = month selected="selected" id="select_date">
+			<option value="hour"{% if ptime == "hour" %}selected="selected" {%endif%} >hour</option>
+			<option value="day" {% if ptime == "day" %}selected="selected" {%endif%} >day</option>
+			<option value="week" {% if ptime == "week" %}selected="selected" {%endif%} >week</option>
+			<option value="month" {% if ptime == "month" %}selected="selected" {%endif%} >month</option>
+			</select></p>
+			
 			<h class="required">
 			{% for line in check_line_values%}	
 			<h><input type='checkbox' class='usercheck' name = {{line.line}} value = {{line.line}} {{ line.checked }} />{{line.line}}</h>&nbsp;
 			{% endfor %}
-			<h><input type='checkbox' id='chkAll' value = "checkall" {{checkall}} onclick='select_all()'/>All</h></h><br>
-			<h class="required">
+			<h><input type='checkbox' id='chkAll' value = "checkall" {{checkall}}  onclick='select_all()'/>All</h>&nbsp;&nbsp;
 			<input type="submit" value = "Show Date" />
-			<input type="submit" value="With Yesterday" name="show1d"  /> 
-			<input type="submit" value="With Yesterday and last week" name="show1w" />
-			<input type="button" value="Download Data" id="download" name="download" />
 			</h>
 	    </div> 
 	</div>
 </fieldset>
 </form>
 
-<div id="download_div" style="display:none;width:800px">
-	<form action="/rrd/img/{{ rrd.id }}/download" method="GET">
-		<label for="id_date_start" class="required">Start:</label> 
-		<input name="start" value="{{ show_date }}" class="vDateField" type="text" id="id_date_start" size="11"><span class="datetimeshortcuts"></span>
-		<label for="id_date_end" class="required">End:</label> 
-		<input name="end" value="{{ show_date }}" class="vDateField" type="text" id="id_date_end" size="11"><span class="datetimeshortcuts"></span>
-			<input type="submit" value="Download"  />
-	</form>
-</div>
-
-<a href="/parse/widget/{{widget.id}}" target="_blank"><img src="/rrd/img/{{ widget.id }}/?&start={{ start }}&end={{ end }}&height=480&width=1000&{{ graph_option }}&cl={{check_lines}}" height="480" width="1000" /></a></br>
+<img src="/img/widget/{{widget.id}}/parse/?&start={{start}}^{{start1}}&end={{end}}^{{end1}}&ptime={{ptime}}&cl={{check_lines}}" height="480" width="1000" /></br>
 <script type="text/javascript" src="/admin/jsi18n/"></script>
 <script type="text/javascript" src="/media/js/core.js"></script>
 <script type="text/javascript" src="/media/js/calendar.js"></script>
@@ -48,16 +44,6 @@
 <script type="text/javascript" src="/media/js/jquery.min.js"></script>
 <script type="text/javascript" src="/media/js/jquery.init.js"></script> 
 <script type="text/javascript" src="/media/js/actions.min.js"></script>
-
-
-<script type="text/javascript"> 
-
-$(function() { 
-	$("#download").click(function(){
-		$("#download_div").toggle();		
-	});
-});
-</script>
 
 <script type = 'text/javascript'>
 $(document).ready( function(){
@@ -78,6 +64,5 @@ this.checked = e;
 });
 }
 </script>
-
 {% endblock %}
 
