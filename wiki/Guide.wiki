@@ -24,6 +24,7 @@ This guide will help you deploy angelbot
    * sudo apt-get install python-rrdtool
    * sudo apt-get install OpenSSL-dev
    * sudo apt-get install python-django
+   * sudo apt-get install python-matplotlib
 =Get Code=
    * svn checkout http://angelbot.googlecode.com/svn/trunk/ angelbot
 =Configuration=
