@@ -4,19 +4,22 @@
 
 <link rel="stylesheet" type="text/css" href="/media/css/forms.css" /> 
 <!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="/media/css/ie.css" /><![endif]-->
-
-<h1>{{ widget.category|title}} - {{ widget.title|title }} - {{ widget.rrd.name|title }}</h1>
+<h1>-
+{% for widget in widgets_title %}
+{{widget.title}}&nbsp;-
+{% endfor %}
+</h1>
 <form action="" method="GET" id = "check">
 <fieldset class="module aligned ">
 	<div class="form-row title"> 
-	    <div>
+		<div>
 			{{ warn|safe  }}
 			<label for="id_date" class="required">Date:</label>
-            <p class="datetime">Start Date: <input name="start" value={{ start }} class="vDateField" type="text" id="id_date_start" size="10" >Time:
+			<p class="datetime">Start Date: <input name="start" value={{ start }} class="vDateField" type="text" id="id_date_start" size="10" >Time:
 			<input name="start1" value={{ start1 }} class="vTimeField" type="text" id="id_date_start_1" size="8" /> </p>
 			<p class="datetime">End &nbsp;&nbsp;Date: <input name="end" value={{ end }} class="vDateField" type="text" id="id_date_end" size="10" />Time:
 			<input name="end1" value={{ end1 }} class="vTimeField" type="text" id="id_date_end_1" size="8" />&nbsp; Unit:
-			<select name="ptime" value = month selected="selected" id="select_date">
+			<select name="ptime" >
 			<option value="hour"{% if ptime == "hour" %}selected="selected" {%endif%} >hour</option>
 			<option value="day" {% if ptime == "day" %}selected="selected" {%endif%} >day</option>
 			<option value="week" {% if ptime == "week" %}selected="selected" {%endif%} >week</option>
@@ -27,15 +30,52 @@
 			{% for line in check_line_values%}	
 			<h><input type='checkbox' class='usercheck' name = {{line.line}} value = {{line.line}} {{ line.checked }} />{{line.line}}</h>&nbsp;
 			{% endfor %}
-			<h><input type='checkbox' id='chkAll' value = "checkall" {{checkall}}  onclick='select_all()'/>All</h>&nbsp;&nbsp;
+			<h><input type='checkbox' id='chkAll' value = "checkall" {{checkall}}  onclick='select_all()'/>All</h>&nbsp;&nbsp;</br>
 			<input type="submit" value = "Show Date" />
+			<input type="button" value="With Other Widget" id="withWidget" name="withWidget" />
+			<input type="button" value="Download Data" id="download" name="download_data" />
 			</h>
-	    </div> 
+		</div> 
+	</div>
+	<div id="withWidget_div" style="display:none;width:800px">
+		{% for widget in widgets %}
+		<h><input type='checkbox' class='withWidget' name = 'check_widget' value = {{widget.value}} {{ widget.checked }} />{{widget.name}}</h>&nbsp;
+		{% endfor %}
+		<h><input type='checkbox' id='checkWidgetAll' value = "checkWidgetAll" {{checkWidgetAll}}  onclick='check_all()'/>All</h>&nbsp;&nbsp;
+		<input type="submit" value = "With Widget"/>
 	</div>
 </fieldset>
 </form>
-
-<img src="/img/widget/{{widget.id}}/parse/?&start={{start}}^{{start1}}&end={{end}}^{{end1}}&ptime={{ptime}}&cl={{check_lines}}" height="480" width="1000" /></br>
+<form action="/downloadparse/" method="GET" id = "category">
+	<fieldset class="module aligned ">
+		<div class="form-row title" id="download_div" style="display:none;width:800px">
+			<label for="id_date" class="required">Date:</label>
+			<p class="datetime">Start Date: <input name="start" value={{ start }} class="vDateField" type="text" id="id_date_start" size="10" >Time:
+			<input name="start1" value={{ start1 }} class="vTimeField" type="text" id="id_date_start_1" size="8" />&nbsp; Unit:
+			<select name="ptime" >
+			<option value="hour"{% if ptime == "hour" %}selected="selected" {%endif%} >hour</option>
+			<option value="day" {% if ptime == "day" %}selected="selected" {%endif%} >day</option>
+			<option value="week" {% if ptime == "week" %}selected="selected" {%endif%} >week</option>
+			<option value="month" {% if ptime == "month" %}selected="selected" {%endif%} >month</option>
+			</select></p>
+			<p class="datetime">End &nbsp;&nbsp;Date: <input name="end" value={{ end }} class="vDateField" type="text" id="id_date_end" size="10" />Time:
+			<input name="end1" value={{ end1 }} class="vTimeField" type="text" id="id_date_end_1" size="8" />&nbsp; Order:
+			<select name="order">
+			<option value="1" selected="selected" >order by widget</option>
+			<option value="2" >order by widget's value</option>
+			</select></p>
+			<input type="hidden" name="dashboard_id" value = {{dashboard_id}} />
+			{%for category in widgetCategory %}
+			<h><input type='checkbox' class='checkCategory' name = 'cdc' value = {{category}} />{{category}}</h>&nbsp;
+			{% endfor %}
+			<h><input type='checkbox' id='checkCategoryAll' value = "checkCategoryAll" onclick='category_all()'/>All</h>&nbsp;&nbsp;
+			<input type="submit" name = "download" value="Download"  />
+		</div>
+	</fieldset>
+</form>
+{% if not warn %}
+<img src="/parse/?&start={{start}}^{{start1}}&end={{end}}^{{end1}}&ptime={{ptime}}&cl={{check_lines}}&widgetls={{check_widgets_id}}" height="480" width="1000" /></br>
+{% endif %}
 <script type="text/javascript" src="/admin/jsi18n/"></script>
 <script type="text/javascript" src="/media/js/core.js"></script>
 <script type="text/javascript" src="/media/js/calendar.js"></script>
@@ -45,6 +85,26 @@
 <script type="text/javascript" src="/media/js/jquery.init.js"></script> 
 <script type="text/javascript" src="/media/js/actions.min.js"></script>
 
+<script type="text/javascript"> 
+$(function() { 
+	$("#withWidget").click(function(){
+		$("#withWidget_div").toggle();
+		if ($("#download_div").is(":visible")==true){
+		$("#download_div").toggle();
+		}
+	});
+});
+</script>
+<script type="text/javascript"> 
+$(function() { 
+	$("#download").click(function(){
+		$("#download_div").toggle();
+		if ($("#withWidget_div").is(":visible")==true){
+		$("#withWidget_div").toggle();
+		}
+	});
+});
+</script>
 <script type = 'text/javascript'>
 $(document).ready( function(){
 $('#check input:checkbox.usercheck').click(function(){
@@ -60,6 +120,44 @@ $('#chkAll')[0].checked = false;
 function select_all(){
 var e = $('#chkAll')[0].checked;
 $('#check input:checkbox.usercheck').each(function(){
+this.checked = e;
+});
+}
+</script>
+<script type = 'text/javascript'>
+$(document).ready( function(){
+$('#category input:checkbox.checkCategory').click(function(){
+if (this.checked){
+if ($('#category input:checked.checkCategory').length == $('#category input.checkCategory').length){
+$('#checkCategoryAll')[0].checked = true;
+}
+}else{
+$('#checkCategoryAll')[0].checked = false;
+}
+});
+});
+function category_all(){
+var e = $('#checkCategoryAll')[0].checked;
+$('#category input:checkbox.checkCategory').each(function(){
+this.checked = e;
+});
+}
+</script>
+<script type = 'text/javascript'>
+$(document).ready( function(){
+$('#check input:checkbox.withWidget').click(function(){
+if (this.checked){
+if ($('#check input:checked.withWidget').length == $('#check input.withWidget').length){
+$('#checkWidgetAll')[0].checked = true;
+}
+}else{
+$('#checkWidgetAll')[0].checked = false;
+}
+});
+});
+function check_all(){
+var e = $('#checkWidgetAll')[0].checked;
+$('#check input:checkbox.withWidget').each(function(){
 this.checked = e;
 });
 }
