@@ -725,7 +725,7 @@ def parse_downoad(request):
     
     dashboard_id = request.GET["dashboard_id"]
     if request.GET.has_key("cdc"):
-        check_categorys = request.GET.getlist("cdc")
+        check_categorys = map(lambda x:x.replace("&nbsp"," "),request.GET.getlist("cdc"))
     else:
         check_categorys = map(lambda x:x["category"],Widget.objects.filter(dashboard=dashboard_id).values("category").order_by('category').annotate())
     
@@ -780,9 +780,13 @@ def show_parse_graph(request,dashboard_id, widget_id):
     widget = get_object_or_404(Widget, id=widget_id)
     
     widgetCategory = []
+    class check_category_values(object):
+        def __init__ (self,name):
+            self.name = name
+            self.value = name.replace(" ","&nbsp")
     for x in Widget.objects.values('category').filter(dashboard=dashboard_id).order_by('category').annotate():
         if x['category'] == '':x['category'] = "---"
-        widgetCategory.append(x['category'])
+        widgetCategory.append(check_category_values(x['category']))
     line = widget.graph_def.replace("{rrd}", widget.rrd.path()).replace('\n','').replace('\r','')
     lines = re.compile( "LINE:(\w+)" ).findall(line)
     
@@ -864,6 +868,7 @@ def show_parse_graph(request,dashboard_id, widget_id):
     if check_widgets_id == []:check_widgets_id.append(widget_id)
     widgets_title = map(lambda x:contrast_widgets[x],check_widgets_id)
     check_widgets_id = ','.join(check_widgets_id)
+    widgets = sorted(widgets, key=lambda x:x.name)
 
     c = RequestContext(request,
         {"dashboard_id":dashboard_id,
