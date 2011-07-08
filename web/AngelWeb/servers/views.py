@@ -249,15 +249,15 @@ def rrd_show(request, rrd_id):
     return render_to_response('servers/rrd_show.html',c)
     
 @login_required()
-def rrd_show_widget_graph(request, rrd_id, widget_id):
+def rrd_show_widget_graph(request, dashboard_id, widget_id):
     import re
     import time
     lines = []
     check_lines = []
-    rrd = get_object_or_404(Rrd, id=rrd_id)
     widget = get_object_or_404(Widget, id=widget_id)
+    rrd = get_object_or_404(Rrd, id=widget.rrd.id)
     line = widget.graph_def.replace("{rrd}", settings.RRD_PATH + widget.rrd.name + ".rrd").replace('\n','')
-    lines = re.compile( "LINE:*?(\w+).*?" ).findall(line)
+    lines = re.compile( "LINE:(\w+)" ).findall(line)
     end = "s%2b1d"
     graph_option = ""
     
@@ -301,6 +301,7 @@ def rrd_show_widget_graph(request, rrd_id, widget_id):
     
     c = RequestContext(request,
         {"rrd":rrd,
+        "dashboard_id":dashboard_id,
         "widget": widget,
         "show_date" : show_date,
         "start": start,
@@ -313,7 +314,7 @@ def rrd_show_widget_graph(request, rrd_id, widget_id):
         })
     return render_to_response('servers/rrd_show_graph.html',c)
 
-def parser(request,widget_id):
+def parser(request):
     import matplotlib
     matplotlib.use('Agg')
     import numpy as np
@@ -322,22 +323,15 @@ def parser(request,widget_id):
     from cStringIO import StringIO
     from matplotlib import pyplot as plt
     from subprocess import Popen, PIPE
-    
-    widget = get_object_or_404(Widget,id = widget_id)
-    rrd_name = widget.rrd.name
-    check_lines = request.GET["cl"].replace('[','').replace(']','').replace('u\'','').replace('\'','').replace(' ','').split(',')
-    rrd_lines = rrdtool.fetch(widget.rrd.path(), "-s", str(2), "-e", "s+0", "LAST")[1]
-    if check_lines == ['']:
-        check_lines = rrd_lines
-    start = int(time.mktime(datetime.strptime(request.GET["start"], "%Y-%m-%d^%H:%M:%S").timetuple()))
-    end = int(time.mktime(datetime.strptime(request.GET["end"], "%Y-%m-%d^%H:%M:%S").timetuple()))
-    if start == end:
-        start -= 86400
-    start -= 60
-    cmd = "rrdtool fetch " + widget.rrd.path() + " LAST -s " + str(start) +" -e " + str(end)
-    p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
-    stdout, stderr = p.communicate()
-    data_ls = [x.split(" ") for x in stdout.replace(":","").replace("  ","").replace("n","-").replace("N","-").replace("\r","\n").split("\n") ]
+
+    def get_rrd_data(widget_id,start,end):
+        widget = get_object_or_404(Widget,id = widget_id)
+        rrd_name = widget.rrd.name
+        cmd = "rrdtool fetch " + widget.rrd.path() + " LAST -s " + str(start) +" -e " + str(end)
+        p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = p.communicate()
+        data_ls = [x.split(" ") for x in stdout.replace(":","").replace("  ","").replace("n","-").replace("N","-").replace("\r","\n").split("\n") ]
+        return data_ls
     
     def parser_time(data_ls,line_number,start_time_number):
         result = []
@@ -369,28 +363,7 @@ def parser(request,widget_id):
         
         return result
     
-    def start(rrd_lines,check_lines,data_ls,start_time_number,p_last_time,time_x):
-        list_all = []
-        times_ls = []
-        for i in range(0,len(rrd_lines)):
-            if rrd_lines[i] in check_lines:
-                list_all.append(parser_time(data_ls, i+1, start_time_number))
-        time_def = time.strftime("%Y%m%d%H%M%S",time.localtime(int(data_ls[3][0])))[:start_time_number]
-        last_time = data_ls[-2][0]
-        for i in data_ls:
-            try:
-                times = time.strftime("%Y%m%d%H%M%S",time.localtime(int(i[0])))
-                if i[0] == last_time:
-                    times_ls.append(eval(p_last_time))
-                elif times[:start_time_number] > time_def:
-                    time_def = times[:start_time_number]
-                    times_ls.append(eval(time_x))
-            except:
-                pass
-        list_all.append(times_ls)
-        return list_all
-    
-    def parser_week(rrd_lines,check_lines,data_ls):
+    def parser_week(rrd_lines,check_lines,widgetls):
         def avaerge_week(data_ls,line_number):
             result = []
             total = 0
@@ -420,46 +393,116 @@ def parser(request,widget_id):
                      pass
             return result
         
-        def start_week(rrd_lines,check_lines,data_ls,):
+        def parser_start(rrd_lines,check_lines,data_ls):
+            
             list_all = []
-            times_ls = []
             for i in range(0,len(rrd_lines)):
                 if rrd_lines[i] in check_lines:
                     list_all.append(avaerge_week(data_ls, i+1))
+            
+            return list_all
+        
+        def start_week(rrd_lines,check_lines,widgetls):
+            list_all = []
+            times_ls = []
+            if len(widgetls)==1:
+                data_ls = get_rrd_data(widgetls[0],start,end)
+                list_all=parser_start(rrd_lines,check_lines,data_ls)
+            else:
+                for p_widget_id in widgetls:
+                    data_ls = get_rrd_data(p_widget_id,start,end)
+                    list_all.append(parser_start(rrd_lines,check_lines,data_ls)[0])
+            
             j = 10080
             data_ls_count = len(data_ls)
             for i in range(data_ls_count):
                 try:
-                    if i == data_ls_count - 2:
+                    #if i == data_ls_count - 2:
+                    if i == 3:
                         times_ls.append(time.strftime("%Y-%m-%d",time.localtime(int(data_ls[i][0])-60)))
                     elif i == j:
                         times_ls.append(time.strftime("%Y-%m-%d",time.localtime(int(data_ls[i][0]))))
-                        j += 10080                     
+                        j += 10080
                 except:
                     pass
             list_all.append(times_ls)
             
             return list_all
-        return start_week(rrd_lines,check_lines,data_ls,)
+        return start_week(rrd_lines,check_lines,widgetls)
+
+    def parser_start(rrd_lines,check_lines,data_ls,start_time_number,p_last_time,time_x):
+        list_all = []
+        
+        for i in range(0,len(rrd_lines)):
+            if rrd_lines[i] in check_lines:
+                list_all.append(parser_time(data_ls, i+1, start_time_number))
+    
+        return list_all
+    
+    def start_parse(widgetls,rrd_lines,check_lines,start_time_number,p_last_time,time_x):
+        result = []
+        result_widget = []
+        if len(widgetls)==1:
+            data_ls = get_rrd_data(widgetls[0],start,end)
+            result=parser_start(rrd_lines,check_lines,data_ls,start_time_number,p_last_time,time_x)
+        else:
+            for p_widget_id in widgetls:
+                data_ls = get_rrd_data(p_widget_id,start,end)
+                result.append(parser_start(rrd_lines,check_lines,data_ls,start_time_number,p_last_time,time_x)[0])
+        times_ls = []
+        time_def = time.strftime("%Y%m%d%H%M%S",time.localtime(int(data_ls[3][0])))[:start_time_number]
+        last_time = data_ls[-2][0]
+        for i in data_ls:
+            try:
+                times = time.strftime("%Y%m%d%H%M%S",time.localtime(int(i[0])))
+                if i[0] == last_time:
+                    times_ls.append(eval(p_last_time))
+                elif times[:start_time_number] > time_def:
+                    time_def = times[:start_time_number]
+                    times_ls.append(eval(time_x))
+            except:
+                pass
+        result.append(times_ls)
+        return result
+
+    widgetls = request.GET["widgetls"].split(",")
+    widgetls_name = map(lambda x:get_object_or_404(Widget,id = x),widgetls)
+    widget = get_object_or_404(Widget,id = widgetls[0])
+    check_lines = request.GET["cl"].split(',')
+    start = int(time.mktime(datetime.strptime(request.GET["start"], "%Y-%m-%d^%H:%M:%S").timetuple()))
+    end = int(time.mktime(datetime.strptime(request.GET["end"], "%Y-%m-%d^%H:%M:%S").timetuple()))
+    rrd_lines = rrdtool.fetch(widget.rrd.path(), "-s", str(2), "-e", "s+0", "LAST")[1]
+    if start == end:
+        start -= 86400
+    start -= 60
+
+    if check_lines == ['']:
+        check_lines = rrd_lines
+    if len(widgetls)>1:
+        check_lines = [check_lines[0]]
+        img_legend = widgetls_name
+        img_title = request.GET["start"]+"_"+request.GET["end"]+"_"+widget.category+"-"+widget.title+"/"+request.GET["ptime"]+"      "+check_lines[0]
+    else:
+        img_legend = check_lines
+        img_title = request.GET["start"]+"_"+request.GET["end"]+"_"+widget.category+"-"+widget.title+"/"+request.GET["ptime"]    
     
     if request.GET["ptime"] =="hour":
         start_time_number = 10
         p_last_time = 'time.strftime("%m-%d %H:%M",time.localtime(int(i[0])-60))[:-2]+"00"'
         time_x = 'time.strftime("%m-%d %H:%M",time.localtime(int(i[0])-3600))'
-        result = start(rrd_lines,check_lines,data_ls,start_time_number,p_last_time,time_x)
+        result = start_parse(widgetls,rrd_lines,check_lines,start_time_number,p_last_time,time_x)
     elif request.GET["ptime"] =="day":
         start_time_number = 8
         p_last_time = 'time.strftime("%Y-%m-%d",time.localtime(int(i[0])-60))'
         time_x = 'time.strftime("%Y-%m-%d",time.localtime(int(i[0])-86400))'
-        result = start(rrd_lines,check_lines,data_ls,start_time_number,p_last_time,time_x)
+        result = start_parse(widgetls,rrd_lines,check_lines,start_time_number,p_last_time,time_x)
     elif request.GET["ptime"] == "week":
-        result = parser_week(rrd_lines,check_lines,data_ls)
+        result = parser_week(rrd_lines,check_lines,widgetls)
     else:
-        # elif request.GET["ptime"] == "month":
         start_time_number = 6
         p_last_time = 'time.strftime("%Y-%m", time.localtime(int(i[0])-60))'
         time_x = 'time.strftime("%Y-%m",time.localtime(int(i[0])-2419200))'
-        result = start(rrd_lines,check_lines,data_ls,start_time_number,p_last_time,time_x)
+        result = start_parse(widgetls,rrd_lines,check_lines,start_time_number,p_last_time,time_x)
 
     x_values = []
     if len(result[-1]) >= 18:
@@ -474,9 +517,9 @@ def parser(request,widget_id):
     for i in range(len(result)-1):
         plt.plot(result[i])
     
-    plt.legend(check_lines, loc="upper right",shadow=True)
+    plt.legend(img_legend, loc="upper right", shadow=True)
     plt.xticks(np.arange(0,len(result[-1]),interval),x_values)
-    plt.title(request.GET["start"]+"_"+request.GET["end"]+"_"+widget.category+"-"+widget.title+"/"+request.GET["ptime"])
+    plt.title(img_title)
     plt.grid(True)
     fig.autofmt_xdate()
     pic_buf = StringIO()
@@ -488,11 +531,258 @@ def parser(request,widget_id):
     response = HttpResponse(image_data)
     response["content-type"] = "image/png"
     return response
+
+def parse_downoad(request):
+    from subprocess import Popen, PIPE
+    import time
+    import rrdtool
+
+    def get_rrd_data(widget_id,start,end):
+        widget = get_object_or_404(Widget,id = widget_id)
+        rrd_name = widget.rrd.name
+        cmd = "rrdtool fetch " + widget.rrd.path() + " LAST -s " + str(start) +" -e " + str(end)
+        p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = p.communicate()
+        data_ls = [x.split(" ") for x in stdout.replace(":","").replace("  ","").replace("n","-").replace("N","-").replace("\r","\n").split("\n") ]
+        return data_ls
     
-def show_parse_graph(request,widget_id):
+    def parser_time(widget_name,data_ls, rrd_lines, line_number,start_time_number):
+        result = [widget_name+"-"+rrd_lines[line_number-1]]
+        total = 0
+        x = 0.0000000000001
+        time_def = time.strftime("%Y%m%d%H%M%S",time.localtime(int(data_ls[3][0])))[:start_time_number]
+        last_time = data_ls[-2][0]
+        for i in data_ls:
+            try:
+                times = time.strftime("%Y%m%d%H%M%S",time.localtime(int(i[0])))
+                if i[0] == last_time:
+                    average = total / x
+                    result.append(str('%.4f' % average))
+                elif times[:start_time_number] == time_def:
+                    total += float(i[line_number])
+                    x += 1
+                else:
+                    time_def = times[:start_time_number]
+                    average = total / x
+                    try:
+                        x = 1.0
+                        total = float(i[line_number])
+                    except:
+                        total = 0
+                        x = 0.0000000000001
+                    result.append(str('%.4f' % average))
+            except:
+                 pass
+        
+        return result
+
+    def start_parse(get_parse_time,dashboard_id,category,start_time_number,p_last_time,time_x):
+        result = []
+        widgetls = map(lambda x:x["id"],Widget.objects.filter(dashboard=int(dashboard_id)).filter(category=category.replace("---","")).values("id"))
+        rrd_lines = rrdtool.fetch(get_object_or_404(Widget,id = widgetls[0]).rrd.path(), "-s", str(2), "-e", "s+0", "LAST")[1]
+        for p_widget_id in widgetls:
+            data_ls = get_rrd_data(p_widget_id,start,end)
+            widget_name = get_object_or_404(Widget,id=p_widget_id).title
+            ls_widget = []
+            for line_number in range(0,len(rrd_lines)):
+                ls_widget.append(parser_time(widget_name,data_ls, rrd_lines, line_number+1, start_time_number))
+            result.append(ls_widget)
+        if get_parse_time:
+            times_ls = ["date"]
+            time_def = time.strftime("%Y%m%d%H%M%S",time.localtime(int(data_ls[3][0])))[:start_time_number]
+            last_time = data_ls[-2][0]
+            for i in data_ls:
+                try:
+                    times = time.strftime("%Y%m%d%H%M%S",time.localtime(int(i[0])))
+                    if i[0] == last_time:
+                        times_ls.append(eval(p_last_time))
+                    elif times[:start_time_number] > time_def:
+                        time_def = times[:start_time_number]
+                        times_ls.append(eval(time_x))
+                except:
+                    pass
+            result.append(times_ls)
+        return result
+
+    def parser_week(get_parse_time,categorys,dashboard_id):
+         def avaerge_week(widget_name,rrd_lines,data_ls,line_number):
+             result = [widget_name+"-"+rrd_lines[line_number-1]]
+             total = 0
+             j = 10080
+             x = 0.0000000000001
+             data_ls_count = len(data_ls)
+             for i in range(data_ls_count):
+                 try:
+                     if i == data_ls_count - 2:
+                         average = total / x
+                         result.append(str('%.4f' % average))
+                         break
+                     elif i < j:
+                         total += float(data_ls[i][line_number])
+                         x += 1
+                     else:
+                         average = total / x
+                         j += 10080
+                         try:
+                             x = 1.0
+                             total = float(data_ls[i][line_number])
+                         except:
+                             total = 0
+                             x = 0.0000000000001
+                         result.append(str('%.4f' % average))
+                 except:
+                      pass
+             return result
+         
+         def start_week(get_parse_time,category,dashboard_id):
+             result = []
+             widgetls = map(lambda x:x["id"],Widget.objects.filter(dashboard=int(dashboard_id)).filter(category=category.replace("---","")).values("id"))
+             rrd_lines = rrdtool.fetch(get_object_or_404(Widget,id = widgetls[0]).rrd.path(), "-s", str(2), "-e", "s+0", "LAST")[1]
+             for p_widget_id in widgetls:
+                 data_ls = get_rrd_data(p_widget_id,start,end)
+                 widget_name = get_object_or_404(Widget,id=p_widget_id).title
+                 ls_widget = []
+                 for line_number in range(0,len(rrd_lines)):
+                     ls_widget.append(avaerge_week(widget_name,rrd_lines,data_ls, line_number+1))
+                 result.append(ls_widget)
+             if get_parse_time:
+                times_ls = ["date"]
+                j = 10080
+                data_ls_count = len(data_ls)
+                for i in range(data_ls_count):
+                    try:
+                        #if i == data_ls_count - 2:
+                        if i ==  3:
+                            times_ls.append(time.strftime("%Y-%m-%d",time.localtime(int(data_ls[i][0])-60)))
+                        elif i == j:
+                            times_ls.append(time.strftime("%Y-%m-%d",time.localtime(int(data_ls[i][0]))))
+                            j += 10080
+                    except:
+                        pass
+                result.append(times_ls)
+             return result
+         return start_week(get_parse_time,categorys,dashboard_id)
+
+    def order_by_widget(parse_week,check_categorys,dashboard_id,start_time_number,p_last_time,time_x):
+        data = ''
+        category_time = 0
+        get_parse_time = False
+        for category in check_categorys:
+            category_time += 1
+            if category_time != len(check_categorys):
+                data += category + '\n'
+                if parse_week == "week":
+                    result = parser_week(get_parse_time,category,dashboard_id)
+                else:
+                    result = start_parse(get_parse_time,dashboard_id,category,start_time_number,p_last_time,time_x)
+                for i in result:
+                    for x in i:
+                        data += ','.join(x)+'\n'
+                    data +='\n'
+            else:
+                get_parse_time = True
+                data += category+'\n'
+                if parse_week == "week":
+                    result = parser_week(get_parse_time,category,dashboard_id)
+                else:
+                    result = start_parse(get_parse_time,dashboard_id,category,start_time_number,p_last_time,time_x)
+                for i in result[:-1]:
+                    for x in i:
+                        data += ','.join(x)+'\n'
+                    data +='\n'
+        data = ','.join(result[-1])+'\n' + data
+        return data
+
+    def order_by_widget_value(parse_week,check_categorys,dashboard_id,start_time_number,p_last_time,time_x):
+        data = ''
+        category_time = 0
+        get_parse_time = False
+        for category in check_categorys:
+            category_time += 1
+            if category_time != len(check_categorys):
+                data += category + '\n'
+                if parse_week == "week":
+                    result = parser_week(get_parse_time,category,dashboard_id)
+                else:
+                    result = start_parse(get_parse_time,dashboard_id,category,start_time_number,p_last_time,time_x)
+                for y in range(len(result[0])):
+                    for i in result:
+                        data += ','.join(i[y])+'\n'
+                    data += '\n'
+            else:
+                get_parse_time = True
+                data += category + '\n'
+                if parse_week == "week":
+                    result = parser_week(get_parse_time,category,dashboard_id)
+                else:
+                    result = start_parse(get_parse_time,dashboard_id,category,start_time_number,p_last_time,time_x)
+                for y in range(len(result[0])):
+                    for i in result[:-1]:
+                        data += ','.join(i[y]) + '\n'
+                    data += '\n'
+        data = ','.join(result[-1])+'\n' + data
+        return data
+    
+    dashboard_id = request.GET["dashboard_id"]
+    if request.GET.has_key("cdc"):
+        check_categorys = request.GET.getlist("cdc")
+    else:
+        check_categorys = map(lambda x:x["category"],Widget.objects.filter(dashboard=dashboard_id).values("category").order_by('category').annotate())
+    
+    start = int(time.mktime(datetime.strptime(request.GET["start"]+"^"+request.GET["start1"], "%Y-%m-%d^%H:%M:%S").timetuple()))
+    end = int(time.mktime(datetime.strptime(request.GET["end"]+"^"+request.GET["end1"], "%Y-%m-%d^%H:%M:%S").timetuple()))
+    if start == end:
+        start -= 86400
+    start -= 60
+    
+    if request.GET["ptime"] =="hour":
+        start_time_number = 10
+        p_last_time = 'time.strftime("%Y-%m-%d %H:%M",time.localtime(int(i[0])-60))[:-2]+"00"'
+        time_x = 'time.strftime("%Y-%m-%d %H:%M",time.localtime(int(i[0])-3600))'
+        if request.GET["order"]=="1":
+            data = order_by_widget("",check_categorys,dashboard_id,start_time_number,p_last_time,time_x)
+        else:
+            data = order_by_widget_value("",check_categorys,dashboard_id,start_time_number,p_last_time,time_x)
+    elif request.GET["ptime"] =="day":
+        start_time_number = 8
+        p_last_time = 'time.strftime("%Y-%m-%d",time.localtime(int(i[0])-60))'
+        time_x = 'time.strftime("%Y-%m-%d",time.localtime(int(i[0])-86400))'
+        if request.GET["order"]=="1":
+            data = order_by_widget("",check_categorys,dashboard_id,start_time_number,p_last_time,time_x)
+        else:
+            data = order_by_widget_value("",check_categorys,dashboard_id,start_time_number,p_last_time,time_x)
+        
+    elif request.GET["ptime"] == "week":
+        if request.GET["order"] == "1":
+            data = order_by_widget("week",check_categorys,dashboard_id,"","","")
+        else:
+            data = order_by_widget_value("week",check_categorys,dashboard_id,"","","")
+    else:
+        start_time_number = 6
+        p_last_time = 'time.strftime("%Y-%m", time.localtime(int(i[0])-60))'
+        time_x = 'time.strftime("%Y-%m",time.localtime(int(i[0])-2419200))'
+        if request.GET["order"]=="1":
+            data = order_by_widget("",check_categorys,dashboard_id,start_time_number,p_last_time,time_x)
+        else:
+            data = order_by_widget_value("",check_categorys,dashboard_id,start_time_number,p_last_time,time_x)
+        
+    response = HttpResponse(data)
+    response["content-type"] = "text/csv"
+    response["content-disposition"] = "attachment; filename="+request.GET["start"]+"~"+request.GET["end"]+"_"+"&".join(check_categorys)+"-"+request.GET["ptime"]+".csv"
+    return response
+
+@login_required()
+def show_parse_graph(request,dashboard_id, widget_id):
     import re
     import time
+    
+    if str(dashboard_id) not in map(lambda x:str(x["id"]),Dashboard.objects.filter(user = request.user.id).values("id")):raise Http404   
     widget = get_object_or_404(Widget, id=widget_id)
+    
+    widgetCategory = []
+    for x in Widget.objects.values('category').filter(dashboard=dashboard_id).order_by('category').annotate():
+        if x['category'] == '':x['category'] = "---"
+        widgetCategory.append(x['category'])
     line = widget.graph_def.replace("{rrd}", widget.rrd.path()).replace('\n','').replace('\r','')
     lines = re.compile( "LINE:(\w+)" ).findall(line)
     
@@ -547,10 +837,38 @@ def show_parse_graph(request,widget_id):
         checkall = "checked"
         check_line_values[0]=(check_line_value(lines[0], " checked"))
     else:
-        checkall = ""    
-        
+        checkall = ""
+    check_lines = ','.join(check_lines)
+    
+    contrast_widgets = {}
+    for i in Widget.objects.filter(category=widget.category).filter(dashboard=dashboard_id).values("title","id"):
+        contrast_widgets[str(i['id'])] = i['title']
+    widgets = []
+    class check_widgets_values(object):
+        def __init__ (self,name,value,checked):
+            self.name = contrast_widgets[name]
+            self.value = value
+            self.checked = checked
+    check_widgets_id = []
+    for i in contrast_widgets.keys():
+        if i in request.GET.getlist("check_widget"):
+           check_widgets_id.append(i)
+           widgets.append(check_widgets_values(i, i, " checked"))
+        else:
+           widgets.append(check_widgets_values(i, i, ""))
+    if len(check_widgets_id)==len(contrast_widgets) or len(contrast_widgets)==1:
+        checkWidgetAll = " checked"
+        widgets[0]=(check_widgets_values(contrast_widgets.keys()[0],contrast_widgets.keys()[0]," checked"))
+    else:
+        checkWidgetAll = ""
+    if check_widgets_id == []:check_widgets_id.append(widget_id)
+    widgets_title = map(lambda x:contrast_widgets[x],check_widgets_id)
+    check_widgets_id = ','.join(check_widgets_id)
+
     c = RequestContext(request,
-        {"widget":widget,
+        {"dashboard_id":dashboard_id,
+        "widgets_title":widgets_title,
+        "check_widgets_id":check_widgets_id,
         "start":start,
         "start1":start1,
         "end":end,
@@ -561,6 +879,10 @@ def show_parse_graph(request,widget_id):
         "check_line_values": check_line_values,
         "checkall":checkall,
         "warn":warn,
+        "widgets":widgets,
+        "check_widgets_id":check_widgets_id,
+        "checkWidgetAll":checkWidgetAll,
+        "widgetCategory":widgetCategory,
         })
     return render_to_response('servers/rrd_parse.html',c)
 
