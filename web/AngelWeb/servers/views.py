@@ -481,10 +481,10 @@ def parser(request):
     if len(widgetls)>1:
         check_lines = [check_lines[0]]
         img_legend = widgetls_name
-        img_title = request.GET["start"]+"_"+request.GET["end"]+"_"+widget.category+"/"+request.GET["ptime"]+"      "+check_lines[0]
+        img_title = (request.GET["start"]+" _ "+request.GET["end"]+" _ "+widget.category+" - "+check_lines[0]+"   /"+request.GET["ptime"]).replace("^"," ")
     else:
         img_legend = check_lines
-        img_title = request.GET["start"]+"_"+request.GET["end"]+"_"+widget.category+"-"+widget.title+"/"+request.GET["ptime"]    
+        img_title = (request.GET["start"]+" _ "+request.GET["end"]+" _ "+widget.category+" - "+widget.title+"   /"+request.GET["ptime"]).replace("^"," ")
     
     if request.GET["ptime"] =="hour":
         start_time_number = 10
@@ -636,7 +636,7 @@ def parse_downoad(request):
          
          def start_week(get_parse_time,category,dashboard_id):
              result = []
-             widgetls = map(lambda x:x["id"],Widget.objects.filter(dashboard=int(dashboard_id)).filter(category=category.replace("---","")).values("id"))
+             widgetls = map(lambda x:x["id"],Widget.objects.filter(dashboard=int(dashboard_id)).filter(category=category.replace("---","")).values("id","title").order_by("title"))
              rrd_lines = rrdtool.fetch(get_object_or_404(Widget,id = widgetls[0]).rrd.path(), "-s", str(2), "-e", "s+0", "LAST")[1]
              for p_widget_id in widgetls:
                  data_ls = get_rrd_data(p_widget_id,start,end)
