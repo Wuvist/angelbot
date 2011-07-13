@@ -367,7 +367,7 @@ def parser(request):
         def avaerge_week(data_ls,line_number):
             result = []
             total = 0
-            j = 10080
+            j = 10320
             x = 0.0000000000001
             data_ls_count = len(data_ls)
             for i in range(data_ls_count):
@@ -413,7 +413,7 @@ def parser(request):
                     data_ls = get_rrd_data(p_widget_id,start,end)
                     list_all.append(parser_start(rrd_lines,check_lines,data_ls)[0])
             
-            j = 10080
+            j = 10320
             data_ls_count = len(data_ls)
             for i in range(data_ls_count):
                 try:
@@ -481,7 +481,7 @@ def parser(request):
     if len(widgetls)>1:
         check_lines = [check_lines[0]]
         img_legend = widgetls_name
-        img_title = request.GET["start"]+"_"+request.GET["end"]+"_"+widget.category+"-"+widget.title+"/"+request.GET["ptime"]+"      "+check_lines[0]
+        img_title = request.GET["start"]+"_"+request.GET["end"]+"_"+widget.category+"/"+request.GET["ptime"]+"      "+check_lines[0]
     else:
         img_legend = check_lines
         img_title = request.GET["start"]+"_"+request.GET["end"]+"_"+widget.category+"-"+widget.title+"/"+request.GET["ptime"]    
@@ -578,7 +578,7 @@ def parse_downoad(request):
 
     def start_parse(get_parse_time,dashboard_id,category,start_time_number,p_last_time,time_x):
         result = []
-        widgetls = map(lambda x:x["id"],Widget.objects.filter(dashboard=int(dashboard_id)).filter(category=category.replace("---","")).values("id"))
+        widgetls = map(lambda x:x["id"],Widget.objects.filter(dashboard=int(dashboard_id)).filter(category=category.replace("---","")).values("id","title").order_by("title"))
         rrd_lines = rrdtool.fetch(get_object_or_404(Widget,id = widgetls[0]).rrd.path(), "-s", str(2), "-e", "s+0", "LAST")[1]
         for p_widget_id in widgetls:
             data_ls = get_rrd_data(p_widget_id,start,end)
@@ -608,7 +608,7 @@ def parse_downoad(request):
          def avaerge_week(widget_name,rrd_lines,data_ls,line_number):
              result = [widget_name+"-"+rrd_lines[line_number-1]]
              total = 0
-             j = 10080
+             j = 10320
              x = 0.0000000000001
              data_ls_count = len(data_ls)
              for i in range(data_ls_count):
@@ -647,7 +647,7 @@ def parse_downoad(request):
                  result.append(ls_widget)
              if get_parse_time:
                 times_ls = ["date"]
-                j = 10080
+                j = 10320
                 data_ls_count = len(data_ls)
                 for i in range(data_ls_count):
                     try:
@@ -727,7 +727,7 @@ def parse_downoad(request):
     if request.GET.has_key("cdc"):
         check_categorys = map(lambda x:x.replace("&nbsp"," "),request.GET.getlist("cdc"))
     else:
-        check_categorys = map(lambda x:x["category"],Widget.objects.filter(dashboard=dashboard_id).values("category").order_by('category').annotate())
+        check_categorys = [Widget.objects.filter(dashboard=dashboard_id).values("category").order_by('category')[0]["category"]]
     
     start = int(time.mktime(datetime.strptime(request.GET["start"]+"^"+request.GET["start1"], "%Y-%m-%d^%H:%M:%S").timetuple()))
     end = int(time.mktime(datetime.strptime(request.GET["end"]+"^"+request.GET["end1"], "%Y-%m-%d^%H:%M:%S").timetuple()))
@@ -768,7 +768,7 @@ def parse_downoad(request):
         
     response = HttpResponse(data)
     response["content-type"] = "text/csv"
-    response["content-disposition"] = "attachment; filename="+request.GET["start"]+"~"+request.GET["end"]+"_"+"&".join(check_categorys)+"-"+request.GET["ptime"]+".csv"
+    response["content-disposition"] = "attachment; filename="+request.GET["start"]+"~"+request.GET["end"]+"_"+"mozat_angel_"+request.GET["ptime"]+".csv"
     return response
 
 @login_required()
