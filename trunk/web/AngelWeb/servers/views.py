@@ -1006,15 +1006,13 @@ def alarm(request):
         import urllib2
         
         result = "suc"
-        try:
-            
-            for user in map(lambda x:x.phone,users):
-                smsApi = settings.SMS_API % (str(user.phone), str(subject)+" error happened ! ticketID: " +str(ticketId))
-                smsResult = urllib2.urlopen(smsApi).read()
+        for user in users:
+            try:
+                smsUrl = settings.SMS_API % (str(user.phone), str(subject)+" error happened ! ticketID: " +str(ticketId))
+                smsResult = urllib2.urlopen(smsUrl.replace(" ","%20")).read()
                 if smsResult != "{ret:0}":result = "fail"
-                
-        except:
-            result = "fail"
+            except:
+                result = "fail"
         
         return result
     
