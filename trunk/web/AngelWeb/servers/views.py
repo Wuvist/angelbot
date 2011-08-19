@@ -32,6 +32,7 @@ def show_cmd(request, server_id, cmd_id):
     
 @login_required()
 def dashboard_show(request, dashboard_id):
+    import time
     dashboard = get_object_or_404(Dashboard, id=dashboard_id)
     if not request.user.is_superuser:
         try:
@@ -39,8 +40,14 @@ def dashboard_show(request, dashboard_id):
         except ObjectDoesNotExist:
             raise Http404
     
+    alarmlogs = AlarmLog.objects.filter(created_on__gte = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(time.time())-30*60))).order_by("widget","-created_on")
+    showAlarms = False
+    if len(alarmlogs) >0 and int(dashboard_id) == 1:
+        showAlarms = True
     c = RequestContext(request, 
-        {"dashboard":dashboard
+        {"dashboard":dashboard,
+        "alarmlogs":alarmlogs,
+        "showAlarms":showAlarms,
         })
     return render_to_response('servers/show_dashboard.html',c)
     
@@ -865,7 +872,7 @@ def show_parse_graph(request,dashboard_id, widget_id):
         widgets[0]=(check_widgets_values(contrast_widgets.keys()[0],contrast_widgets.keys()[0]," checked"))
     else:
         checkWidgetAll = ""
-    if check_widgets_id == []:check_widgets_id.append(widget_id)
+    if check_widgets_id == [] or request.GET.get("showWidgets","") == "Show Date":check_widgets_id = [widget_id]
     widgets_title = map(lambda x:contrast_widgets[x],check_widgets_id)
     check_widgets_id = ','.join(check_widgets_id)
     widgets = sorted(widgets, key=lambda x:x.name)
@@ -890,4 +897,247 @@ def show_parse_graph(request,dashboard_id, widget_id):
         "widgetCategory":widgetCategory,
         })
     return render_to_response('servers/rrd_parse.html',c)
+
+def grah_aider_img(request,graphid,width,height):
+    import re
+    import time
+    from subprocess import Popen, PIPE
+    
+    def get_line(graphAiderDef):
+        return graphAiderDef.lines_def.replace("{rrd}", settings.RRD_PATH + graphAiderDef.rrd.name + ".rrd").replace("\n", "").replace("\r", " ")
+    
+    def get_check_lines(line_diff):
+        color = get_line(graphAiderDef)[get_line(graphAiderDef).index("LINE:"+line_diff)+5+len(line_diff):get_line(graphAiderDef).index("LINE:"+line_diff)+len(line_diff)+12] #5+7
+        line = "DEF:"+line_diff+"="+settings.RRD_PATH + graphAiderDef.rrd.name + ".rrd:"+line_diff+":LAST LINE:"+line_diff+color+":"+line_diff.capitalize()
+        if graphAiderDef.graph_type == "2":
+            one_day = " " + "DEF:donline="+settings.RRD_PATH+graphAiderDef.rrd.name+".rrd:"+line_diff+":LAST:start=start_time-1d:end=start+1d SHIFT:donline:86400 LINE:donline#fbba5c:Yesterday"
+            line += one_day + " " + "DEF:wonline="+settings.RRD_PATH+graphAiderDef.rrd.name+".rrd:"+line_diff+":LAST:start=start_time-1W:end=start+1d SHIFT:wonline:604800 LINE:wonline#b5b5b5:LastWeek"
+        return line
+    
+    graphAiderDef = get_object_or_404(GraphAiderDef,id=graphid)
+    lines = re.compile( "LINE:(\w+)" ).findall(graphAiderDef.lines_def)
+    if graphAiderDef.graph_type == "2":
+        lines = lines[:1]
+    line = ""
+    for l in lines:
+        line += " " + get_check_lines(l)
+    
+    start_time = int(time.mktime(time.strptime(time.strftime("%Y-%m-%d"),"%Y-%m-%d")))
+    cmd = ("rrdtool graph - -E --imgformat PNG -t \""+graphAiderDef.title+"\" -s start_time -e s+1d --width "+width+" --height "+height+" "+line).replace("start_time",str(start_time))
+    p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = p.communicate()
+    
+    if len(stderr) > 0:
+        response = HttpResponse(cmd + "\n" + stderr)
+        response["content-type"] = "text/plain"
+        return response
+    response = HttpResponse(stdout)
+    response["content-type"] = "image/png"
+    return response
+
+def graph_aiders(request,aiderid):
+    graph_aider = get_object_or_404(GraphAider,id=aiderid)
+    graphs = graph_aider.graphs.all()
+    
+    c = RequestContext(request,
+        {"graphs":graphs,
+        "width":graph_aider.width,
+        "height":graph_aider.height,
+        "refresh_time":graph_aider.refresh_time*1000,
+        })
+    return render_to_response('servers/graph_aider.html',c)
+
+def alarm(request):
+    import time
+    
+    contact_users = {1:"firstcontact",2:"secondcontact",3:"thirdcontact",4:"fourthcontact",5:"fifthcontact",6:"sixthcontact"}
+    def createTicket(subject,result):
+        import pyodbc
+        
+        timeNow = '\''+str(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()))+'\''
+        ticketId = ""
+        ticketValues = ('\''+str(subject)+'\'',"'mo'",'\''+str(result)+'\'',timeNow,timeNow,timeNow)
+        host = settings.TICKET_DATABASE_HOST
+        port = settings.TICKET_DATABASE_PORT
+        databaseNane = settings.TICKET_DATABASE_NAME
+        userName = settings.TICKET_DATABASE_USERNAME
+        passWord = settings.TICKET_DATABASE_PASSWORD
+        try:
+            cnxn = pyodbc.connect("DRIVER={FreeTDS};SERVER="+host+";PORT="+port+";DATABASE="+databaseNane+";UID="+userName+";PWD="+passWord)
+            cursor = cnxn.cursor()
+            sql = "insert into mo_ticket(keyword,ticket_type,incident,time,create_on,modified_on) values(%s, %s, %s, %s,%s, %s)" % ticketValues
+            cursor.execute(sql)
+            cnxn.commit()
+            ticketId = cursor.execute("select top 1 id from mo_ticket order by id desc").fetchone()[0]
+            cursor.close()
+            cnxn.close()
+            result = ""
+            contactReault = "suc"
+        except:
+            result = "created ticket failed !"
+            contactReault = "fail"
+        return str(ticketId),result,contactReault
+    
+    def sendMail(users,subject,contents,ticketId):
+        import smtplib
+        from email.mime.text import MIMEText
+        
+        des = "\n\nThis email auto send by Mozat Angel, if any questions, please kindly feed back to operation team. thanks !\nBest Regards\nMozat Angel"
+        
+        sender = 'wumingyou@mozat.com'
+        receivers = map(lambda x:x.email,users)
+        usersname = map(lambda x:x.name,users)
+        msg = MIMEText("Dear, "+", ".join(usersname)+"\n\n"+contents+"ticketId: "+ticketId+des)
+        msg['Subject'] = "Angel "+subject+" error happened !"
+        msg['From'] = "Mozat Angel"
+        msg['To'] = "; ".join(receivers)
+        try:
+            sender = smtplib.SMTP('i-smtp.mozat.com')
+            sender.sendmail(sender, receivers, msg.as_string())
+            sender.close()
+            result = ""
+            contactReault = "suc"
+        except Exception, e:
+            result = str(e)
+            contactReault = "fail"
+        return result,contactReault
+    
+    def sendSMS(users,subject,ticketId):
+        import urllib2
+        
+        result = "suc"
+        try:
+            
+            for user in users:
+                smsApi = settings.SMS_API % (str(user.phone), subject+" error happened ! ticketID: " +str(ticketId))
+                smsResult = urllib2.urlopen(smsApi).read()
+                if smsResult != "{ret:0}":result = "fail"
+                
+        except:
+            result = "fail"
+        
+        return result
+    
+    def rrdAlarm(widget,rrdTime):
+        import rrdtool
+        rrd_path = widget.rrd.path()
+        info = rrdtool.info(rrd_path)
+        last_update = info["last_update"]
+        result = ""
+        alarmError = False
+        if time.time() - last_update > rrdTime*60:
+            alarmError = True
+            lastedTime = "from " + time.strftime("%m-%d %H:%M",time.localtime(int(last_update)))+" to "+time.strftime("%m-%d %H:%M",time.localtime())
+            result = lastedTime +", \n" + widget.title + " no update sustained "+str(int(time.time() - last_update)/60)+" minutes !\n"
+        elif widget.data_def:
+            data_rrds = rrdtool.fetch(rrd_path, "-s", str(int(last_update)-int(rrdTime) * 60), "-e", str(last_update) + "-1", "LAST")
+            try:
+                data_def = eval(widget.data_def.replace("\n", "").replace("\r", ""))
+                data = list(data_rrds[2][0])
+                ds = data_rrds[1]
+                errorRrdValue = ""
+                errorValues = ""
+                for i in range(0, len(ds)):
+                    if data_def.has_key(ds[i]):
+                        field_def = data_def[ds[i]]
+                        try:
+                            if False not in [eval(str(x[i])+field_def[2]) for x in data_rrds[2] if x[i] != None ]:
+                                alarmError = True
+                                errorRrdValue += ds[i]+","
+                                if len(data_rrds[2])<=10:
+                                    data_rrd = map(lambda x:str(x[i]),data_rrds[2])
+                                else:
+                                    data_rrd = map(lambda x:str(x[i]),data_rrds[2])[-10:]
+                                errorValues += "Latest " + ds[i] +" values: " + " ".join(data_rrd)+"\n"
+                        except:
+                            pass
+                    else:
+                        pass
+                lastedTime = "from " + time.strftime("%m-%d %H:%M",time.localtime(int(time.time())-rrdTime*60))+" to "+time.strftime("%m-%d %H:%M",time.localtime())
+                result =  lastedTime +", \n"+widget.title+" " +errorRrdValue+" error sustained more than " + str(rrdTime)+ " minutes !\n"+errorValues
+                
+            except:
+                return widget.data_def
+        
+        return alarmError,result
+        
+    def contrastLog(alarm,widget,alarmlog):
+        rrdTime = 0
+        alarmDataDef = eval(alarm.alarm_def.replace("\n", "").replace("\r", ""))
+        
+        if alarmlog == "":
+            rrdTime = eval(alarmDataDef[1])["time"]
+            alarmLevel = 1
+            alarmMode = eval(alarmDataDef[1])["mode"]
+            contactUsers = alarm.firstcontact.all()
+        elif alarmlog.overdue == "2" or alarmDataDef.get(int(alarmlog.alarmlevel)+1,"") == "":
+            if int(eval(alarmDataDef[int(alarmlog.alarmlevel)])["interval"])<(datetime.now()-alarmlog.created_on).seconds/60:
+                rrdTime = eval(alarmDataDef[1])["time"]
+                alarmLevel = 1
+                alarmMode = eval(alarmDataDef[1])["mode"]
+                contactUsers = alarm.firstcontact.all()
+        elif (datetime.now()-alarmlog.created_on).seconds/60 > int(eval(alarmDataDef[int(alarmlog.alarmlevel)+1])["time"]):
+            rrdTime = eval(alarmDataDef[int(alarmlog.alarmlevel)+1])["time"]
+            alarmLevel = int(alarmlog.alarmlevel)+1
+            alarmMode = eval(alarmDataDef[int(alarmlog.alarmlevel)+1])["mode"]
+            contactUsers = eval("alarm."+contact_users[int(alarmlog.alarmlevel)+1]).all()
+        if int(rrdTime) !=0:
+            alarmError,result = rrdAlarm(widget,int(rrdTime))
+            if alarmError == False:
+                try:
+                    alarmlog.overdue = "2"
+                    alarmlog.save()
+                except:
+                    pass
+                if alarmLevel!=1 and int(eval(alarmDataDef[int(alarmlog.alarmlevel)])["interval"])<(datetime.now()-alarmlog.created_on).seconds/60:
+                    rrdTime = eval(alarmDataDef[1])["time"]
+                    alarmLevel = 1
+                    alarmMode = eval(alarmDataDef[1])["mode"]
+                    contactUsers = alarm.firstcontact.all()
+                    alarmError,result = rrdAlarm(widget,int(rrdTime))
+            
+            if alarmError:
+                try:
+                    if alarmlog.overdue == "2" or alarmDataDef.get(int(alarmlog.alarmlevel)+1,"") == "":
+                        ticketId = ""
+                    else:
+                        ticketId = alarmlog.ticketid
+                except:
+                    ticketId = ""
+                if alarmMode == "ticket":
+                    ticketId,resultAlarm,contactReault = createTicket(widget.title,result)
+                elif alarmMode == "email":
+                    resultAlarm,contactReault = sendMail(contactUsers,widget.title,result,ticketId)
+                elif alarmMode == "sms":
+                   contactReault = sendSMS(contactUsers,widget.title,ticketId)
+                   resultAlarm = ""
+                logs = AlarmLog()
+                logs.title = alarm
+                logs.widget = widget
+                logs.alarmlevel = alarmLevel
+                logs.alarmmode = alarmMode
+                logs.ticketid = ticketId
+                logs.overdue = "1"
+                logs.save()
+                logs.alarmuser = contactUsers
+                logs.save()
+                logs.result = result+"\n\n"+resultAlarm
+                logs.contact_result = contactReault
+                logs.save()
+
+    alarms = Alarm.objects.all()
+    for alarm in alarms:
+        if eval(alarm.enable):
+            for widget in alarm.widget.all():
+                try:
+                    alarmlog = AlarmLog.objects.filter(widget = widget.id).order_by("-created_on")[0]
+                except:
+                    alarmlog = ""
+                contrastLog(alarm,widget,alarmlog)
+    alarmlogs = AlarmLog.objects.filter(created_on__gte = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(time.time())-24*3600))).order_by("widget","-created_on")
+    
+    c = RequestContext(request,
+        {"alarmlogs":alarmlogs,
+        })
+    return render_to_response('servers/auto_alarm.html',c)
 

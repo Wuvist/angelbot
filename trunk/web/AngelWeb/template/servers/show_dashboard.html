@@ -2,6 +2,72 @@
 {% load rrd_extras %}
 
 {% block content %}
+
+{% if showAlarms %}
+<fieldset class="module aligned ">
+	<input type="button" value="Hide Already Alarms" id="showAlarms" name="ahowalerms" />&nbsp
+	<input type="button" value="Show Last 24 Hours Alarms" onclick="location.href='/alarm'" /> 
+	<div id="showAlarms_div" style="display:block;">
+		<table>
+			<tr>
+				<th>Time</th><th>Title</th><th>Widget</th><th>Alarm level</th><th>Alarm mode</th><th>Ticket ID</th><th>Overdue</th><th>Contact result</th><th>Alarm users</th>
+			</tr>
+				{% for alarmlog in alarmlogs %}
+			<tr>
+				<td>{{ alarmlog.created_on|date:"m-d H:i:s" }}</td>
+				<td>{{ alarmlog.title.title }}</td>
+				<td>{{ alarmlog.widget.title }}</td>
+				<td>
+						{% if alarmlog.alarmlevel == 2 %}
+					<div style="background-color:#AAAAFF;" >{{ alarmlog.alarmlevel }} th</div>
+						{% else %}
+						{% if alarmlog.alarmlevel == 3 %}
+					<div style="background-color:red;" >{{ alarmlog.alarmlevel }} th</div>
+						{% else %}
+						{% if alarmlog.alarmlevel == 4 %}
+					<div style="background-color:yellow;" >{{ alarmlog.alarmlevel }} th</div>
+						{% else %}
+						{% if alarmlog.alarmlevel == 5 %}
+					<div style="background-color:#BE77FF;" >{{ alarmlog.alarmlevel }} th</div>
+						{% else %}
+						{% if alarmlog.alarmlevel == 6 %}
+					<div style="background-color:#FFD306;" >{{ alarmlog.alarmlevel }} th</div>
+						{% else %}
+					<div style="background-color:#9AFF02;" >{{ alarmlog.alarmlevel }} th</div>
+						{% endif %}{% endif %}{% endif %}{% endif %}{% endif %}
+				</td>
+				<td>
+						{% if alarmlog.alarmmode == "email" %}
+					<div style="background-color:#FFD306;" >{{ alarmlog.alarmmode }}</div>
+						{% else %}
+						{% if alarmlog.alarmmode == "sms" %}
+					<div style="background-color:red;" >{{ alarmlog.alarmmode }}</div>
+						{% else %}
+					<div style="background-color:#9AFF02;" >{{ alarmlog.alarmmode }}</div>
+						{% endif %}
+						{% endif %}
+				</td>
+				<td>{{ alarmlog.ticketid }}</td>
+				<td>{% if alarmlog.overdue == "1" %}Not{% else %}<div style="background-color:#9AFF02;" >Yes</div>{% endif %}</td>
+				<td>
+						{% if alarmlog.contact_result == "fail" %}
+					<div style="background-color:red;" >{{ alarmlog.contact_result }}</div>
+						{% else %}
+						{{ alarmlog.contact_result }}
+						{% endif %}
+				</th>
+				<td>
+						{% for user in alarmlog.alarmuser.all %}
+						{{ user.name }}
+						{% endfor %}
+				</td>
+			</tr>
+				{% endfor %}
+		</table>
+	</div>
+</fieldset>
+{% endif %}
+
 <style>
 th {width:100px;}
 </style>
@@ -67,4 +133,20 @@ th {width:100px;}
         }
     })
 </script>
+
+<script type="text/javascript"> 
+$(function() {
+	$("#showAlarms").click(function(){
+		if ($("#showAlarms_div").is(":visible")==true){
+			$("#showAlarms").val("Show Already Alarms");
+			$("#showAlarms_div").toggle();
+			
+		}else{
+			$("#showAlarms").val("Hide Already Alarms");
+			$("#showAlarms_div").toggle();
+		}
+	});
+});
+</script>
+
 {% endblock %}
