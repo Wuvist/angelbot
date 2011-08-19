@@ -8,6 +8,13 @@
 	{% endfor %}
 	</ul>
 	
+	<h1>Graph Aiders</h1>
+	<ul>
+	{% for graph_aider in graph_aiders%}
+		<li><a href="/graphaider/{{ graph_aider.id }}/">{{ graph_aider.title }}</a></li>
+	{% endfor %}
+	</ul>
+	
 	{% if is_staff %}
 	<h1>Servers</h1>
 		<h2>Windows Servers</h2>

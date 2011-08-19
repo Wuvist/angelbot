@@ -31,4 +31,7 @@ urlpatterns = patterns('',
     (r'^parse/$', 'servers.views.parser'),
     (r'^dashboard/(\d+)/widget/(\d+)/parse/$', 'servers.views.show_parse_graph'),
     (r'^downloadparse/$', 'servers.views.parse_downoad'),
+    (r'^grahaiderimg/(\d+)/width/(\d+)/height/(\d+)$', 'servers.views.grah_aider_img'),
+    (r'^graphaider/(\d+)/$', 'servers.views.graph_aiders'),
+    (r'^alarm/$', 'servers.views.alarm'),
 )

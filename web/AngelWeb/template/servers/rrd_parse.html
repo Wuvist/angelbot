@@ -31,7 +31,7 @@
 			<h><input type='checkbox' class='usercheck' name = {{line.line}} value = {{line.line}} {{ line.checked }} />{{line.line}}</h>&nbsp;
 			{% endfor %}
 			<h><input type='checkbox' id='chkAll' value = "checkall" {{checkall}}  onclick='select_all()'/>All</h>&nbsp;&nbsp;</br>
-			<input type="submit" value = "Show Date" />
+			<input type="submit" value = "Show Date" id = "showWidgets" name = "showWidgets"/>
 			<input type="button" value="With Other Widget" id="withWidget" name="withWidget" />
 			<input type="button" value="Download Data" id="download" name="download_data" />
 			</h>
@@ -42,7 +42,7 @@
 		<h><input type='checkbox' class='withWidget' name = 'check_widget' value = {{widget.value}} {{ widget.checked }} />{{widget.name}}</h>&nbsp;
 		{% endfor %}
 		<h><input type='checkbox' id='checkWidgetAll' value = "checkWidgetAll" {{checkWidgetAll}}  onclick='check_all()'/>All</h>&nbsp;&nbsp;
-		<input type="submit" value = "With Widget"/>
+		<input type="submit" value = "With Widget" id  = "showWidgets" name = "showWidgets"/>
 	</div>
 </fieldset>
 </form>

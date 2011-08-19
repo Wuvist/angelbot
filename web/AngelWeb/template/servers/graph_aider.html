@@ -1,0 +1,24 @@
+{% extends "base_site.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="/media/css/forms.css" />
+<!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="/media/css/ie.css" /><![endif]-->
+
+
+{% for graph in graphs%}
+<img src="/grahaiderimg/{{ graph.id }}/width/{{ width }}/height/{{ height }}" height={{ height }} width={{ width }} />
+{% endfor %}
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+<script language="javascript">
+    function reload()
+    {
+        location.reload(true);
+    }
+    $(function() {
+
+        setTimeout(reload, {{ refresh_time }});
+    })
+</script>
+{% endblock %}
