@@ -956,7 +956,7 @@ def alarm(request):
         
         timeNow = '\''+str(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()))+'\''
         ticketId = ""
-        ticketValues = ('\''+str(subject)+'\'',"'mo'",'\''+str(result)+'\'',timeNow,timeNow,timeNow)
+        ticketValues = ('\''+"[angel] "+str(subject)+'\'',"'mo'",'\''+str(result)+'\'',timeNow,timeNow,timeNow)
         host = settings.TICKET_DATABASE_HOST
         port = settings.TICKET_DATABASE_PORT
         databaseNane = settings.TICKET_DATABASE_NAME
@@ -1008,8 +1008,8 @@ def alarm(request):
         result = "suc"
         try:
             
-            for user in users:
-                smsApi = settings.SMS_API % (str(user.phone), subject+" error happened ! ticketID: " +str(ticketId))
+            for user in map(lambda x:x.phone,users):
+                smsApi = settings.SMS_API % (str(user.phone), str(subject)+" error happened ! ticketID: " +str(ticketId))
                 smsResult = urllib2.urlopen(smsApi).read()
                 if smsResult != "{ret:0}":result = "fail"
                 
