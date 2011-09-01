@@ -34,4 +34,5 @@ urlpatterns = patterns('',
     (r'^grahaiderimg/(\d+)/width/(\d+)/height/(\d+)$', 'servers.views.grah_aider_img'),
     (r'^graphaider/(\d+)/$', 'servers.views.graph_aiders'),
     (r'^alarm/$', 'servers.views.alarm'),
+    (r'^errors', 'servers.views.show_error_widget'),
 )
