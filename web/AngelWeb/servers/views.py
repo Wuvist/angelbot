@@ -50,7 +50,29 @@ def dashboard_show(request, dashboard_id):
         "showAlarms":showAlarms,
         })
     return render_to_response('servers/show_dashboard.html',c)
+
+@login_required()
+def show_error_widget(request):
+    import time
+    dashboard_id = 1
+    dashboard = get_object_or_404(Dashboard, id=dashboard_id)
+    if not request.user.is_superuser:
+        try:
+            dashboard.user.get(id = request.user.id)
+        except ObjectDoesNotExist:
+            raise Http404
     
+    alarmlogs = AlarmLog.objects.filter(created_on__gte = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(time.time())-30*60))).order_by("widget","-created_on")
+    showAlarms = False
+    if len(alarmlogs) >0 and int(dashboard_id) == 1:
+        showAlarms = True
+    c = RequestContext(request, 
+        {"dashboard":dashboard,
+        "alarmlogs":alarmlogs,
+        "showAlarms":showAlarms,
+        })
+    return render_to_response('servers/show_error_widget.html',c)
+
 @login_required()
 def execute_cmd(request, server_id, cmd_id):
     server = get_object_or_404(Server, id=server_id)
@@ -473,7 +495,7 @@ def parser(request):
         return result
 
     widgetls = request.GET["widgetls"].split(",")
-    widgetls_name = map(lambda x:get_object_or_404(Widget,id = x),widgetls)
+    widgetls_name = map(lambda x:get_object_or_404(Widget,id = x).title,widgetls)
     widget = get_object_or_404(Widget,id = widgetls[0])
     check_lines = request.GET["cl"].split(',')
     start = int(time.mktime(datetime.strptime(request.GET["start"], "%Y-%m-%d^%H:%M:%S").timetuple()))
@@ -956,7 +978,7 @@ def alarm(request):
         
         timeNow = '\''+str(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()))+'\''
         ticketId = ""
-        ticketValues = ('\''+"[angel] "+str(subject)+'\'',"'mo'",'\''+str(result)+'\'',timeNow,timeNow,timeNow)
+        ticketValues = ('\''+"[angel] "+str(subject)+'\'',"'mo'","'angel'","'angel'",'\''+str(result)+'\'',timeNow,timeNow,timeNow)
         host = settings.TICKET_DATABASE_HOST
         port = settings.TICKET_DATABASE_PORT
         databaseNane = settings.TICKET_DATABASE_NAME
@@ -965,7 +987,7 @@ def alarm(request):
         try:
             cnxn = pyodbc.connect("DRIVER={FreeTDS};SERVER="+host+";PORT="+port+";DATABASE="+databaseNane+";UID="+userName+";PWD="+passWord)
             cursor = cnxn.cursor()
-            sql = "insert into mo_ticket(keyword,ticket_type,incident,time,create_on,modified_on) values(%s, %s, %s, %s,%s, %s)" % ticketValues
+            sql = "insert into mo_ticket(keyword,ticket_type,username,update_unername,incident,time,create_on,modified_on) values(%s, %s, %s, %s, %s, %s, %s, %s)" % ticketValues
             cursor.execute(sql)
             cnxn.commit()
             ticketId = cursor.execute("select top 1 id from mo_ticket order by id desc").fetchone()[0]
@@ -1043,10 +1065,10 @@ def alarm(request):
                                 alarmError = True
                                 errorRrdValue += ds[i]+","
                                 if len(data_rrds[2])<=10:
-                                    data_rrd = map(lambda x:str(x[i]),data_rrds[2])
+                                    data_rrd = ["None" if x[i] == None else str('%.2f' % x[i]) for x in data_rrds[2]]
                                 else:
-                                    data_rrd = map(lambda x:str(x[i]),data_rrds[2])[-10:]
-                                errorValues += "Latest " + ds[i] +" values: " + " ".join(data_rrd)+"\n"
+                                    data_rrd = ["None" if x[i] == None else str('%.2f' % x[i]) for x in data_rrds[2]][-10:]
+                                errorValues += "Lastest " + ds[i] + " values: " + ",".join(data_rrd)+"\n"
                         except:
                             pass
                     else:

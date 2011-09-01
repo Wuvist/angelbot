@@ -102,12 +102,12 @@ def show_widget_title(widget):
     return widget.title + check_date(info, thred)
     
 def show_int(value):
-    if value:
+    if value or str(value) == "0":
         return str(int(value))
     return "None"
 
 def show_float(value):
-    if value:
+    if value or str(value) == "0":
         return "%.2f" % value
     return "None"
 
@@ -117,7 +117,7 @@ def show_ok(value):
     return "Error"
 
 def show_percent(value):
-    if value:
+    if value or str(value) == "0":
         return "%.2f" % (value * 100) + " %"
     else:
         return "None"

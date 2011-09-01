@@ -19,7 +19,9 @@ class Server(models.Model):
     def __unicode__(self):
         return self.name + "(" + str(self.ip) + ")"
     
-    
+    class Meta:
+        ordering = ["ip"]
+
 class CmdLog(models.Model):
     user = models.ForeignKey(User)
     cmd = models.CharField(max_length=200)
@@ -28,13 +30,16 @@ class CmdLog(models.Model):
     
     def __unicode__(self):
         return str(self.user) + ":" + self.cmd + "(" + str(self.created_on)  +")"
-    
+
 class Cmd(models.Model):
     server_type = models.CharField(max_length=1, choices=SERVER_TYPE_CHOICES)
     text = models.CharField(max_length=200)
     def __unicode__(self):
         return self.text
-        
+    
+    class Meta:
+        ordering = ["text"]
+
 class Rrd(models.Model):
     name = models.CharField(max_length=50)
     setting = models.TextField(max_length=512)
@@ -48,7 +53,7 @@ class Rrd(models.Model):
     
     class Meta:
         ordering = ["name"]
-        
+
 class SeverCmd(models.Model):
     server = models.ForeignKey(Server)
     cmd = models.ForeignKey(Cmd)
@@ -56,6 +61,9 @@ class SeverCmd(models.Model):
     
     def __unicode__(self):
         return self.title
+    
+    class Meta:
+        ordering = ["title"]
 
 class Dashboard(models.Model):
     title = models.CharField(max_length=50)
@@ -95,6 +103,9 @@ class AlarmUser(models.Model):
     
     def __unicode__(self):
         return self.name + " " + self.phone
+    
+    class Meta:
+        ordering = ["name"]
 
 ALARM_TYPE_CHOICES = (
     ('True', 'True'),
