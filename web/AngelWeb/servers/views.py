@@ -920,7 +920,7 @@ def show_parse_graph(request,dashboard_id, widget_id):
         })
     return render_to_response('servers/rrd_parse.html',c)
 
-def grah_aider_img(request,graphid,width,height):
+def grah_aider_img(request,graphid,width,height,start_time,end_time):
     import re
     import time
     from subprocess import Popen, PIPE
@@ -932,8 +932,8 @@ def grah_aider_img(request,graphid,width,height):
         color = get_line(graphAiderDef)[get_line(graphAiderDef).index("LINE:"+line_diff)+5+len(line_diff):get_line(graphAiderDef).index("LINE:"+line_diff)+len(line_diff)+12] #5+7
         line = "DEF:"+line_diff+"="+settings.RRD_PATH + graphAiderDef.rrd.name + ".rrd:"+line_diff+":LAST LINE:"+line_diff+color+":"+line_diff.capitalize()
         if graphAiderDef.graph_type == "2":
-            one_day = " " + "DEF:donline="+settings.RRD_PATH+graphAiderDef.rrd.name+".rrd:"+line_diff+":LAST:start=start_time-1d:end=start+1d SHIFT:donline:86400 LINE:donline#fbba5c:Yesterday"
-            line += one_day + " " + "DEF:wonline="+settings.RRD_PATH+graphAiderDef.rrd.name+".rrd:"+line_diff+":LAST:start=start_time-1W:end=start+1d SHIFT:wonline:604800 LINE:wonline#b5b5b5:LastWeek"
+            one_day = " " + "DEF:donline="+settings.RRD_PATH+graphAiderDef.rrd.name+".rrd:"+line_diff+":LAST:start=start_time-1d:end=end_time-1d SHIFT:donline:86400 LINE:donline#fbba5c:Yesterday"
+            line += one_day + " " + "DEF:wonline="+settings.RRD_PATH+graphAiderDef.rrd.name+".rrd:"+line_diff+":LAST:start=start_time-1W:end=end_time-1W SHIFT:wonline:604800 LINE:wonline#b5b5b5:LastWeek"
         return line
     
     graphAiderDef = get_object_or_404(GraphAiderDef,id=graphid)
@@ -944,8 +944,7 @@ def grah_aider_img(request,graphid,width,height):
     for l in lines:
         line += " " + get_check_lines(l)
     
-    start_time = int(time.mktime(time.strptime(time.strftime("%Y-%m-%d"),"%Y-%m-%d")))
-    cmd = ("rrdtool graph - -E --imgformat PNG -t \""+graphAiderDef.title+"\" -s start_time -e s+1d --width "+width+" --height "+height+" "+line).replace("start_time",str(start_time))
+    cmd = ("rrdtool graph - -E --imgformat PNG -t \""+graphAiderDef.title+"\" -s start_time -e end_time --width "+width+" --height "+height+" "+line).replace("start_time",str(start_time)).replace("end_time",str(end_time))
     p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
     stdout, stderr = p.communicate()
     
@@ -958,13 +957,46 @@ def grah_aider_img(request,graphid,width,height):
     return response
 
 def graph_aiders(request,aiderid):
+    import time
+    
     graph_aider = get_object_or_404(GraphAider,id=aiderid)
     graphs = graph_aider.graphs.all()
+    def_time = time.strftime("%H:%M:%S")
+    
+    start = request.GET.get("start",time.strftime("%Y-%m-%d"))
+    start1 = request.GET.get("start1","00:00:00")
+    end = request.GET.get("end",time.strftime("%Y-%m-%d",time.localtime(time.time()+86400)))
+    end1 = request.GET.get("end1","00:00:00")
+    if request.GET.has_key("show7"):
+        start = time.strftime("%Y-%m-%d",time.localtime(time.time()-86400))
+        start1 = "07:00:00"
+        end = time.strftime("%Y-%m-%d")
+        end1 = "07:00:00"
+    elif request.GET.has_key("showtoday") or start+start1 == end+end1:
+        start = time.strftime("%Y-%m-%d")
+        start1 = "00:00:00"
+        end = time.strftime("%Y-%m-%d",time.localtime(time.time()+86400))
+        end1 = "00:00:00"
+        
+    startTime = int(time.mktime(datetime.strptime(start + start1, "%Y-%m-%d%H:%M:%S").timetuple()))
+    endTime = int(time.mktime(datetime.strptime(end + end1, "%Y-%m-%d%H:%M:%S").timetuple()))
+    
+    if startTime - endTime > 0:
+        warn = "<div class='errornote'>The end time must be longer than start time or equals !</div>"
+    else:
+        warn = ""
     
     c = RequestContext(request,
         {"graphs":graphs,
         "width":graph_aider.width,
         "height":graph_aider.height,
+        "start":start,
+        "start1":start1,
+        "end":end,
+        "end1":end1,
+        "warn":warn,
+        "startTime":startTime,
+        "endTime":endTime,
         "refresh_time":graph_aider.refresh_time*1000,
         })
     return render_to_response('servers/graph_aider.html',c)
@@ -981,11 +1013,11 @@ def alarm(request):
         ticketValues = ('\''+"[angel] "+str(subject)+'\'',"'mo'","'angel'","'angel'",'\''+str(result)+'\'',timeNow,timeNow,timeNow)
         host = settings.TICKET_DATABASE_HOST
         port = settings.TICKET_DATABASE_PORT
-        databaseNane = settings.TICKET_DATABASE_NAME
+        databaseName = settings.TICKET_DATABASE_NAME
         userName = settings.TICKET_DATABASE_USERNAME
         passWord = settings.TICKET_DATABASE_PASSWORD
         try:
-            cnxn = pyodbc.connect("DRIVER={FreeTDS};SERVER="+host+";PORT="+port+";DATABASE="+databaseNane+";UID="+userName+";PWD="+passWord)
+            cnxn = pyodbc.connect("DRIVER={FreeTDS};SERVER="+host+";PORT="+port+";DATABASE="+databaseName+";UID="+userName+";PWD="+passWord)
             cursor = cnxn.cursor()
             sql = "insert into mo_ticket(keyword,ticket_type,username,update_unername,incident,time,create_on,modified_on) values(%s, %s, %s, %s, %s, %s, %s, %s)" % ticketValues
             cursor.execute(sql)
