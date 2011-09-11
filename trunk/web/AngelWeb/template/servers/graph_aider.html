@@ -4,13 +4,27 @@
 
 <link rel="stylesheet" type="text/css" href="/media/css/forms.css" />
 <!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="/media/css/ie.css" /><![endif]-->
-
-
+<form action="" method="GET">
+	{{ warn|safe }}
+	<h class="datetime">Start Date: <input name="start" value={{ start }} class="vDateField" type="text" id="id_date_start" size="10" >Time:
+	<input name="start1" value={{ start1 }} class="vTimeField" type="text" id="id_date_start_1" size="8" />&nbsp;&nbsp;
+	<h class="datetime">End &nbsp;Date: <input name="end" value={{ end }} class="vDateField" type="text" id="id_date_end" size="10" />Time:
+	<input name="end1" value={{ end1 }} class="vTimeField" type="text" id="id_date_end_1" size="8" />
+	<input type="submit" value = "Show Date" id = "showDate" name = "showDate"/>
+	<input type="submit" value = "Show Today" id = "showtoday" name = "showtoday"/>
+	<input type="submit" value="Show 7 o'clock" id="show7" name="show7" />
+</form>
+<br>
 {% for graph in graphs%}
-<img src="/grahaiderimg/{{ graph.id }}/width/{{ width }}/height/{{ height }}" height={{ height }} width={{ width }} />
+<img src="/grahaiderimg/{{ graph.id }}/w/{{ width }}/h/{{ height }}/start/{{ startTime }}/end/{{ endTime }}" height={{ height }} width={{ width }} />
 {% endfor %}
 
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="/media/js/core.js"></script>
+<script type="text/javascript" src="/media/js/calendar.js"></script>
+<script type="text/javascript" src="/media/js/admin/DateTimeShortcuts.js"></script>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+
 <script language="javascript">
     function reload()
     {
