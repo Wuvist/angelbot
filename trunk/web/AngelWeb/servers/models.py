@@ -177,3 +177,39 @@ class GraphAider(models.Model):
     class Meta:
         ordering = ["title"]
 
+class FrequentAlarm(models.Model):
+    title = models.CharField(max_length=50)
+    enable = models.CharField(max_length=8, choices=ALARM_TYPE_CHOICES)
+    alarm_def = models.TextField(max_length =512, null = True, blank = True)
+    des = models.TextField(max_length =512, null = True, blank = True)    
+    firstcontact = models.ManyToManyField(AlarmUser, null = True, blank = True, related_name = 'FrequentAlarm_firstcontact_set')
+    secondcontact = models.ManyToManyField(AlarmUser, null = True, blank = True, related_name = 'FrequentAlarm_secondcontact_set')
+    thirdcontact = models.ManyToManyField(AlarmUser, null = True, blank = True, related_name = 'FrequentAlarm_thirdcontact_set')
+    fourthcontact = models.ManyToManyField(AlarmUser, null = True, blank = True, related_name = 'FrequentAlarm_fourthcontact_set')
+    fifthcontact = models.ManyToManyField(AlarmUser, null = True, blank = True, related_name = 'FrequentAlarm_fifthcontact_set')
+    sixthcontact = models.ManyToManyField(AlarmUser, null = True, blank = True, related_name = 'FrequentAlarm_sixthcontact_set')
+    widget = models.ManyToManyField(Widget)
+    
+    def __unicode__(self):
+        return self.title + " " + self.enable
+    
+    class Meta:
+        ordering = ["title"]
+
+class FrequentAlarmLog(models.Model):
+    title = models.ForeignKey(FrequentAlarm)
+    widget = models.ForeignKey(Widget)
+    lasterror = models.CharField(max_length=8, choices=ALARM_TYPE_CHOICES)
+    error_num = models.IntegerField(max_length=16)
+    alarmlevel = models.IntegerField(max_length=1, null = True, blank = True)
+    alarmmode = models.CharField(max_length=16, null = True, blank = True)
+    ticketid = models.CharField(max_length=16, null = True, blank = True)
+    alarmuser = models.ManyToManyField(AlarmUser, null = True, blank = True)
+    contact_result = models.CharField(max_length=8,null = True, blank = True)
+    result = models.TextField(null = True, blank = True)
+    lasterror_time = models.DateTimeField(null = True, blank = True)
+    created_on = models.DateTimeField(auto_now_add = True)
+    
+    def __unicode__(self):
+        return str(self.title) + ": "  + str(self.alarmlevel) +" level "+ str(self.widget) + " (" + str(self.created_on)  +")"
+

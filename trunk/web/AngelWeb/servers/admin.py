@@ -26,6 +26,10 @@ class AlarmAdmin(admin.ModelAdmin):
     list_display = ('title', 'enable')
     ordering = ('title',)
 
+class FrequentAlarmAdmin(admin.ModelAdmin):
+    list_display = ('title', 'enable')
+    ordering = ('title',)
+
 admin.site.register(Server)
 admin.site.register(CmdLog)
 admin.site.register(Cmd)
@@ -38,3 +42,5 @@ admin.site.register(Alarm, AlarmAdmin)
 admin.site.register(AlarmLog, AlarmLogAdmin)
 admin.site.register(GraphAider)
 admin.site.register(GraphAiderDef)
+admin.site.register(FrequentAlarm,FrequentAlarmAdmin)
+admin.site.register(FrequentAlarmLog)
