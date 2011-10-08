@@ -7,10 +7,11 @@
 
 		<table>
 			<tr>
-				<th>Time</th><th>Title</th><th>Widget</th><th>Alarm level</th><th>Alarm mode</th><th>Ticket ID</th><th>Overdue</th><th>Contact result</th><th>Alarm users</th>
+				<th>Auto Alarm</th><th>Time</th><th>Title</th><th>Widget</th><th>Alarm level</th><th>Alarm mode</th><th>Ticket ID</th><th>Overdue</th><th>Contact result</th><th>Alarm users</th>
 			</tr>
 				{% for alarmlog in alarmlogs %}
 			<tr>
+				<td></td>
 				<td>{{ alarmlog.created_on|date:"m-d H:i:s" }}</td>
 				<td>{{ alarmlog.title.title }}</td>
 				<td>{{ alarmlog.widget.title }}</td>
@@ -55,6 +56,63 @@
 				</th>
 				<td>
 						{% for user in alarmlog.alarmuser.all %}
+						{{ user.name }}
+						{% endfor %}
+				</td>
+			</tr>
+				{% endfor %}
+		</table>
+		<br>
+		<table>
+			<tr>
+				<th>Frequent Alarm</th><th>Time</th><th>Title</th><th>Widget</th><th>Alarm level</th><th>Alarm mode</th><th>Ticket ID</th><th>Contact result</th><th>Alarm users</th>
+			</tr>
+				{% for falarmlog in frequentAlarmLogs %}
+			<tr>
+				<td></td>
+				<td>{{ falarmlog.lasterror_time|date:"m-d H:i:s" }}</td>
+				<td>{{ falarmlog.title.title }}</td>
+				<td>{{ falarmlog.widget.title }}</td>
+				<td>
+						{% if falarmlog.alarmlevel == 2 %}
+					<div style="background-color:#AAAAFF;" >{{ falarmlog.alarmlevel }} th</div>
+						{% else %}
+						{% if falarmlog.alarmlevel == 3 %}
+					<div style="background-color:red;" >{{ falarmlog.alarmlevel }} th</div>
+						{% else %}
+						{% if falarmlog.alarmlevel == 4 %}
+					<div style="background-color:yellow;" >{{ falarmlog.alarmlevel }} th</div>
+						{% else %}
+						{% if falarmlog.alarmlevel == 5 %}
+					<div style="background-color:#BE77FF;" >{{ falarmlog.alarmlevel }} th</div>
+						{% else %}
+						{% if falarmlog.alarmlevel == 6 %}
+					<div style="background-color:#FFD306;" >{{ falarmlog.alarmlevel }} th</div>
+						{% else %}
+					<div style="background-color:#9AFF02;" >{{ falarmlog.alarmlevel }} th</div>
+						{% endif %}{% endif %}{% endif %}{% endif %}{% endif %}
+				</td>
+				<td>
+						{% if falarmlog.alarmmode == "email" %}
+					<div style="background-color:#FFD306;" >{{ falarmlog.alarmmode }}</div>
+						{% else %}
+						{% if falarmlog.alarmmode == "sms" %}
+					<div style="background-color:red;" >{{ falarmlog.alarmmode }}</div>
+						{% else %}
+					<div style="background-color:#9AFF02;" >{{ falarmlog.alarmmode }}</div>
+						{% endif %}
+						{% endif %}
+				</td>
+				<td>{{ falarmlog.ticketid }}</td>
+				<td>
+						{% if falarmlog.contact_result == "fail" %}
+					<div style="background-color:red;" >{{ falarmlog.contact_result }}</div>
+						{% else %}
+						{{ falarmlog.contact_result }}
+						{% endif %}
+				</th>
+				<td>
+						{% for user in falarmlog.alarmuser.all %}
 						{{ user.name }}
 						{% endfor %}
 				</td>

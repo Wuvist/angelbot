@@ -41,13 +41,15 @@ def dashboard_show(request, dashboard_id):
             raise Http404
     
     alarmlogs = AlarmLog.objects.filter(created_on__gte = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(time.time())-30*60))).order_by("widget","-created_on")
+    frequentAlarmLogs = FrequentAlarmLog.objects.filter(lasterror_time__gte = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(time.time())-30*60))).order_by("widget","-lasterror_time")
     showAlarms = False
-    if len(alarmlogs) >0 and int(dashboard_id) == 1:
+    if len(alarmlogs)+len(frequentAlarmLogs) > 0 and int(dashboard_id) == 1:
         showAlarms = True
     c = RequestContext(request, 
         {"dashboard":dashboard,
         "alarmlogs":alarmlogs,
         "showAlarms":showAlarms,
+        "frequentAlarmLogs":frequentAlarmLogs,
         })
     return render_to_response('servers/show_dashboard.html',c)
 
@@ -1056,13 +1058,13 @@ def alarm(request):
             contactReault = "fail"
         return result,contactReault
     
-    def sendSMS(users,subject,ticketId):
+    def sendSMS(users,subject,result):
         import urllib2
         
         result = "suc"
         for user in users:
             try:
-                smsUrl = settings.SMS_API % (str(user.phone), str(subject)+" error happened ! ticketID: " +str(ticketId))
+                smsUrl = settings.SMS_API % (str(user.phone), str(subject)+" error happened ! " +str(result))
                 smsResult = urllib2.urlopen(smsUrl.replace(" ","%20")).read()
                 if smsResult != "{ret:0}":result = "fail"
             except:
@@ -1161,7 +1163,7 @@ def alarm(request):
                 elif alarmMode == "email":
                     resultAlarm,contactReault = sendMail(contactUsers,widget.title,result,ticketId)
                 elif alarmMode == "sms":
-                   contactReault = sendSMS(contactUsers,widget.title,ticketId)
+                   contactReault = sendSMS(contactUsers,widget.title,"ticketID: "+str(ticketId))
                    resultAlarm = ""
                 logs = AlarmLog()
                 logs.title = alarm
@@ -1176,9 +1178,87 @@ def alarm(request):
                 logs.result = result+"\n\n"+resultAlarm
                 logs.contact_result = contactReault
                 logs.save()
-
-    alarms = Alarm.objects.all()
-    for alarm in alarms:
+    def frequentrrdAlarm(widget):
+        import rrdtool
+        rrd_path = widget.rrd.path()
+        info = rrdtool.info(rrd_path)
+        last_update = info["last_update"]
+        alarmError = False
+        if widget.data_def:
+            data_rrds = rrdtool.fetch(rrd_path, "-s", str(int(last_update)-1), "-e", "s+0", "LAST")
+            try:
+                data_def = eval(widget.data_def.replace("\n", "").replace("\r", ""))
+                if time.time() - last_update > int(data_def["interval"])*60:
+                    alarmError = True
+                else:
+                    data = data_rrds[2][0]
+                    ds = data_rrds[1]
+                    errorRrdValue = ""
+                    errorValues = ""
+                    for i in range(0, len(ds)):
+                        if data_def.has_key(ds[i]):
+                            field_def = data_def[ds[i]]
+                            try:
+                                if eval(str(data[i])+field_def[2]): # or data[i] == None
+                                    alarmError = True
+                                    break
+                            except:
+                                pass
+            except:
+                return widget.data_def
+        
+        return alarmError
+    
+    def alarmFrequent(alarm,widget,frequentAlarmLog):
+        if frequentrrdAlarm(widget):
+            if frequentAlarmLog == "":
+                log = FrequentAlarmLog()
+                log.title = alarm
+                log.widget = widget
+                log.lasterror = "True"
+                log.error_num = 1
+                log.save()
+                frequentAlarmLog = FrequentAlarmLog.objects.filter(widget = widget.id).filter(created_on__contains = time.strftime("%Y-%m-%d",time.localtime())).order_by("-created_on")[0]
+            elif frequentAlarmLog.lasterror == "False":
+                frequentAlarmLog.lasterror = "True"
+                frequentAlarmLog.error_num += 1
+                frequentAlarmLog.save()
+        elif frequentAlarmLog != "" and  frequentAlarmLog.lasterror == "True":
+            frequentAlarmLog.lasterror = "False"
+            frequentAlarmLog.save()
+            
+        alarmDataDef = eval(alarm.alarm_def.replace("\n", "").replace("\r", ""))
+        alarmDataDefKeys = alarmDataDef.keys()
+        alarmDataDefKeys.reverse()
+        alarmLevel = ""
+        for i in alarmDataDefKeys:
+            if frequentAlarmLog.error_num >= int(eval(alarmDataDef[i])["alarm_num"]):
+                if int(alarmDataDefKeys[0]) == frequentAlarmLog.alarmlevel or int(i) == frequentAlarmLog.alarmlevel:
+                    break
+                elif frequentAlarmLog.alarmlevel != int(i):
+                    alarmLevel = i
+                    alarmMode = eval(alarmDataDef[i])["mode"]
+                    result = widget.title + " error happened "+str(frequentAlarmLog.error_num)+" times !"
+                    ticketId = ""
+                    contactUsers = eval("alarm."+contact_users[i]).all()
+                    if alarmMode == "ticket":
+                        ticketId,resultAlarm,contactReault = createTicket(widget.title,result)
+                    elif alarmMode == "email":
+                        resultAlarm,contactReault = sendMail(contactUsers,widget.title,result,frequentAlarmLog.ticketid)
+                    elif alarmMode == "sms":
+                       contactReault = sendSMS(contactUsers,widget.title,"total error times: "+str(frequentAlarmLog.error_num))
+                    
+                    frequentAlarmLog.alarmlevel = alarmLevel
+                    frequentAlarmLog.alarmmode = alarmMode
+                    frequentAlarmLog.ticketId = ticketId
+                    frequentAlarmLog.contact_result = contactReault
+                    frequentAlarmLog.result = result
+                    frequentAlarmLog.lasterror_time = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime())
+                    frequentAlarmLog.alarmuser = contactUsers
+                    frequentAlarmLog.save()
+                    break
+    
+    for alarm in Alarm.objects.all():
         if eval(alarm.enable):
             for widget in alarm.widget.all():
                 try:
@@ -1186,10 +1266,22 @@ def alarm(request):
                 except:
                     alarmlog = ""
                 contrastLog(alarm,widget,alarmlog)
+    
+    for alarm in FrequentAlarm.objects.all():
+        if eval(alarm.enable):
+            for widget in alarm.widget.all():
+                try:
+                    frequentAlarmLog = FrequentAlarmLog.objects.filter(widget = widget.id).filter(created_on__contains = time.strftime("%Y-%m-%d",time.localtime())).order_by("-created_on")[0]
+                except:
+                    frequentAlarmLog = ""
+                alarmFrequent(alarm,widget,frequentAlarmLog)
+
     alarmlogs = AlarmLog.objects.filter(created_on__gte = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(time.time())-24*3600))).order_by("widget","-created_on")
+    frequentAlarmLogs = FrequentAlarmLog.objects.filter(lasterror_time__gte = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(time.time())-24*3600))).order_by("widget","-lasterror_time")
     
     c = RequestContext(request,
         {"alarmlogs":alarmlogs,
+        "frequentAlarmLogs":frequentAlarmLogs,
         })
     return render_to_response('servers/auto_alarm.html',c)
 
