@@ -106,7 +106,7 @@ def rrd_img(request, widget_id):
     height = request.GET["height"]
     start = request.GET["start"]
     end = request.GET["end"]
-    check_lines = request.GET["cl"].replace('[','').replace(']','').replace('u\'','').replace('\'','').replace(' ','').split(',')
+    check_lines = eval(request.GET["cl"])
     # TODO should refactor here
     def get_line(widget):
         return widget.graph_def.replace("{rrd}", settings.RRD_PATH + widget.rrd.name + ".rrd").replace("\n", "").replace("\r", " ")
@@ -150,7 +150,7 @@ def rrd_img(request, widget_id):
             line += one_day + " " + "DEF:wonline="+settings.RRD_PATH+widget.rrd.name+".rrd:"+line_diff+":LAST:start="+start+"-"+get_time+":end=start+1d SHIFT:wonline:604800 LINE:wonline#b5b5b5:LastWeek"
         return line
     
-    if check_lines[0] == "":
+    if check_lines == []:
         line = get_line(widget)
     elif request.GET.has_key("1w"):
         line =get_check_lines(check_lines[0],"1w")
@@ -1058,13 +1058,13 @@ def alarm(request):
             contactReault = "fail"
         return result,contactReault
     
-    def sendSMS(users,subject,result):
+    def sendSMS(users,subject,contents):
         import urllib2
         
         result = "suc"
         for user in users:
             try:
-                smsUrl = settings.SMS_API % (str(user.phone), str(subject)+" error happened ! " +str(result))
+                smsUrl = settings.SMS_API % (str(user.phone), str(subject)+" error happened ! " +str(contents))
                 smsResult = urllib2.urlopen(smsUrl.replace(" ","%20")).read()
                 if smsResult != "{ret:0}":result = "fail"
             except:
