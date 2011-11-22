@@ -52,7 +52,7 @@ def format_value(field_def, value, check_values = True):
 def format_value_def(field_def,data_rrd):
     if data_rrd[-1] == None or False in [eval(str(x)+field_def[2]) for x in data_rrd if x != None ]:
         try:
-            if data_rrd[-1] ==None or eval(str(data_rrd[-1])+ field_def[1]):
+            if (data_rrd[-1] != None) and (False not in [eval(str(x)+field_def[1]) for x in data_rrd if x != None ]):
                 result = "<div class='errors'>" + eval(field_def[0]+"("+str(data_rrd[-1])+")") + "</div>"
             else:
                 result = eval(field_def[0]+"("+str(data_rrd[-1])+")")

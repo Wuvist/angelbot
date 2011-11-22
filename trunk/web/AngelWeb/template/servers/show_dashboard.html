@@ -183,7 +183,7 @@ th {width:100px;}
     }
     $(function() {
         if ($(".errornote")[0]) {
-            alert("Error happens");
+            alert($(".errornote").length + "  Error happens");
         }
         else {
             setTimeout(reload, 60000);
