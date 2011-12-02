@@ -1235,11 +1235,34 @@ def alarm(request):
             log.save()
             return log
             
+        def doReport(alarmLevel,frequentAlarmLog,contactUsers):
+            alarmMode = eval(alarmDataDef[alarmLevel])["mode"]
+            result = widget.title + " error happened "+str(error_num_now)+" times !"
+            ticketId = ""
+            if "ticket" in str(alarmMode):
+                try:
+                    assign = eval(alarmDataDef[alarmLevel])["assign"]
+                except:
+                    assign = "no"
+                ticketId,resultAlarm,contactReault = createTicket("[frequent]"+str(widget.title),result,contactUsers,assign)
+                frequentAlarmLog = saveFrequentLog(frequentAlarmLog,alarmLevel,alarmMode,ticketId,contactReault,result,contactUsers)
+            if "email" in str(alarmMode):
+                resultAlarm,contactReault = sendMail(contactUsers,widget.title,result,frequentAlarmLog.ticketid)
+                frequentAlarmLog = saveFrequentLog(frequentAlarmLog,alarmLevel,alarmMode,str(frequentAlarmLog.ticketid),contactReault,result,contactUsers)
+            if "sms" in str(alarmMode):
+                contactReault = sendSMS(contactUsers,widget.title,"total error times: "+str(error_num_now))
+                frequentAlarmLog = saveFrequentLog(frequentAlarmLog,alarmLevel,alarmMode,str(frequentAlarmLog.ticketid),contactReault,result,contactUsers)
+        
         if frequentrrdAlarm(widget):
+            if frequentAlarmLog != "":
+                alarmlevel = frequentAlarmLog.alarmlevel
+            else:
+                alarmlevel = ""
             if frequentAlarmLog == "" or frequentAlarmLog.lasterror == "False":
                 log = FrequentAlarmLog()
                 log.title = alarm
                 log.widget = widget
+                log.alarmlevel = alarmlevel
                 log.lasterror = "True"
                 log.error_num = 1
                 log.save()
@@ -1252,35 +1275,28 @@ def alarm(request):
         alarmDataDef = eval(alarm.alarm_def.replace("\n", "").replace("\r", ""))
         alarmDataDefKeys = alarmDataDef.keys()
         alarmDataDefKeys.reverse()
-        alarmLevel = ""
+        
         if frequentAlarmLog != "":
             for i in alarmDataDefKeys:
                 alarmTime = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(time.time() - int(eval(alarmDataDef[i])["alarm_time"])*60))
                 error_num_now = FrequentAlarmLog.objects.filter(widget = widget.id).filter(created_on__gte = alarmTime).count()
                 if error_num_now >= int(eval(alarmDataDef[i])["alarm_num"]):
-                    if int(alarmDataDefKeys[0]) == frequentAlarmLog.alarmlevel or int(i) == frequentAlarmLog.alarmlevel:
+                    if frequentAlarmLog.alarmlevel != int(i):
+                        doReport(i,frequentAlarmLog,eval("alarm."+contact_users[i]).all())
                         break
-                    elif frequentAlarmLog.alarmlevel != int(i):
-                        alarmLevel = i
-                        alarmMode = eval(alarmDataDef[i])["mode"]
-                        result = widget.title + " error happened "+str(error_num_now)+" times !"
-                        ticketId = ""
-                        contactUsers = eval("alarm."+contact_users[i]).all()
-                        if "ticket" in str(alarmMode):
-                            try:
-                                assign = eval(alarmDataDef[i])["assign"]
-                            except:
-                                assign = "no"
-                            ticketId,resultAlarm,contactReault = createTicket("[frequent]"+str(widget.title),result,contactUsers,assign)
-                            frequentAlarmLog = saveFrequentLog(frequentAlarmLog,alarmLevel,alarmMode,ticketId,contactReault,result,contactUsers)
-                        if "email" in str(alarmMode):
-                            print frequentAlarmLog.ticketid,type(frequentAlarmLog.ticketid)
-                            resultAlarm,contactReault = sendMail(contactUsers,widget.title,result,frequentAlarmLog.ticketid)
-                            frequentAlarmLog = saveFrequentLog(frequentAlarmLog,alarmLevel,alarmMode,str(frequentAlarmLog.ticketId),contactReault,result,contactUsers)
-                        if "sms" in str(alarmMode):
-                           contactReault = sendSMS(contactUsers,widget.title,"total error times: "+str(error_num_now))
-                           frequentAlarmLog = saveFrequentLog(frequentAlarmLog,alarmLevel,alarmMode,str(frequentAlarmLog.ticketId),contactReault,result,contactUsers)
-                        break
+                    elif frequentAlarmLog.alarmlevel == int(i):
+                        try:
+                            goingNo = True
+                            alarmTime = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(time.time() - int(eval(alarmDataDef[frequentAlarmLog.alarmlevel])["interval"])*60))
+                            lastErrorLog = FrequentAlarmLog.objects.filter(widget = widget.id).filter(lasterror_time__gte = alarmTime).order_by("-lasterror_time")[0]
+                            if time.time() - time.mktime(lastErrorLog.lasterror_time.timetuple()) < int(eval(alarmDataDef[frequentAlarmLog.alarmlevel])["alarm_time"])*60 :
+                                goingNo = False
+                        except:
+                            goingNo = True
+                        
+                        if goingNo:
+                            doReport(i,frequentAlarmLog,eval("alarm."+contact_users[i]).all())
+                            break
     
     for alarm in Alarm.objects.all():
         if eval(alarm.enable):
