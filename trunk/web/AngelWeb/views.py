@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic.simple import direct_to_template
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import Context, loader, RequestContext
-from servers.models import Server, Dashboard,GraphAider
+from servers.models import Server,Dashboard,GraphAider,DashboardError
 
 @login_required()
 def home(request):
@@ -19,8 +19,10 @@ def home(request):
     graph_aiders = GraphAider.objects.filter(user=request.user.id).all()
     if request.user.is_superuser:
         dashboards = Dashboard.objects.all()
+        error_dashboards = DashboardError.objects.all()
     else:
         dashboards = request.user.dashboard_set.all()
+        error_dashboards = request.user.dashboarderror_set.all()
     is_staff = False
     if dashboards[0].id == 1:
         is_staff = True
@@ -31,5 +33,6 @@ def home(request):
         "dashboards": dashboards,
         "is_staff": is_staff,
         "graph_aiders":graph_aiders,
+        "error_dashboards":error_dashboards,
         })
     return render_to_response('home.html',c)
