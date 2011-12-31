@@ -37,7 +37,7 @@
 			</h>
 		</div> 
 	</div>
-	<div id="withWidget_div" style="display:none;width:800px">
+	<div id="withWidget_div" style="display:none;">
 		{% for widget in widgets %}
 		<h><input type='checkbox' class='withWidget' name = 'check_widget' value = {{widget.value}} {{ widget.checked }} />{{widget.name}}</h>&nbsp;
 		{% endfor %}
@@ -48,7 +48,7 @@
 </form>
 <form action="/downloadparse/" method="GET" id = "category">
 	<fieldset class="module aligned ">
-		<div class="form-row title" id="download_div" style="display:none;width:800px">
+		<div class="form-row title" id="download_div" style="display:none;">
 			<label for="id_date" class="required">Date:</label>
 			<p class="datetime">Start Date: <input name="start" value={{ start }} class="vDateField" type="text" id="id_date_start" size="10" >Time:
 			<input name="start1" value={{ start1 }} class="vTimeField" type="text" id="id_date_start_1" size="8" />&nbsp; Unit:

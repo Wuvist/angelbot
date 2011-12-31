@@ -48,7 +48,7 @@
 						{% endif %}
 						{% endif %}
 				</td>
-				<td><a href="http://ticket.mozat.com/ticket/mainIndex/?url=Ticket/MonView/{{ alarmlog.ticketid }}" >{{ alarmlog.ticketid }}</a></td>
+				<td>{{ alarmlog.ticketid }}</td>
 				<td>{% if alarmlog.overdue == "1" %}Not{% else %}<div style="background-color:#9AFF02;" >Yes</div>{% endif %}</td>
 				<td>
 						{% if alarmlog.contact_result == "fail" %}
@@ -105,7 +105,7 @@
 						{% endif %}
 						{% endif %}
 				</td>
-				<td><a href="http://ticket.mozat.com/ticket/mainIndex/?url=Ticket/MonView/{{ falarmlog.ticketid }}" >{{ falarmlog.ticketid }}</a></td>
+				<td>{{ falarmlog.ticketid }}</td>
 				<td>
 						{% if falarmlog.contact_result == "fail" %}
 					<div style="background-color:red;" >{{ falarmlog.contact_result }}</div>
@@ -125,6 +125,7 @@
 </fieldset>
 {% endif %}
 
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <style>
 th {width:100px;}
 </style>
@@ -134,30 +135,31 @@ th {width:100px;}
 {% endif %}
 
 {% regroup dashboard.widget_set.all|dictsort:"category.title" by category as widgets %}
-	
+
 {% for category in widgets %}
-	<h2>{{ category.grouper }}</h2>
-	<table>
-	{% if category.list.0.widget_type == "1" %}
-	<tr>
-		<th></th>
-		{{ category.list.0|show_widget_header|safe|title }}
-		<th>Graph</th>
-		<th>Action</th>
-	</tr>
-	{% endif %}
-	{% if category.list.0.widget_type == "2" %}
-	<tr>
-		<th></th>
-		<th>Latest</th>
-		<th>Yesterday</th>
-		<th>Last Week</th>
-		<th>Graph</th>
-		<th>Action</th>
-	</tr>
-	{% endif %}
+<h2><a href = "#{{ category.grouper.title|widget_category_cut }}_b"  id="{{ category.grouper.title|widget_category_cut }}_b" >{{ category.grouper.title }}</a></h2>
+	<table id="{{ category.grouper.title|widget_category_cut }}_table">
+					{% if category.list.0.widget_type == "1" %}
+					<tr class="{{ category.grouper.title|widget_category_cut }}_columnTitles" style="display:{{ category.grouper.display }};">
+						<th></th>
+						{{ category.list.0|show_widget_header|safe|title }}
+						<th>Graph</th>
+						<th>Action</th>
+					</tr>
+					{% endif %}
+					{% if category.list.0.widget_type == "2" %}
+					<tr class="{{ category.grouper.title|widget_category_cut }}_columnTitles" style="display:{{ category.grouper.display }};">
+						<th></th>
+						<th>Latest</th>
+						<th>Yesterday</th>
+						<th>Last Week</th>
+						<th>Graph</th>
+						<th>Action</th>
+					</tr>
+				{% endif %}
 	{% for widget in category.list|dictsort:"title" %}
-	<tr>
+
+		<tr class="{{ category.grouper.title|widget_category_cut }}_tr" style="display:{{ category.grouper.display }};">
 		<th>{{ widget|show_widget_title|safe }}</th>
 		{% if widget.widget_type == "1" %}
 			{{ widget|show_widget_with_current_value|safe }}
@@ -173,24 +175,53 @@ th {width:100px;}
 		</td>
 	</tr>
 	{% endfor %}
+
 </table>
-{% endfor %}
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
-<script language="javascript"> 
-    function reload()
-    {
-        location.reload(true);
-    }
-    $(function() {
-        if ($(".errornote")[0]) {
-            alert($(".errornote").length + "  Error happens");
-        }
-        else {
-            setTimeout(reload, 60000);
-        }
-    })
+
+	<script type="text/javascript"> 
+	$(document).ready(function(){
+		$("#{{ category.grouper.title|widget_category_cut }}_b").click(function(){
+		    {% if category.grouper.display_mode == "0" %}
+			if ($('#{{ category.grouper.title|widget_category_cut }}_table').find('div.errornote').length == "0" && $('#{{ category.grouper.title|widget_category_cut }}_table').find('div.errors').length == "0"){
+			{% endif %}
+			{% if category.grouper.display_mode == "1" %}
+			if ($('#{{ category.grouper.title|widget_category_cut }}_table').find('div.errornote').length == "0"){
+			{% endif %}
+					$('#{{ category.grouper.title|widget_category_cut }}_table tr.{{ category.grouper.title|widget_category_cut }}_columnTitles').slideToggle();
+				}
+			$('#{{ category.grouper.title|widget_category_cut }}_table tr.{{ category.grouper.title|widget_category_cut }}_tr').each(function(){
+				{% if category.grouper.display_mode == "0" %}
+				if ($(this).find('div.errornote').length == "0" && $(this).find('div.errors').length == "0" ){
+				{% endif %}
+				{% if category.grouper.display_mode == "1" %}
+				if ($(this).find('div.errornote').length == "0"){
+				{% endif %}
+					$(this).slideToggle();
+					}
+			});
+		});
+	});
+	</script>
+
+<script type="text/javascript">
+$(document).ready(function(){
+	$('#{{ category.grouper.title|widget_category_cut }}_table tr').each(function(){
+		{% if category.grouper.display_mode == "0" %}
+	    if ($(this).find('div.errornote').length > "0" || $(this).find('div.errors').length > "0"){
+		{% endif %}
+		{% if category.grouper.display_mode == "1" %}
+		if ($(this).find('div.errornote').length > "0"){
+		{% endif %}
+			$('#{{ category.grouper.title|widget_category_cut }}_table tr.{{ category.grouper.title|widget_category_cut }}_columnTitles').show();
+			$(this).show();
+	    }
+	});
+});
 </script>
 
+
+
+{% endfor %}
 <script type="text/javascript"> 
 $(function() {
 	$("#showAlarms").click(function(){
@@ -206,4 +237,13 @@ $(function() {
 });
 </script>
 
+<script language="javascript"> 
+    function reload()
+    {
+        location.reload(true);
+    }
+    $(function() {
+            setTimeout(reload, 60000);
+    })
+</script>
 {% endblock %}

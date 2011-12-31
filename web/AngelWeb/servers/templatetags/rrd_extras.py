@@ -6,6 +6,11 @@ import datetime
 
 register = template.Library()
 
+@register.filter(name='widget_category_cut')
+def widget_category_cut(title):
+    "Format a ID name in HTML"
+    
+    return title.replace(".","_").replace(" ","_").replace("(","").replace(")","").replace("&","")
 
 @register.filter(name='show_rrd')
 def show_rrd(rrd):

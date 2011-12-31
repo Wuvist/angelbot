@@ -54,7 +54,36 @@ def dashboard_show(request, dashboard_id):
     return render_to_response('servers/show_dashboard.html',c)
 
 @login_required()
-def show_error_widget(request):
+def dashboard_show_error(request,dashboard_error_id):
+    import time
+    dashboard_error = get_object_or_404(DashboardError, id=dashboard_error_id)
+    imgs = dashboard_error.graphs.all()
+    startTime = int(time.mktime(datetime.strptime(time.strftime("%Y-%m-%d",time.localtime()),"%Y-%m-%d").timetuple()))
+    endTime = startTime + 86400
+    if not request.user.is_superuser:
+        try:
+            dashboard_error.user.get(id = request.user.id)
+        except ObjectDoesNotExist:
+            raise Http404
+    
+    alarmlogs = AlarmLog.objects.filter(created_on__gte = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(time.time())-30*60))).order_by("widget","-created_on")
+    showAlarms = False
+    if len(alarmlogs) >0 and int(dashboard_id) == 1:
+        showAlarms = True
+    c = RequestContext(request, 
+        {"dashboard":dashboard_error.dashboard,
+        "dashboard_error":dashboard_error,
+        "imgsDivWidth":dashboard_error.width*2+5,
+        "alarmlogs":alarmlogs,
+        "showAlarms":showAlarms,
+        "startTime":startTime,
+        "endTime":endTime,
+        "imgs":imgs,
+        })
+    return render_to_response('servers/show_dashboard_error.html',c)
+
+@login_required()
+def show_assort_widget(request):
     import time
     dashboard_id = 1
     dashboard = get_object_or_404(Dashboard, id=dashboard_id)
@@ -73,7 +102,7 @@ def show_error_widget(request):
         "alarmlogs":alarmlogs,
         "showAlarms":showAlarms,
         })
-    return render_to_response('servers/show_error_widget.html',c)
+    return render_to_response('servers/show_assort_widget.html',c)
 
 @login_required()
 def execute_cmd(request, server_id, cmd_id):
@@ -812,12 +841,11 @@ def show_parse_graph(request,dashboard_id, widget_id):
     
     widgetCategory = []
     class check_category_values(object):
-        def __init__ (self,name):
-            self.name = name
-            self.value = name.replace(" ","&nbsp")
-    for x in Widget.objects.values('category').filter(dashboard=dashboard_id).order_by('category').annotate():
-        if x['category'] == '':x['category'] = "---"
-        widgetCategory.append(check_category_values(x['category']))
+        def __init__ (self,x):
+            self.name = x.title
+            self.value = x.id
+    for x in WidgetCategory.objects.filter(widget__in = Widget.objects.values('id').filter(dashboard=dashboard_id)).annotate():
+        widgetCategory.append(check_category_values(x))
     line = widget.graph_def.replace("{rrd}", widget.rrd.path()).replace('\n','').replace('\r','')
     lines = re.compile( "LINE:(\w+)" ).findall(line)
     
@@ -1057,9 +1085,9 @@ def alarm(request):
         msg['From'] = "Mozat Angel"
         msg['To'] = "; ".join(receivers)
         try:
-            sender = smtplib.SMTP('i-smtp.mozat.com')
-            sender.sendmail(sender, receivers, msg.as_string())
-            sender.close()
+            s = smtplib.SMTP('i-smtp.mozat.com')
+            s.sendmail(sender, receivers, msg.as_string())
+            s.close()
             result = ""
             contactReault = "suc"
         except Exception, e:
@@ -1257,7 +1285,7 @@ def alarm(request):
             if frequentAlarmLog != "":
                 alarmlevel = frequentAlarmLog.alarmlevel
             else:
-                alarmlevel = ""
+                alarmlevel = None
             if frequentAlarmLog == "" or frequentAlarmLog.lasterror == "False":
                 log = FrequentAlarmLog()
                 log.title = alarm
@@ -1266,7 +1294,7 @@ def alarm(request):
                 log.lasterror = "True"
                 log.error_num = 1
                 log.save()
-                frequentAlarmLog = FrequentAlarmLog.objects.filter(widget = widget.id).filter(created_on__contains = time.strftime("%Y-%m-%d",time.localtime())).order_by("-created_on")[0]
+                frequentAlarmLog = FrequentAlarmLog.objects.filter(widget = widget.id).filter(created_on__gte = time.strftime("%Y-%m-%d",time.localtime())).order_by("-created_on")[0]
 
         elif frequentAlarmLog != "" and  frequentAlarmLog.lasterror == "True":
             frequentAlarmLog.lasterror = "False"
@@ -1311,7 +1339,7 @@ def alarm(request):
         if eval(alarm.enable):
             for widget in alarm.widget.all():
                 try:
-                    frequentAlarmLog = FrequentAlarmLog.objects.filter(widget = widget.id).filter(created_on__contains = time.strftime("%Y-%m-%d",time.localtime())).order_by("-created_on")[0]
+                    frequentAlarmLog = FrequentAlarmLog.objects.filter(widget = widget.id).filter(created_on__gte = time.strftime("%Y-%m-%d",time.localtime())).order_by("-created_on")[0]
                 except:
                     frequentAlarmLog = ""
                 alarmFrequent(alarm,widget,frequentAlarmLog)

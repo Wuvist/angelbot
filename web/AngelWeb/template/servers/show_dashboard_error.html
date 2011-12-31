@@ -1,8 +1,12 @@
-{% extends "base_site.html" %}
+{% extends "base_site_error.html" %}
 {% load rrd_extras %}
 
 {% block content %}
 
+{% if dashboard.des %}
+       <div class="system-message">  {{ dashboard.des|safe }}</div>
+{% endif %}
+<div id="data" style="width:900px;float:left;">
 {% if showAlarms %}
 <fieldset class="module aligned ">
 	<input type="button" value="Hide Already Alarms" id="showAlarms" name="ahowalerms" />&nbsp
@@ -10,11 +14,10 @@
 	<div id="showAlarms_div" style="display:block;">
 		<table>
 			<tr>
-				<th>Auto Alarm</th><th>Time</th><th>Title</th><th>Widget</th><th>Alarm level</th><th>Alarm mode</th><th>Ticket ID</th><th>Overdue</th><th>Contact result</th><th>Alarm users</th>
+				<th>Time</th><th>Title</th><th>Widget</th><th>Alarm level</th><th>Alarm mode</th><th>Ticket ID</th><th>Overdue</th><th>Contact result</th><th>Alarm users</th>
 			</tr>
 				{% for alarmlog in alarmlogs %}
 			<tr>
-				<td></td>
 				<td>{{ alarmlog.created_on|date:"m-d H:i:s" }}</td>
 				<td>{{ alarmlog.title.title }}</td>
 				<td>{{ alarmlog.widget.title }}</td>
@@ -48,7 +51,7 @@
 						{% endif %}
 						{% endif %}
 				</td>
-				<td><a href="http://ticket.mozat.com/ticket/mainIndex/?url=Ticket/MonView/{{ alarmlog.ticketid }}" >{{ alarmlog.ticketid }}</a></td>
+				<td>{{ alarmlog.ticketid }}</td>
 				<td>{% if alarmlog.overdue == "1" %}Not{% else %}<div style="background-color:#9AFF02;" >Yes</div>{% endif %}</td>
 				<td>
 						{% if alarmlog.contact_result == "fail" %}
@@ -65,85 +68,30 @@
 			</tr>
 				{% endfor %}
 		</table>
-		<table>
-			<tr>
-				<th>Frequent Alarm</th><th>Time</th><th>Title</th><th>Widget</th><th>Alarm level</th><th>Alarm mode</th><th>Ticket ID</th><th>Contact result</th><th>Alarm users</th>
-			</tr>
-				{% for falarmlog in frequentAlarmLogs %}
-			<tr>
-				<td></td>
-				<td>{{ falarmlog.lasterror_time|date:"m-d H:i:s" }}</td>
-				<td>{{ falarmlog.title.title }}</td>
-				<td>{{ falarmlog.widget.title }}</td>
-				<td>
-						{% if falarmlog.alarmlevel == 2 %}
-					<div style="background-color:#AAAAFF;" >{{ falarmlog.alarmlevel }} th</div>
-						{% else %}
-						{% if falarmlog.alarmlevel == 3 %}
-					<div style="background-color:red;" >{{ falarmlog.alarmlevel }} th</div>
-						{% else %}
-						{% if falarmlog.alarmlevel == 4 %}
-					<div style="background-color:yellow;" >{{ falarmlog.alarmlevel }} th</div>
-						{% else %}
-						{% if falarmlog.alarmlevel == 5 %}
-					<div style="background-color:#BE77FF;" >{{ falarmlog.alarmlevel }} th</div>
-						{% else %}
-						{% if falarmlog.alarmlevel == 6 %}
-					<div style="background-color:#FFD306;" >{{ falarmlog.alarmlevel }} th</div>
-						{% else %}
-					<div style="background-color:#9AFF02;" >{{ falarmlog.alarmlevel }} th</div>
-						{% endif %}{% endif %}{% endif %}{% endif %}{% endif %}
-				</td>
-				<td>
-						{% if falarmlog.alarmmode == "email" %}
-					<div style="background-color:#FFD306;" >{{ falarmlog.alarmmode }}</div>
-						{% else %}
-						{% if falarmlog.alarmmode == "sms" %}
-					<div style="background-color:red;" >{{ falarmlog.alarmmode }}</div>
-						{% else %}
-					<div style="background-color:#9AFF02;" >{{ falarmlog.alarmmode }}</div>
-						{% endif %}
-						{% endif %}
-				</td>
-				<td><a href="http://ticket.mozat.com/ticket/mainIndex/?url=Ticket/MonView/{{ falarmlog.ticketid }}" >{{ falarmlog.ticketid }}</a></td>
-				<td>
-						{% if falarmlog.contact_result == "fail" %}
-					<div style="background-color:red;" >{{ falarmlog.contact_result }}</div>
-						{% else %}
-						{{ falarmlog.contact_result }}
-						{% endif %}
-				</th>
-				<td>
-						{% for user in falarmlog.alarmuser.all %}
-						{{ user.name }}
-						{% endfor %}
-				</td>
-			</tr>
-				{% endfor %}
-		</table>
 	</div>
 </fieldset>
 {% endif %}
 
 <style>
-th {width:100px;}
+th {width:50px;}
 </style>
-<h1>{{ dashboard.title }}</h1>
-{% if dashboard.des %}
-	<div class="system-message">{{ dashboard.des|safe }}</div>
-{% endif %}
 
 {% regroup dashboard.widget_set.all|dictsort:"category.title" by category as widgets %}
 	
 {% for category in widgets %}
+
+	{% for widget in category.list|dictsort:"title" %}
+	{% if "errornote" in widget|show_widget_title|safe or "errornote" in widget|show_widget_with_current_value|safe or "errornote" in widget|show_widget_with_current_and_past_value|safe or "error" in widget|show_widget_title|safe or "error" in widget|show_widget_with_current_value|safe or "error" in widget|show_widget_with_current_and_past_value|safe%}
+	{% ifchanged %}
+
 	<h2>{{ category.grouper }}</h2>
+	
 	<table>
 	{% if category.list.0.widget_type == "1" %}
 	<tr>
 		<th></th>
 		{{ category.list.0|show_widget_header|safe|title }}
 		<th>Graph</th>
-		<th>Action</th>
 	</tr>
 	{% endif %}
 	{% if category.list.0.widget_type == "2" %}
@@ -153,10 +101,9 @@ th {width:100px;}
 		<th>Yesterday</th>
 		<th>Last Week</th>
 		<th>Graph</th>
-		<th>Action</th>
 	</tr>
 	{% endif %}
-	{% for widget in category.list|dictsort:"title" %}
+	{% endifchanged  %}
 	<tr>
 		<th>{{ widget|show_widget_title|safe }}</th>
 		{% if widget.widget_type == "1" %}
@@ -166,28 +113,42 @@ th {width:100px;}
 			{{ widget|show_widget_with_current_and_past_value|safe }}
 		{% endif %}
 		<td><a href="/dashboard/{{ dashboard.id }}/widget/{{ widget.id }}/graph" target="_blank">View</a></td>
-		<td>
-			{% if widget.server and dashboard.id == 1 %}
-				<a href="/servers/{{ widget.server.id}}/" target="_blank">Execute</a>
-			{% endif %}
-		</td>
 	</tr>
+	{% endif %}
 	{% endfor %}
 </table>
 {% endfor %}
+</div>
+<div id="imgall" style="width:{{ imgsDivWidth }}px;float:right;">
+{% for img in imgs %}
+<img src="/grahaiderimg/{{ img.id }}/w/{{ dashboard_error.width }}/h/{{ dashboard_error.height }}/start/{{ startTime }}/end/{{ endTime }}" height={{ dashboard_error.height }} width={{ dashboard_error.width }} />
+{% endfor %}
+</div>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+<script type="text/javascript"> 
+
+$(document).ready( function() { 
+	$("#imgall").click(function(){
+	    if ($("#imgall").width() == {{ imgsDivWidth }})
+	    {
+			$("#data").width();
+			$("#imgall").width(5);
+	    }
+		else {
+			$("#data").width(900);
+			$("#imgall").width({{ imgsDivWidth }});
+		}
+	});
+});
+</script>
+
 <script language="javascript"> 
     function reload()
     {
         location.reload(true);
     }
     $(function() {
-        if ($(".errornote")[0]) {
-            alert($(".errornote").length + "  Error happens");
-        }
-        else {
             setTimeout(reload, 60000);
-        }
     })
 </script>
 
@@ -207,3 +168,4 @@ $(function() {
 </script>
 
 {% endblock %}
+

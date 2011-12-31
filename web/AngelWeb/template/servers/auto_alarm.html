@@ -45,7 +45,7 @@
 						{% endif %}
 						{% endif %}
 				</td>
-				<td>{{ alarmlog.ticketid }}</td>
+				<td><a href="http://ticket.mozat.com/ticket/mainIndex/?url=Ticket/MonView/{{ alarmlog.ticketid }}" >{{ alarmlog.ticketid }}</a></td>
 				<td>{% if alarmlog.overdue == "1" %}Not{% else %}<div style="background-color:#9AFF02;" >Yes</div>{% endif %}</td>
 				<td>
 						{% if alarmlog.contact_result == "fail" %}
@@ -103,7 +103,7 @@
 						{% endif %}
 						{% endif %}
 				</td>
-				<td>{{ falarmlog.ticketid }}</td>
+				<td><a href="http://ticket.mozat.com/ticket/mainIndex/?url=Ticket/MonView/{{ falarmlog.ticketid }}" >{{ falarmlog.ticketid }}</a></td>
 				<td>
 						{% if falarmlog.contact_result == "fail" %}
 					<div style="background-color:red;" >{{ falarmlog.contact_result }}</div>

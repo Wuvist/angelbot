@@ -73,6 +73,27 @@ class Dashboard(models.Model):
     def __unicode__(self):
         return self.title
 
+CATEGORY_DISPLAY_CHOICES = (
+    ('black', 'True'),
+    ('none', 'False'),
+)
+CATEGORY_DISPLAY_MODE_CHOICES = (
+    ('0', 'Error & Warning'),
+    ('1', 'Error'),
+)
+class WidgetCategory(models.Model):
+    title = models.CharField(max_length=64, )
+    display = models.CharField(max_length=8, choices=CATEGORY_DISPLAY_CHOICES)
+    display_mode = models.CharField(max_length=1, choices=CATEGORY_DISPLAY_MODE_CHOICES)
+    des = models.TextField(null = True, blank=True)
+    
+    def __unicode__(self):
+        return self.title
+    
+    class Meta:
+        ordering = ["title"]
+
+
 WIDGET_TYPE_CHOICES = (
     ('1', 'Show Current Value Only'),
     ('2', 'Show Current / Yesterday / Last Week Value'),
@@ -83,7 +104,7 @@ class Widget(models.Model):
     dashboard = models.ManyToManyField(Dashboard)
     server = models.ForeignKey(Server, null = True, blank=True)
     rrd = models.ForeignKey(Rrd)
-    category = models.CharField(max_length =50, null = True, blank=True)
+    category = models.ForeignKey(WidgetCategory)
     widget_type = models.CharField(max_length=1, choices=WIDGET_TYPE_CHOICES)
     graph_def = models.TextField(max_length =512)
     data_def = models.TextField(max_length =512, null = True, blank=True)
@@ -213,3 +234,16 @@ class FrequentAlarmLog(models.Model):
     def __unicode__(self):
         return str(self.title) + ": "  + str(self.alarmlevel) +" level "+ str(self.widget) + " (" + str(self.created_on)  +")"
 
+class DashboardError(models.Model):
+    title = models.CharField(max_length=50)
+    dashboard = models.ForeignKey(Dashboard)
+    graphs = models.ManyToManyField(GraphAiderDef)
+    width = models.IntegerField(max_length=8)
+    height = models.IntegerField(max_length=8)
+    user = models.ManyToManyField(User, null = True, blank=True)
+    
+    def __unicode__(self):
+        return self.title
+    
+    class Meta:
+        ordering = ["title"]
