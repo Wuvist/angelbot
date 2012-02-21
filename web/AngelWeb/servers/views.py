@@ -129,6 +129,7 @@ def execute_cmd(request, server_id, cmd_id):
     return HttpResponse(fetch_page(url))
 
 def rrd_img(request, widget_id):
+    import time
     widget = get_object_or_404(Widget, id=widget_id)
     from subprocess import Popen, PIPE
     width = request.GET["width"]
@@ -169,10 +170,14 @@ def rrd_img(request, widget_id):
     #if request.GET.has_key("1w"):
     #line += " " + get_line_diff(widget, "1w")
 
-    def get_check_lines(line_diff,get_time):
+    def get_check_lines(line_diff,get_time,withTime="",shiftTime=""):
         color = get_line(widget)[get_line(widget).index("LINE:"+line_diff)+5+len(line_diff):get_line(widget).index("LINE:"+line_diff)+len(line_diff)+12] #5+7
         line = "DEF:"+line_diff+"="+settings.RRD_PATH + widget.rrd.name + ".rrd:"+line_diff+":LAST LINE:"+line_diff+color+":"+line_diff.capitalize()
-        if get_time == "1d":
+        if get_time == "withAnyDate":
+            startWithTime = int(time.mktime(time.strptime(request.GET["withDate"], "%Y-%m-%d")))
+            line += " " + "DEF:donline="+settings.RRD_PATH+widget.rrd.name+".rrd:"+line_diff+":LAST:start="+str(startWithTime)+\
+            ":end=start+1d SHIFT:donline:"+str(int(shiftTime)-startWithTime)+" LINE:donline#fbba5c:"+withTime
+        elif get_time == "1d":
             line += " " + "DEF:donline="+settings.RRD_PATH+widget.rrd.name+".rrd:"+line_diff+":LAST:start="+start+"-"+get_time+":end=start+1d SHIFT:donline:86400 LINE:donline#fbba5c:Yesterday"
         elif get_time == "1w":
             one_day = " " + "DEF:donline="+settings.RRD_PATH+widget.rrd.name+".rrd:"+line_diff+":LAST:start="+start+"-1d:end=start+1d SHIFT:donline:86400 LINE:donline#fbba5c:Yesterday"
@@ -181,6 +186,8 @@ def rrd_img(request, widget_id):
     
     if check_lines == []:
         line = get_line(widget)
+    elif request.GET.has_key("withAnyDate"):
+        line =get_check_lines(check_lines[0],"withAnyDate",request.GET["withDate"],start)
     elif request.GET.has_key("1w"):
         line =get_check_lines(check_lines[0],"1w")
     elif request.GET.has_key("1d"):
@@ -325,12 +332,20 @@ def rrd_show_widget_graph(request, dashboard_id, widget_id):
         show_date = request.GET["date"]
     else:
         show_date = time.strftime("%Y-%m-%d")
+    
+    if request.GET.has_key("withdate"):
+        withdate = request.GET["withdate"]
+    else:
+        withdate = time.strftime("%Y-%m-%d")
         
     if request.GET.has_key("show1d"):
         graph_option += "&1d=1"
 
     if request.GET.has_key("show1w"):
         graph_option += "&1w=1&1d=1"
+    
+    if request.GET.has_key("withAnyDate"):
+        graph_option += "&withAnyDate=True"
         
     for checkbox in lines:
         if request.GET.has_key(checkbox):
@@ -371,6 +386,7 @@ def rrd_show_widget_graph(request, dashboard_id, widget_id):
         "check_lines":check_lines,
         "check_line_values": check_line_values,
         "checkall":checkall,
+        "withdate":withdate,
         })
     return render_to_response('servers/rrd_show_graph.html',c)
 
