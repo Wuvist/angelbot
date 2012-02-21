@@ -23,6 +23,9 @@
 			<input type="submit" value="With Yesterday" name="show1d"  /> 
 			<input type="submit" value="With Yesterday and last week" name="show1w" />
 			<input type="button" value="Download Data" id="download" name="download" />
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<input name="withdate" value="{{ withdate }}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
+			<input type="submit" value="With Any Date" name="withAnyDate" />
 			</h>
 	    </div> 
 	</div>
@@ -39,7 +42,7 @@
 	</form>
 </div>
 
-<a href="/dashboard/{{dashboard_id}}/widget/{{widget.id}}/parse" target="_blank"><img src="/rrd/img/{{ widget.id }}/?&start={{ start }}&end={{ end }}&height=480&width=1000&{{ graph_option }}&cl={{check_lines}}" height="480" width="1000" /></a></br>
+<a href="/dashboard/{{dashboard_id}}/widget/{{widget.id}}/parse" target="_blank"><img src="/rrd/img/{{ widget.id }}/?&start={{ start }}&end={{ end }}&height=480&width=1000&{{ graph_option }}&cl={{check_lines}}&withDate={{ withdate }}" height="480" width="1000" /></a></br>
 <script type="text/javascript" src="/admin/jsi18n/"></script>
 <script type="text/javascript" src="/media/js/core.js"></script>
 <script type="text/javascript" src="/media/js/calendar.js"></script>
