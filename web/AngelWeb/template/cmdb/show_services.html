@@ -25,10 +25,10 @@
 			</select>
 			service type: 
 			<select name="service_type" >
-			{% for s in services_type %}
 				<option value="" {% if service_type == "" %}selected="selected"{% endif %} >All</option>
+				{% for s in services_type %}
 				<option value="{{ s }}" {% if service_type == s %}selected="selected"{% endif %} >{{ s }}</option>
-			{% endfor %}
+				{% endfor %}
 			</select>
 			system:
 			<select name="system" >
