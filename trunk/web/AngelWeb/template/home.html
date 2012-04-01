@@ -1,6 +1,14 @@
 {% extends "base_site.html" %}
 
 {% block content %}
+		{% if is_staff %}
+	<h1>CMDB</h1>
+	<ul>
+		<li><a href="/cmdb/servers/">server</a></li>
+		<li><a href="/cmdb/services/">services</a></li>
+	</ul>
+	{% endif %}
+
 	<h1>Dashboards</h1>
 	<ul>
 	{% for dashboard in dashboards%}

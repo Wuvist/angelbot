@@ -36,4 +36,8 @@ urlpatterns = patterns('',
     (r'^alarm/$', 'servers.views.alarm'),
     (r'^dashboard/error/(\d+)/$', 'servers.views.dashboard_show_error'),
     (r'^assort', 'servers.views.show_assort_widget'),
+    (r'^cmdb/servers/$', 'cmdb.views.show_servers'),
+    (r'^cmdb/updateservers/$', 'cmdb.views.syncdbservers'),
+    (r'^cmdb/services/$', 'cmdb.views.show_services'),
+    (r'^cmdb/updateservices/$', 'cmdb.views.syncdbservices'),
 )

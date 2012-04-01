@@ -17,6 +17,7 @@ class WidgetAdmin(admin.ModelAdmin):
 
 class RrdAdmin(admin.ModelAdmin):
     list_display = ('name', 'des')
+    search_fields = ('name', )
     ordering = ('name',)
 
 class AlarmLogAdmin(admin.ModelAdmin):
@@ -47,3 +48,7 @@ admin.site.register(GraphAiderDef)
 admin.site.register(FrequentAlarm,FrequentAlarmAdmin)
 admin.site.register(FrequentAlarmLog)
 admin.site.register(DashboardError)
+admin.site.register(Project)
+admin.site.register(IDC)
+admin.site.register(ServiceType)
+admin.site.register(WidgetServiceType)

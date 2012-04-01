@@ -8,14 +8,52 @@ SERVER_TYPE_CHOICES = (
     ('L', 'Linux'),
 )
 
+PHYSICAL_SERVER_CHOICES = (
+    ('Y', 'Yes'),
+    ('N', 'No'),
+)
+
+SERVER_FUNCTION_CHOICES = (
+    ('D', 'DB'),
+    ('A', 'APP'),
+)
+
 # Create your models here.
+class Project(models.Model):
+    name = models.CharField(max_length=50)
+    remark = models.CharField(max_length=1000, null = True, blank = True)
+    def __unicode__(self):
+        return self.name
+    
+    class Meta:
+        ordering = ["name"]
+
+class IDC(models.Model):
+    name = models.CharField(max_length=50)
+    remark = models.CharField(max_length=1000, null = True, blank = True)
+    def __unicode__(self):
+        return self.name
+    
+    class Meta:
+        ordering = ["name"]
+
 class Server(models.Model):
     ip = models.IPAddressField(max_length=200)
     name = models.CharField(max_length=50)
     username = models.CharField(max_length=50)
     password = models.CharField(max_length=50)
+    project = models.ForeignKey(Project)
+    physical_server = models.CharField(max_length=1, choices=PHYSICAL_SERVER_CHOICES)
+    physical_server_ip = models.IPAddressField(max_length=200)
+    core = models.IntegerField(max_length=2)
+    ram = models.CharField(max_length=10)
+    hard_disk = models.CharField(max_length=100)
+    server_function = models.CharField(max_length=1, default="A", choices=SERVER_FUNCTION_CHOICES)
     server_type = models.CharField(max_length=1, choices=SERVER_TYPE_CHOICES)
-    remark = models.CharField(max_length=1000)
+    idc = models.ForeignKey(IDC)
+    remark = models.CharField(max_length=256, null = True, blank = True)
+    created_on = models.DateTimeField(auto_now_add = True)
+    
     def __unicode__(self):
         return self.name + "(" + str(self.ip) + ")"
     
@@ -92,7 +130,27 @@ class WidgetCategory(models.Model):
     
     class Meta:
         ordering = ["title"]
+        
+class ServiceType(models.Model):
+    name = models.CharField(max_length=50)
+    remark = models.CharField(max_length=256, null = True, blank = True)
+    
+    def __unicode__(self):
+        return self.name
+    
+    class Meta:
+        ordering = ["name"]
 
+class WidgetServiceType(models.Model):
+    name = models.CharField(max_length=50)
+    type = models.ForeignKey(ServiceType)
+    remark = models.CharField(max_length=256, null = True, blank = True)
+    
+    def __unicode__(self):
+        return self.name
+    
+    class Meta:
+        ordering = ["name"]
 
 WIDGET_TYPE_CHOICES = (
     ('1', 'Show Current Value Only'),
@@ -106,9 +164,14 @@ class Widget(models.Model):
     rrd = models.ForeignKey(Rrd)
     category = models.ForeignKey(WidgetCategory)
     widget_type = models.CharField(max_length=1, choices=WIDGET_TYPE_CHOICES)
+    project = models.ManyToManyField(Project)##########
+    service_type = models.ForeignKey(WidgetServiceType)########
     graph_def = models.TextField(max_length =512)
     data_def = models.TextField(max_length =512, null = True, blank=True)
-        
+    path = models.CharField(max_length=128, null = True, blank=True)########
+    remark = models.CharField(max_length=256, null = True, blank = True)#########
+    update_time = models.DateTimeField(null = True, blank = True)########
+    created_on = models.DateTimeField(auto_now_add = True)
     def __unicode__(self):
         return self.title + "-----" + self.rrd.name
     
@@ -221,7 +284,7 @@ class FrequentAlarmLog(models.Model):
     title = models.ForeignKey(FrequentAlarm)
     widget = models.ForeignKey(Widget)
     lasterror = models.CharField(max_length=8, choices=ALARM_TYPE_CHOICES)
-    error_num = models.IntegerField(max_length=16)
+    error_num = models.IntegerField(max_length=16, null = True, blank = True)
     alarmlevel = models.IntegerField(max_length=1, null = True, blank = True)
     alarmmode = models.CharField(max_length=16, null = True, blank = True)
     ticketid = models.CharField(max_length=16, null = True, blank = True)

@@ -1,0 +1,94 @@
+{% extends "base_site.html" %}
+{% load cmdb_extras %}
+
+{% block content %}
+<!--<link rel="stylesheet" type="text/css" href="/media/css/forms.css" /> -->
+<link rel="stylesheet" type="text/css" href="/media/css/forms.css" /> 
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="/media/js/core.js"></script>
+<script type="text/javascript" src="/media/js/calendar.js"></script>
+<script type="text/javascript" src="/media/js/admin/DateTimeShortcuts.js"></script>
+	
+<fieldset class="module aligned ">
+	<div class="form-row title"> 
+	    <div>
+		<form action="" method="GET" >
+			<h>ip: <input type="text" name="ip" value="{{ ip }}" >
+			title: <input type="text" name="title" value="{{ title }}" >
+			physical ip: <input type="text" name="pip" value="{{ pip }}" ></h><br/>
+			<h>service name: 
+			<select name="service_name" >
+			{% for s in services_name %}
+				<option value="" {% if service_name == "" %}selected="selected"{% endif %} >All</option>
+				<option value="{{ s }}" {% if service_name == s %}selected="selected"{% endif %} >{{ s }}</option>
+			{% endfor %}
+			</select>
+			service type: 
+			<select name="service_type" >
+			{% for s in services_type %}
+				<option value="" {% if service_type == "" %}selected="selected"{% endif %} >All</option>
+				<option value="{{ s }}" {% if service_type == s %}selected="selected"{% endif %} >{{ s }}</option>
+			{% endfor %}
+			</select>
+			system:
+			<select name="system" >
+				<option value="" {% if system == "" %}selected="selected"{% endif %} >All</option>
+				<option value="W" {% if system == "W" %}selected="selected"{% endif %} >Windows</option>
+				<option value="L" {% if system == "L" %}selected="selected"{% endif %} >Linux</option>
+			</select>
+
+			project:
+			<select name="project" >
+			{% for p in projects %}
+				<option value="" {% if project == "" %}selected="selected"{% endif %} >All</option>
+				<option value="{{ p.project }}" {% if project == p.project %}selected="selected"{% endif %} >{{ p.project }}</option>
+			{% endfor %}
+			</select>
+
+			created on:
+			<input name="created_on" value="{{ created_on }}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span></h>
+			&nbsp;&nbsp;&nbsp;
+		    <input type="submit" value = "Show Date" /><br/>
+		</form>
+
+		<form action="/cmdb/updateservices" method="GET">
+			<h>Last Update: {{ lastUpdate.created_on|date:"Y-m-d H:i:s" }}&nbsp;
+			<input type="submit" value = "Update Now"  name="syncdb"/></h>
+		</form>
+		</div>
+	</div>
+</fieldset>
+	<style>
+	th {width:100px;}
+	</style>
+	<h2>services:</h2>
+	<table>
+		<th>project</th><th>title</th><th>ip</th><th style="width:150px" >server info</th><th>system</th><th>service name</th><th>service type</th><th>remark</th><th style="width:150px" >created on</th><th style="width:150px" >last udpate</th>
+		{% for s in services %}
+		{% if forloop.counter0|tr_color %}
+		<tr class="row1">
+		{% else %}
+		<tr>
+		{% endif %}
+			<td>{{s.project}}</td><td>{{ s.title }}</td><td><a href="/cmdb/servers/?ip={{ s.ip }}">{{ s.ip }}</a></td>
+			<td>{{ s.server_id|showServerInfo|safe }}</td>
+			<td>
+			{% if s.system == "W" %}
+			Windows
+			{% else %}
+			Linux
+			{% endif %}
+			</td>
+			<td>
+			{{ s.service_name }}
+			</td>
+
+			<td>{{ s.service_type }}</td><td>{{ s.remark }}</td>
+			
+			<td>{{ s.created_on|date:"Y-m-d H:i:s" }}</td>
+			<td>{{ s.update_time|date:"Y-m-d H:i:s" }}</td>
+		</tr>
+		{% endfor %}
+	</table>
+
+{% endblock %}
