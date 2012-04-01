@@ -1,0 +1,106 @@
+{% extends "base_site.html" %}
+{% load cmdb_extras %}
+
+{% block content %}
+<!--<link rel="stylesheet" type="text/css" href="/media/css/forms.css" /> -->
+<link rel="stylesheet" type="text/css" href="/media/css/forms.css" />
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="/media/js/core.js"></script>
+<script type="text/javascript" src="/media/js/calendar.js"></script>
+<script type="text/javascript" src="/media/js/admin/DateTimeShortcuts.js"></script>
+
+<fieldset class="module aligned ">
+	<div class="form-row title"> 
+	    <div>
+		<form action="" method="GET" >
+			<h>ip: <input type="text" name="ip" value="{{ ip }}" >
+			server name: <input type="text" name="name" value="{{ name }}" >
+			physical ip: <input type="text" name="pip" value="{{ pip }}" ></h><br/>
+			<h>system: 
+			<select name="system" >
+				<option value="" {% if system == "" %}selected="selected"{% endif %} >All</option>
+				<option value="W" {% if system == "W" %}selected="selected"{% endif %} >Windows</option>
+				<option value="L" {% if system == "L" %}selected="selected"{% endif %} >Linux</option>
+			</select>
+
+			IDC: 
+			<select name="idc" >
+				<option value="" {% if idc == "" %}selected="selected"{% endif %} >All</option>
+				{% for i in idcs %}
+				<option value="{{ i.name }}" {% if idc == i.name  %}selected="selected"{% endif %} >{{ i.name }}</option>
+				{% endfor %}
+			</select>
+
+			project:
+			<select name="project" >
+				<option value="" {% if project == "" %}selected="selected"{% endif %} >All</option>
+				{% for p in projects %}
+				<option value="{{ p.name }}" {% if project == p.name %}selected="selected"{% endif %} >{{ p.name }}</option>
+				{% endfor %}
+			</select>
+
+			is physical server:
+			<select name="ispserver" >
+				<option value="" {% if ispserver == "" %}selected="selected"{% endif %} >All</option>
+				<option value="Y" {% if ispserver == "Y" %}selected="selected"{% endif %} >Yes</option>
+				<option value="N" {% if ispserver == "N" %}selected="selected"{% endif %} >No</option>
+			</select>
+
+			funtion:
+			<select name="funtion" >
+				<option value="" {% if funtion == "" %}selected="selected"{% endif %} >All</option>
+				<option value="A" {% if funtion == "A" %}selected="selected"{% endif %} >APP</option>
+				<option value="D" {% if funtion == "D" %}selected="selected"{% endif %} >DB</option>
+			</select>
+			created on:
+			<input name="created_on" value="{{ created_on }}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
+			&nbsp;&nbsp;&nbsp;
+		    <input type="submit" value = "Show Date" /></h><br/>
+		</form>
+		<form action="/cmdb/updateservers" method="GET" >
+			<h>Last Update: {{ lastUpdate.created_on|date:"Y-m-d H:i:s" }}&nbsp;
+			<input type="submit" value = "Update Now"  name="syncdb"/></h>
+		</form>
+		</div>
+		</div>
+	</fieldset>
+	<style>
+	th {width:100px;}
+	</style>
+	<h2>servers:</h2>
+	<table>
+		<th>ip</th><th style="width:150px" >server name</th><th>IDC</th><th>project</th><th>physical_server</th><th>physical ip</th><th style="width:50px" >core</th><th style="width:50px" >ram</th><th>hard disk</th><th>system</th><th>function</th><th style="width:150px" >created on</th>
+		{% for s in servers %}
+		{% if forloop.counter0|tr_color %}
+		<tr class="row1">
+		{% else %}
+		<tr>
+		{% endif %}
+			<td><a href="/cmdb/services/?ip={{ s.ip }}">{{s.ip}}</a></td><td>{{ s.name }}</td><td>{{ s.idc }}</td><td>{{ s.project }}</td>
+			<td>
+			{% if s.physical_server == "Y" %}
+			Yes
+			{% else %}
+			No
+			{% endif %}
+			</td>
+			<td>{{ s.physical_server_ip }}</td><td>{{ s.core }}</td><td>{{ s.ram }}</td><td>{{ s.hard_disk }}</td>
+			<td>
+			{% if s.server_type == "W" %}
+			Windows
+			{% else %}
+			Linux
+			{% endif %}
+			</td>
+			<td>
+			{% if s.server_function == "D" %}
+			DB
+			{% else %}
+			APP
+			{% endif %}</td>
+			<td>{{ s.created_on|date:"Y-m-d H:i:s" }}</td>
+		</tr>
+		{% endfor %}
+	</table>
+
+{% endblock %}
