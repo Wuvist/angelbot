@@ -77,11 +77,16 @@ def show_servers(request):
         servers = servers.filter(created_on__range=(time.strftime("%Y-%m-%d",time.strptime(created_on, "%Y-%m-%d")),\
         time.strftime("%Y-%m-%d %H:%M:%S",time.strptime(created_on+" 23:59:59", "%Y-%m-%d %H:%M:%S"))))
         
+    try:
+        LastUpdateTime = LastUpdate.objects.get(title = "cmdbServerLastUpdate")
+    except:
+        LastUpdateTime = ""
+    
     c = RequestContext(request, 
         {"servers":servers,
         "project":project,
         "projects":s_project.objects.all(),
-        "lastUpdate":LastUpdate.objects.get(title = "cmdbServerLastUpdate"),
+        "lastUpdate":LastUpdateTime,
         "ip":ip,
         "name":name,
         "idc":idc,
@@ -168,15 +173,20 @@ def show_services(request):
         services = services.filter(created_on__range=(time.strftime("%Y-%m-%d",time.strptime(created_on, "%Y-%m-%d")),\
         time.strftime("%Y-%m-%d %H:%M:%S",time.strptime(created_on+" 23:59:59", "%Y-%m-%d %H:%M:%S"))))
         
+    try:
+        LastUpdateTime = LastUpdate.objects.get(title = "cmdbServiceLastUpdate")
+    except:
+        LastUpdateTime = ""
+        
     c = RequestContext(request,
         {"services":services,
-        "lastUpdate":LastUpdate.objects.get(title = "cmdbServiceLastUpdate"),
+        "lastUpdate":LastUpdateTime,
         "ip":ip,
         "title":title,
         "pip":pip,
         "service_name":service_name,
         "services_name":Service.objects.values_list("service_name",flat=True).annotate(),
-        "service_type":service_name,
+        "service_type":service_type,
         "services_type":Service.objects.values_list("service_type",flat=True).annotate(),
         "project":project,
         "projects":Server.objects.values("project").annotate(),
