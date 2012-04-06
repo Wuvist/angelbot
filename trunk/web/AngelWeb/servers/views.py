@@ -68,7 +68,7 @@ def dashboard_show_error(request,dashboard_error_id):
     
     alarmlogs = AlarmLog.objects.filter(created_on__gte = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(time.time())-30*60))).order_by("widget","-created_on")
     showAlarms = False
-    if len(alarmlogs) >0 and int(dashboard_id) == 1:
+    if len(alarmlogs) >0 and int(dashboard_error.dashboard.id) == 1:
         showAlarms = True
     c = RequestContext(request, 
         {"dashboard":dashboard_error.dashboard,
