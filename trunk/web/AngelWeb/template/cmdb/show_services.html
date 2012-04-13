@@ -63,13 +63,14 @@
 	</style>
 	<h2>services:</h2>
 	<table>
-		<th>project</th><th>title</th><th>ip</th><th style="width:150px" >server info</th><th>system</th><th>service name</th><th>service type</th><th>remark</th><th style="width:150px" >created on</th><th style="width:150px" >last udpate</th>
+		<th style="width:20px" >id</th><th>project</th><th>title</th><th>ip</th><th style="width:150px" >server info</th><th>system</th><th>service name</th><th>service type</th><th>remark</th><th style="width:150px" >created on</th><th style="width:150px" >last udpate</th>
 		{% for s in services %}
 		{% if forloop.counter0|tr_color %}
 		<tr class="row1">
 		{% else %}
 		<tr>
 		{% endif %}
+			<td>{{ forloop.counter }}</td>
 			<td>{{s.project}}</td><td>{{ s.title }}</td><td><a href="/cmdb/servers/?ip={{ s.ip }}">{{ s.ip }}</a></td>
 			<td>{{ s.server_id|showServerInfo|safe }}</td>
 			<td>
