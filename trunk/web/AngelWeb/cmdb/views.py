@@ -22,7 +22,7 @@ def syncdbservers(request):
     serversServers = s_server.objects.all()
     server_s = serversServers.values_list("id", flat=True)
     serversDel = list(set(serversLs)-set(server_s))
-    cmdbServers.filter(id__in = serversDel).update(available="N",del_time = datetime.now())
+    cmdbServers.filter(server_id__in = serversDel).update(available="N",del_time = datetime.now())
     for s in serversServers:
         if s.id in serversLs:
             Server.objects.filter(server_id=s.id).update(ip = s.ip,server_id = s.id,name = s.name,password = s.password,\
@@ -70,9 +70,10 @@ def show_servers(request):
     system = request.GET.get("system","")
     funtion = request.GET.get("funtion","")
     created_on = request.GET.get("created_on","")
-    servers = Server.objects.filter(available = "Y", ip__contains=ip, name__contains=name, idc__contains=idc, \
-    project__contains=project,physical_server__contains=ispserver, physical_server_ip__contains=pip, \
-    server_type__contains=system, server_function__contains=funtion).order_by("ip")
+    servers = Server.objects.filter(ip__contains=ip,name__contains=name,idc__contains=idc,physical_server__contains=ispserver,\
+    physical_server_ip__contains=pip,server_type__contains=system, server_function__contains=funtion,available = "Y").order_by("ip")
+    if project != "":
+        servers = servers.filter(project__contains=project)
     if created_on != "":
         servers = servers.filter(created_on__range=(time.strftime("%Y-%m-%d",time.strptime(created_on, "%Y-%m-%d")),\
         time.strftime("%Y-%m-%d %H:%M:%S",time.strptime(created_on+" 23:59:59", "%Y-%m-%d %H:%M:%S"))))
@@ -82,7 +83,7 @@ def show_servers(request):
     except:
         LastUpdateTime = ""
     
-    c = RequestContext(request, 
+    c = RequestContext(request,
         {"servers":servers,
         "project":project,
         "projects":s_project.objects.all(),
@@ -106,7 +107,7 @@ def syncdbservices(request):
     serversServices = s_service.objects.all()
     services_s = serversServices.values_list("id", flat=True)
     servicesDel = list(set(servicesLs)-set(services_s))
-    cmdbServices.filter(id__in = servicesDel).update(available="N",del_time = datetime.now())
+    cmdbServices.filter(service_id__in = servicesDel).update(available="N",del_time = datetime.now())
     for s in serversServices:
         if s.server == None:
             server_id = ""
@@ -165,10 +166,14 @@ def show_services(request):
     system = request.GET.get("system","")
     remark = request.GET.get("remark","")
     created_on = request.GET.get("created_on","")
-    services = Service.objects.filter(available = "Y", ip__contains=ip, title__contains=title, project__contains=project,\
-    system__contains=system, physical_server_ip__contains=pip,\
-    service_name__contains=service_name, service_type__contains=service_type, remark__contains=remark\
-    ).order_by("title")
+    services = Service.objects.filter(available = "Y", ip__contains=ip, title__contains=title,\
+    system__contains=system, physical_server_ip__contains=pip,remark__contains=remark,).order_by("title")
+    if service_name != "":
+        services = services.filter(service_name=service_name)
+    if service_type != "":
+        services = services.filter(service_type=service_type)
+    if project != "":
+        services = services.filter(project=project)
     if created_on != "":
         services = services.filter(created_on__range=(time.strftime("%Y-%m-%d",time.strptime(created_on, "%Y-%m-%d")),\
         time.strftime("%Y-%m-%d %H:%M:%S",time.strptime(created_on+" 23:59:59", "%Y-%m-%d %H:%M:%S"))))

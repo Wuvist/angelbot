@@ -18,10 +18,10 @@
 			physical ip: <input type="text" name="pip" value="{{ pip }}" ></h><br/>
 			<h>service name: 
 			<select name="service_name" >
-			{% for s in services_name %}
 				<option value="" {% if service_name == "" %}selected="selected"{% endif %} >All</option>
+				{% for s in services_name %}
 				<option value="{{ s }}" {% if service_name == s %}selected="selected"{% endif %} >{{ s }}</option>
-			{% endfor %}
+				{% endfor %}
 			</select>
 			service type: 
 			<select name="service_type" >
@@ -39,16 +39,16 @@
 
 			project:
 			<select name="project" >
-			{% for p in projects %}
 				<option value="" {% if project == "" %}selected="selected"{% endif %} >All</option>
+				{% for p in projects %}
 				<option value="{{ p.project }}" {% if project == p.project %}selected="selected"{% endif %} >{{ p.project }}</option>
-			{% endfor %}
+				{% endfor %}
 			</select>
 
 			created on:
 			<input name="created_on" value="{{ created_on }}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span></h>
 			&nbsp;&nbsp;&nbsp;
-		    <input type="submit" value = "Show Date" /><br/>
+		    <input type="submit" value = "Show Data" /><br/>
 		</form>
 
 		<form action="/cmdb/updateservices" method="GET">
