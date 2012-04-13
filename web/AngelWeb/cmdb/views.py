@@ -86,7 +86,7 @@ def show_servers(request):
     c = RequestContext(request,
         {"servers":servers,
         "project":project,
-        "projects":s_project.objects.all(),
+        "projects":s_project.objects.all().order_by("name"),
         "lastUpdate":LastUpdateTime,
         "ip":ip,
         "name":name,
@@ -119,12 +119,18 @@ def syncdbservices(request):
             pip=s.server.physical_server_ip
             server_id = s.server.id
             system = s.server.server_type
+        if s.service_type != None:
+            service_name = s.service_type.name
+            service_typeName = s.service_type.type.name
+        else:
+            service_name = "---"
+            service_typeName = "---"
         if s.id in servicesLs:
             Service.objects.filter(service_id=s.id).update(title = s.title,service_id=s.id,\
             project = ",".join([str(v) for v in s.project.all().values_list("name",flat=True)]),\
             dashboard = ",".join([str(v) for v in s.dashboard.all().values_list("id",flat=True)]),\
-            physical_server_ip = pip, ip = ip,system = system,service_name = s.service_type.name,\
-            service_type = s.service_type.type.name,path = s.path,remark = s.remark,available = "Y",created_on = s.created_on)
+            physical_server_ip = pip, ip = ip,system = system,service_name = service_name,\
+            service_type = service_typeName,path = s.path,remark = s.remark,available = "Y",created_on = s.created_on)
         else:
             ser = Service()
             ser.title = s.title
@@ -190,11 +196,11 @@ def show_services(request):
         "title":title,
         "pip":pip,
         "service_name":service_name,
-        "services_name":Service.objects.values_list("service_name",flat=True).annotate(),
+        "services_name":Service.objects.values_list("service_name",flat=True).annotate().order_by("service_name"),
         "service_type":service_type,
-        "services_type":Service.objects.values_list("service_type",flat=True).annotate(),
+        "services_type":Service.objects.values_list("service_type",flat=True).annotate().order_by("service_type"),
         "project":project,
-        "projects":Server.objects.values("project").annotate(),
+        "projects":Server.objects.values("project").annotate().order_by("project"),
         "system":system,
         "created_on":created_on,
         })
