@@ -164,13 +164,13 @@ class Widget(models.Model):
     rrd = models.ForeignKey(Rrd)
     category = models.ForeignKey(WidgetCategory)
     widget_type = models.CharField(max_length=1, choices=WIDGET_TYPE_CHOICES)
-    project = models.ManyToManyField(Project)##########
-    service_type = models.ForeignKey(WidgetServiceType)########
+    project = models.ManyToManyField(Project)
+    service_type = models.ForeignKey(WidgetServiceType, null = True, blank = True)
     graph_def = models.TextField(max_length =512)
     data_def = models.TextField(max_length =512, null = True, blank=True)
-    path = models.CharField(max_length=128, null = True, blank=True)########
-    remark = models.CharField(max_length=256, null = True, blank = True)#########
-    update_time = models.DateTimeField(null = True, blank = True)########
+    path = models.CharField(max_length=128, null = True, blank=True)
+    remark = models.CharField(max_length=256, null = True, blank = True)
+    update_time = models.DateTimeField(null = True, blank = True)
     created_on = models.DateTimeField(auto_now_add = True)
     def __unicode__(self):
         return self.title + "-----" + self.rrd.name
