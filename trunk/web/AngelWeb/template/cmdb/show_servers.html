@@ -58,7 +58,7 @@
 		    <input type="submit" value = "Show Data" /></h><br/>
 		</form>
 		<form action="/cmdb/updateservers" method="GET" >
-			<h>Last Update: {{ lastUpdate.created_on|date:"Y-m-d H:i:s" }}&nbsp;
+			<h>Latest Update: {{ lastUpdate.created_on|date:"Y-m-d H:i:s" }}&nbsp;
 			<input type="submit" value = "Update Now"  name="syncdb"/></h>
 		</form>
 		</div>
@@ -69,7 +69,7 @@
 	</style>
 	<h2>servers:</h2>
 	<table>
-		<th style="width:20px" >id</th><th>ip</th><th style="width:150px" >server name</th><th>IDC</th><th>project</th><th>physical_server</th><th>physical ip</th><th style="width:50px" >core</th><th style="width:50px" >ram</th><th>hard disk</th><th>system</th><th>function</th><th style="width:150px" >created on</th>
+		<th style="width:20px" >id</th><th>ip</th><th style="width:150px" >server name</th><th>IDC</th><th>project</th><th>physical server</th><th>physical ip</th><th style="width:50px" >core</th><th style="width:50px" >ram</th><th>hard disk</th><th>system</th><th>function</th><th style="width:150px" >created on</th>
 		{% for s in servers %}
 		{% if forloop.counter0|tr_color %}
 		<tr class="row1">
