@@ -12,6 +12,10 @@
 <fieldset class="module aligned ">
 	<div class="form-row title"> 
 	    <div>
+			<form action="/cmdb/updateservices" method="GET">
+				<h>Latest Update: {{ lastUpdate.created_on|date:"Y-m-d H:i:s" }}&nbsp;
+				<input type="submit" value = "Update Now"  name="syncdb"/></h>
+			</form>
 		<form action="" method="GET" >
 			<h>ip: <input type="text" name="ip" value="{{ ip }}" >
 			title: <input type="text" name="title" value="{{ title }}" >
@@ -49,11 +53,6 @@
 			<input name="created_on" value="{{ created_on }}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span></h>
 			&nbsp;&nbsp;&nbsp;
 		    <input type="submit" value = "Show Data" /><br/>
-		</form>
-
-		<form action="/cmdb/updateservices" method="GET">
-			<h>Latest Update: {{ lastUpdate.created_on|date:"Y-m-d H:i:s" }}&nbsp;
-			<input type="submit" value = "Update Now"  name="syncdb"/></h>
 		</form>
 		</div>
 	</div>
