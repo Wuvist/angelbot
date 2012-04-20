@@ -76,7 +76,9 @@
 			{% if s.system == "W" %}
 			Windows
 			{% else %}
+			{% if s.system == "L" %}
 			Linux
+			{% endif %}
 			{% endif %}
 			</td>
 			<td>

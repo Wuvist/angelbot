@@ -200,7 +200,7 @@ def show_services(request):
         "service_type":service_type,
         "services_type":Service.objects.values_list("service_type",flat=True).annotate().order_by("service_type"),
         "project":project,
-        "projects":Server.objects.values("project").annotate().order_by("project"),
+        "projects":Service.objects.values("project").annotate().order_by("project"),
         "system":system,
         "created_on":created_on,
         })
