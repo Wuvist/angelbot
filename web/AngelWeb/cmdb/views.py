@@ -125,10 +125,12 @@ def syncdbservices(request):
         else:
             service_name = "---"
             service_typeName = "---"
+        projects = ",".join([str(v) for v in s.project.all().values_list("name",flat=True)])
+        if projects == "":
+            projects = "---"
         if s.id in servicesLs:
             Service.objects.filter(service_id=s.id).update(title = s.title,service_id=s.id,\
-            project = ",".join([str(v) for v in s.project.all().values_list("name",flat=True)]),\
-            dashboard = ",".join([str(v) for v in s.dashboard.all().values_list("id",flat=True)]),\
+            project = projects,dashboard = ",".join([str(v) for v in s.dashboard.all().values_list("id",flat=True)]),\
             physical_server_ip = pip, ip = ip,system = system,service_name = service_name,\
             service_type = service_typeName,path = s.path,remark = s.remark,available = "Y",created_on = s.created_on)
         else:
