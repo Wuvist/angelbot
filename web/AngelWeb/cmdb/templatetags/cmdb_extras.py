@@ -10,7 +10,7 @@ def showServerInfo(id):
     '''Show server info'''
     try:
         s = Server.objects.get(server_id=id)
-        result = "server name: %s<br/>core: %s ram: %s hard disk: %s" % (s.name,s.core,s.ram,s.hard_disk)
+        result = "[%s: %s-%s-%s]" % (s.name,s.core,s.ram,s.hard_disk)
     except:
         result = ""
         
