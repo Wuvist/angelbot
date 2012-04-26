@@ -104,21 +104,15 @@ def show_servers(request):
 def syncdbservices(request):
     cmdbServices = Service.objects.all()
     servicesLs = cmdbServices.values_list("service_id", flat=True)
-    serversServices = s_service.objects.all()
+    serversServices = s_service.objects.exclude(server = None)
     services_s = serversServices.values_list("id", flat=True)
     servicesDel = list(set(servicesLs)-set(services_s))
     cmdbServices.filter(service_id__in = servicesDel).update(available="N",del_time = datetime.now())
     for s in serversServices:
-        if s.server == None:
-            server_id = ""
-            system = ""
-            ip = ""
-            pip = ""
-        else:
-            ip=s.server.ip
-            pip=s.server.physical_server_ip
-            server_id = s.server.id
-            system = s.server.server_type
+        ip=s.server.ip
+        pip=s.server.physical_server_ip
+        server_id = s.server.id
+        system = s.server.server_type
         if s.service_type != None:
             service_name = s.service_type.name
             service_typeName = s.service_type.type.name
@@ -137,14 +131,14 @@ def syncdbservices(request):
             ser = Service()
             ser.title = s.title
             ser.service_id = s.id
-            ser.project = ",".join([str(v) for v in s.project.all().values_list("name",flat=True)])
+            ser.project = projects
             ser.dashboard = ",".join([str(v) for v in s.dashboard.all().values_list("id",flat=True)])
             ser.ip = ip
             ser.physical_server_ip = pip
             ser.server_id = server_id
             ser.system = system
-            ser.service_name = s.service_type.name
-            ser.service_type = s.service_type.type.name
+            ser.service_name = service_name
+            ser.service_type = service_typeName
             ser.path = s.path
             ser.remark = s.remark
             ser.available = "Y"
