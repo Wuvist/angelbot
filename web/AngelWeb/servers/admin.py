@@ -32,6 +32,11 @@ class FrequentAlarmAdmin(admin.ModelAdmin):
     list_display = ('title', 'enable')
     ordering = ('title',)
 
+class ProjectAdmin(admin.ModelAdmin):
+    list_display = ('name', 'alarm')
+    ordering = ('name',)
+
+
 admin.site.register(Server)
 admin.site.register(CmdLog)
 admin.site.register(Cmd)
@@ -48,7 +53,7 @@ admin.site.register(GraphAiderDef)
 admin.site.register(FrequentAlarm,FrequentAlarmAdmin)
 admin.site.register(FrequentAlarmLog)
 admin.site.register(DashboardError)
-admin.site.register(Project)
+admin.site.register(Project, ProjectAdmin)
 admin.site.register(IDC)
 admin.site.register(ServiceType)
 admin.site.register(WidgetServiceType)

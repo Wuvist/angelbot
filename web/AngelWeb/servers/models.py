@@ -18,9 +18,15 @@ SERVER_FUNCTION_CHOICES = (
     ('A', 'APP'),
 )
 
+ALARM_TYPE_CHOICES = (
+    ('True', 'True'),
+    ('False', 'False'),
+)
+
 # Create your models here.
 class Project(models.Model):
     name = models.CharField(max_length=50)
+    alarm = models.CharField(max_length=8, choices=ALARM_TYPE_CHOICES)
     remark = models.CharField(max_length=1000, null = True, blank = True)
     def __unicode__(self):
         return self.name
@@ -190,11 +196,6 @@ class AlarmUser(models.Model):
     
     class Meta:
         ordering = ["name"]
-
-ALARM_TYPE_CHOICES = (
-    ('True', 'True'),
-    ('False', 'False'),
-)
 
 class Alarm(models.Model):
     title = models.CharField(max_length=50)
