@@ -557,10 +557,10 @@ def parser(request):
     if len(widgetls)>1:
         check_lines = [check_lines[0]]
         img_legend = widgetls_name
-        img_title = (request.GET["start"]+" _ "+request.GET["end"]+" _ "+widget.category+" - "+check_lines[0]+"   /"+request.GET["ptime"]).replace("^"," ")
+        img_title = (request.GET["start"]+" _ "+request.GET["end"]+" _ "+widget.category.title+" - "+check_lines[0]+"   /"+request.GET["ptime"]).replace("^"," ")
     else:
         img_legend = check_lines
-        img_title = (request.GET["start"]+" _ "+request.GET["end"]+" _ "+widget.category+" - "+widget.title+"   /"+request.GET["ptime"]).replace("^"," ")
+        img_title = (request.GET["start"]+" _ "+request.GET["end"]+" _ "+widget.category.title+" - "+widget.title+"   /"+request.GET["ptime"]).replace("^"," ")
     
     if request.GET["ptime"] =="hour":
         start_time_number = 10
@@ -590,18 +590,21 @@ def parser(request):
         interval = 1
 
     fig = plt.figure(figsize=(20,9))
+    ax = fig.add_axes([0.05,0.1,0.9,0.8])
     for i in range(len(result)-1):
-        plt.plot(result[i])
+        ax.plot(result[i])
     
-    plt.legend(img_legend, loc="upper right", shadow=True)
-    plt.xticks(np.arange(0,len(result[-1]),interval),x_values)
-    plt.title(img_title)
-    plt.grid(True)
+    ax.legend(img_legend, loc="upper right", shadow=True)
+    ax.set_xticks(np.arange(0,len(result[-1]),interval))
+    ax.set_xticklabels(x_values)
+    ax.set_title(img_title)
+    ax.grid(True)
     fig.autofmt_xdate()
     pic_buf = StringIO()
-    plt.savefig(pic_buf,dpi=65)
+    fig.savefig(pic_buf,dpi=65)
     image_data = pic_buf.getvalue()
     pic_buf.close()
+    fig.clear()
     plt.close()
     
     response = HttpResponse(image_data)
