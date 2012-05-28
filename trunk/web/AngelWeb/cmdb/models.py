@@ -45,6 +45,7 @@ class Server(models.Model):
     
 class Service(models.Model):
     title = models.CharField(max_length=50)
+    color = models.CharField(max_length=16)
     service_id = models.IntegerField(max_length=16)
     server_id = models.CharField(max_length=8) 
     project = models.CharField(max_length=50)

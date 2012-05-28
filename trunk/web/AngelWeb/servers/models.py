@@ -23,6 +23,15 @@ ALARM_TYPE_CHOICES = (
     ('False', 'False'),
 )
 
+SERVICETYPE_COLOR_CHOICES = (
+    ('beige','beige'),('black','black'), ('brown', 'brown'),('blue', 'blue'),
+    ('darksalmon','darksalmon'),('darkseagreen','darkseagreen'),
+    ('darkslateblue','darkslateblue'),('green','green'),('red','red'),
+    ('tomato','tomato'),('transparent','transparent'),('turquoise','turquoise'),
+    ('violet','violet'),('wheat','wheat'),('whitesmoke','whitesmoke'),
+    ('yellow','yellow'),('yellowgreen','yellowgreen'),('pink', 'pink'),
+)
+
 # Create your models here.
 class Project(models.Model):
     name = models.CharField(max_length=50)
@@ -139,6 +148,7 @@ class WidgetCategory(models.Model):
         
 class ServiceType(models.Model):
     name = models.CharField(max_length=50)
+    color = models.CharField(max_length=16, choices=SERVICETYPE_COLOR_CHOICES)
     remark = models.CharField(max_length=256, null = True, blank = True)
     
     def __unicode__(self):

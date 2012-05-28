@@ -40,4 +40,6 @@ urlpatterns = patterns('',
     (r'^cmdb/updateservers/$', 'cmdb.views.syncdbservers'),
     (r'^cmdb/services/$', 'cmdb.views.show_services'),
     (r'^cmdb/updateservices/$', 'cmdb.views.syncdbservices'),
+    (r'^cmdb/deployment/$', 'cmdb.views.cmdbDeployment'),
+    
 )
