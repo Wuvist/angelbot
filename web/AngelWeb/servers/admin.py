@@ -36,6 +36,9 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = ('name', 'alarm')
     ordering = ('name',)
 
+class ServicesTypeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'color')
+    ordering = ('name',)
 
 admin.site.register(Server)
 admin.site.register(CmdLog)
@@ -55,5 +58,5 @@ admin.site.register(FrequentAlarmLog)
 admin.site.register(DashboardError)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(IDC)
-admin.site.register(ServiceType)
+admin.site.register(ServiceType,ServicesTypeAdmin)
 admin.site.register(WidgetServiceType)

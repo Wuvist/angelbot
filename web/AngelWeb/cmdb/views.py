@@ -246,8 +246,7 @@ def cmdbDeployment(request):
 	ylist = [];logo = 0
 	for pro in projects:
             logo += 1
-            x=10;y=maxY-100;w=100;h=20;yserver = y - 20;xserver = x;xservice = x;maxXX = x;yls = []
-	    colorDict = {}
+            x=10;y=maxY-100;w=100;h=20;yserver = y - 20;xserver = x;xservice = x;maxXX = x;yls = [];colorDict = {}
 	    pservers = servers_p.filter(project = pro)
 	    c.setFont("Times-Roman", 12)
 	    c.drawCentredString(maxX/2,maxY-20,pro +" deployment")
@@ -277,9 +276,9 @@ def cmdbDeployment(request):
 		    for ssss in services.filter(ip = s.ip):
 		        yservicea -= h
 		        yls.append(yservicea)
-		        drawRect(c,ssss.title,ssss.color,xserver,yservicea,w,h)
+		        drawRect(c,ssss.title,str(ssss.color),xserver,yservicea,w,h)
 		        if ssss.service_type not in colorDict:
-			    colorDict[ssss.service_type] = ssss.color
+			    colorDict[ssss.service_type] = str(ssss.color)
 	        else:
 		    xxservice = xserver
 		    for ss in serviceServers:
@@ -290,9 +289,9 @@ def cmdbDeployment(request):
 			    wservices = w
 			    yservice -= h
 			    yls.append(yservice)
-			    drawRect(c,sss.title,sss.color,xxservice,yservice,wservices,h)
+			    drawRect(c,sss.title,str(sss.color),xxservice,yservice,wservices,h)
 			    if sss.service_type not in colorDict:
-			        colorDict[sss.service_type] = sss.color
+			        colorDict[sss.service_type] = str(sss.color)
 		        xxservice += w
 	        xserver += wserver
 	        ylist += yls
