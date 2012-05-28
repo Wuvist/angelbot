@@ -116,16 +116,18 @@ def syncdbservices(request):
         if s.service_type != None:
             service_name = s.service_type.name
             service_typeName = s.service_type.type.name
+            color = s.service_type.type.color
         else:
             service_name = "---"
             service_typeName = "---"
+            color = "white"
         projects = ",".join([str(v) for v in s.project.all().values_list("name",flat=True)])
         if projects == "":
             projects = "---"
         if s.id in servicesLs:
             Service.objects.filter(service_id=s.id).update(title = s.title,service_id=s.id,\
             project = projects,dashboard = ",".join([str(v) for v in s.dashboard.all().values_list("id",flat=True)]),\
-            physical_server_ip = pip, ip = ip,system = system,service_name = service_name,\
+            physical_server_ip = pip, ip = ip,system = system,service_name = service_name,color = color,\
             service_type = service_typeName,path = s.path,remark = s.remark,available = "Y",created_on = s.created_on)
         else:
             ser = Service()
@@ -157,7 +159,8 @@ def syncdbservices(request):
 def show_services(request):
     
     if not request.user.is_staff:
-        raise Http404    
+        raise Http404
+    
     ip = request.GET.get("ip","")
     title = request.GET.get("title","")
     service_name = request.GET.get("service_name","")
@@ -168,6 +171,7 @@ def show_services(request):
     system = request.GET.get("system","")
     remark = request.GET.get("remark","")
     created_on = request.GET.get("created_on","")
+    
     services = Service.objects.filter(available = "Y", ip__contains=ip, title__contains=title,\
     system__contains=system, physical_server_ip__contains=pip,remark__contains=remark,).order_by("title")
     if service_name != "":
@@ -197,9 +201,135 @@ def show_services(request):
         "services_type":Service.objects.values_list("service_type",flat=True).annotate().order_by("service_type"),
         "project":project,
         "projects":Service.objects.values("project").annotate().order_by("project"),
+        "projects_d":Server.objects.values_list("project",flat = True).annotate(),
         "system":system,
         "created_on":created_on,
         })
     
     return render_to_response('cmdb/show_services.html',c)
+
+def cmdbDeployment(request):
+    from cStringIO import StringIO
+    from reportlab.pdfgen import canvas
+    from reportlab.lib import colors
+    import time
+    
+    def drawRect(c,rectStr,color,x,y,w,h):
+        c.setStrokeColor("black")
+        c.setFillColor(color)
+        c.rect(x,y,w,h,stroke=1,fill=1)
+        if len(rectStr) <= 15:
+            c.setFillColor("black")
+            c.setFont("Times-Roman", 10)
+            c.drawCentredString(x+w/2,y+h/3,rectStr)
+        elif 15 < len(rectStr) < 20:
+            c.setFillColor("black")
+            c.setFont("Times-Roman", 8)
+            c.drawCentredString(x+w/2,y+h/3,rectStr)
+        elif len(rectStr) >= 20:
+            if '[' in rectStr and ']' in rectStr:
+                c.setFillColor("black")
+                c.setFont("Times-Roman", 7)
+                t = c.beginText(x+10,y+2*h/3)
+                t.textLines(rectStr.split(";"))
+                c.drawText(t)
+            else:
+                c.setFillColor("black")
+                c.setFont("Times-Roman", 7)
+                t = c.beginText(x+10,y+2*h/3)
+                t.textLines(rectStr.split("-"))
+                c.drawText(t)
+    
+
+    def main(maxX,maxY):
+        c = canvas.Canvas(temp,(maxX,maxY))
+	ylist = [];logo = 0
+	for pro in projects:
+            logo += 1
+            x=10;y=maxY-100;w=100;h=20;yserver = y - 20;xserver = x;xservice = x;maxXX = x;yls = []
+	    colorDict = {}
+	    pservers = servers_p.filter(project = pro)
+	    c.setFont("Times-Roman", 12)
+	    c.drawCentredString(maxX/2,maxY-20,pro +" deployment")
+            c.setStrokeColor("black")
+            c.setFillColor("white")
+            c.rect(maxX-250,maxY-35,140,15,stroke=1,fill=1)
+            c.setFillColor("black")
+	    c.drawString(maxX-247,maxY-30,"Server(ip)[cores-RAM-HD]")
+            c.drawString(x+20,maxY-50,"IDC: " + pservers[0].idc)
+	    for s in pservers:
+	        wx = len(Server.objects.filter(physical_server_ip = s.physical_server_ip))
+	        if wx > 1:
+		    wx -= 1
+	        wserver = w*wx
+	        maxXX += wserver
+	        if maxXX > maxX - 10:
+		    xserver = x
+		    maxXX = wserver
+		    yserver = min(yls) - 1.5*h
+		    yls = []
+	        drawRect(c,'',"white",xserver,yserver,wserver,h)
+	        c.drawCentredString(xserver+wserver/2,yserver+h*4/7,s.name+'('+s.ip[8:]+')')
+	        c.drawCentredString(xserver+wserver/2,yserver+h*1/7,'['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+']')
+	        serviceServers = servers.filter(physical_server_ip = s.physical_server_ip).exclude(ip = s.physical_server_ip)
+	        if len(serviceServers) == 0:
+		    yservicea = yserver
+		    for ssss in services.filter(ip = s.ip):
+		        yservicea -= h
+		        yls.append(yservicea)
+		        drawRect(c,ssss.title,ssss.color,xserver,yservicea,w,h)
+		        if ssss.service_type not in colorDict:
+			    colorDict[ssss.service_type] = ssss.color
+	        else:
+		    xxservice = xserver
+		    for ss in serviceServers:
+		        yservice = yserver - h
+		        services_s = services.filter(server_id = ss.server_id)
+		        drawRect(c,ss.name+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']','white',xxservice,yservice,w,h)
+		        for sss in services_s:
+			    wservices = w
+			    yservice -= h
+			    yls.append(yservice)
+			    drawRect(c,sss.title,sss.color,xxservice,yservice,wservices,h)
+			    if sss.service_type not in colorDict:
+			        colorDict[sss.service_type] = sss.color
+		        xxservice += w
+	        xserver += wserver
+	        ylist += yls
+
+	    xp = maxX-250;yp=maxY-50;wp=70;hp=15;z=4;i=0
+	    for d in colorDict.keys():
+	        i += 1
+	        if i > z:
+		    z += 4
+		    yp = maxY-50
+		    xp += wp
+	        drawRect(c,d,colorDict[d],xp,yp,wp,hp)
+	        yp -= hp
+            if logo == len(projects):
+                c.setFillColor("black")
+                c.drawCentredString(maxX/2,5,r'(c) Mozat Pte Ltd. All rights reserved.')
+	    c.showPage()    
+        c.save()
+        
+        return temp,min(ylist)
+    
+    x = 1000;y = 500;
+    services = Service.objects.filter(available = "Y").order_by("ip")
+    servers = Server.objects.all()
+    servers_p = Server.objects.filter(physical_server = "Y")
+    projects =  request.GET.getlist("ps")    
+    if len(projects) == 0:
+        projects = servers.values_list("project",flat = True).annotate()
+    temp = StringIO()
+    tmp,yy = main(x,y)
+    if yy < 0:
+        tmp,yy = main(x,-1*yy + y + 30)
+    
+    response = HttpResponse(tmp.getvalue())
+    response["conten-type"] = "application/pdf"
+    response["Content-Disposition"] = ("attachment;filename=mozat_deployment_%s.pdf" % time.strftime("%Y-%m-%d"))
+    
+    return response
+
 

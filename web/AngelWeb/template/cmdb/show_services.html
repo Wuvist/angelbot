@@ -4,10 +4,6 @@
 {% block content %}
 <!--<link rel="stylesheet" type="text/css" href="/media/css/forms.css" /> -->
 <link rel="stylesheet" type="text/css" href="/media/css/forms.css" /> 
-<script type="text/javascript" src="/admin/jsi18n/"></script>
-<script type="text/javascript" src="/media/js/core.js"></script>
-<script type="text/javascript" src="/media/js/calendar.js"></script>
-<script type="text/javascript" src="/media/js/admin/DateTimeShortcuts.js"></script>
 	
 <fieldset class="module aligned ">
 	<div class="form-row title"> 
@@ -51,11 +47,22 @@
 
 			created on:
 			<input name="created_on" value="{{ created_on }}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span></h>
-			&nbsp;&nbsp;&nbsp;
-		    <input type="submit" value = "Show Data" /><br/>
+			&nbsp;&nbsp;
+			<input type="submit" value = "Show Data" />
+			<input type="button" value = "Download Deployment" id="download" name="download"/><br/>
 		</form>
 		</div>
 	</div>
+<div id="download_div" style="display:none;width:800px">
+	<form action="/cmdb/deployment/" method="GET">
+		{% for p in projects_d %}      
+			<h><input type='checkbox' class='usercheck' name = 'ps' value = {{p}} />{{p}}</h>&nbsp;
+			{% endfor %}
+			<h><input type='checkbox' id='chkAll' value = "checkall"  onclick='select_all()'/>All</h></h><br>
+			<input type="submit" value="Download"  />
+	</form>
+</div>
+
 </fieldset>
 	<style>
 	th {width:100px;}
@@ -92,5 +99,43 @@
 		</tr>
 		{% endfor %}
 	</table>
+
+
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="/media/js/core.js"></script>
+<script type="text/javascript" src="/media/js/calendar.js"></script>
+<script type="text/javascript" src="/media/js/admin/DateTimeShortcuts.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+<script type="text/javascript" src="/media/js/jquery.min.js"></script>
+<script type="text/javascript" src="/media/js/jquery.init.js"></script> 
+<script type="text/javascript" src="/media/js/actions.min.js"></script>
+<script type="text/javascript"> 
+
+$(function() { 
+	$("#download").click(function(){
+		$("#download_div").toggle();
+	});
+});
+</script>
+
+<script type = 'text/javascript'>
+$(document).ready( function(){
+$('#download_div input:checkbox.usercheck').click(function(){
+if (this.checked){
+if ($('#download_div input:checked.usercheck').length == $('#download_div input.usercheck').length){
+$('#chkAll')[0].checked = true;
+}
+}else{
+$('#chkAll')[0].checked = false;
+}
+});
+});
+function select_all(){
+var e = $('#chkAll')[0].checked;
+$('#download_div input:checkbox.usercheck').each(function(){
+this.checked = e;
+});
+}
+</script>
 
 {% endblock %}
