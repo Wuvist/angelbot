@@ -141,6 +141,7 @@ def syncdbservices(request):
             ser.system = system
             ser.service_name = service_name
             ser.service_type = service_typeName
+            ser.color = color
             ser.path = s.path
             ser.remark = s.remark
             ser.available = "Y"
@@ -243,72 +244,72 @@ def cmdbDeployment(request):
 
     def main(maxX,maxY):
         c = canvas.Canvas(temp,(maxX,maxY))
-	ylist = [];logo = 0
-	for pro in projects:
+        ylist = [];logo = 0
+        for pro in projects:
             logo += 1
             x=10;y=maxY-100;w=100;h=20;yserver = y - 20;xserver = x;xservice = x;maxXX = x;yls = [];colorDict = {}
-	    pservers = servers_p.filter(project = pro)
-	    c.setFont("Times-Roman", 12)
-	    c.drawCentredString(maxX/2,maxY-20,pro +" deployment")
+            pservers = servers_p.filter(project = pro)
+            c.setFont("Times-Roman", 12)
+            c.drawCentredString(maxX/2,maxY-20,pro +" deployment")
             c.setStrokeColor("black")
             c.setFillColor("white")
             c.rect(maxX-250,maxY-35,140,15,stroke=1,fill=1)
             c.setFillColor("black")
-	    c.drawString(maxX-247,maxY-30,"Server(ip)[cores-RAM-HD]")
+            c.drawString(maxX-247,maxY-30,"Server(ip)[cores-RAM-HD]")
             c.drawString(x+20,maxY-50,"IDC: " + pservers[0].idc)
-	    for s in pservers:
-	        wx = len(Server.objects.filter(physical_server_ip = s.physical_server_ip))
-	        if wx > 1:
-		    wx -= 1
-	        wserver = w*wx
-	        maxXX += wserver
-	        if maxXX > maxX - 10:
-		    xserver = x
-		    maxXX = wserver
-		    yserver = min(yls) - 1.5*h
-		    yls = []
-	        drawRect(c,'',"white",xserver,yserver,wserver,h)
-	        c.drawCentredString(xserver+wserver/2,yserver+h*4/7,s.name+'('+s.ip[8:]+')')
-	        c.drawCentredString(xserver+wserver/2,yserver+h*1/7,'['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+']')
-	        serviceServers = servers.filter(physical_server_ip = s.physical_server_ip).exclude(ip = s.physical_server_ip)
-	        if len(serviceServers) == 0:
-		    yservicea = yserver
-		    for ssss in services.filter(ip = s.ip):
-		        yservicea -= h
-		        yls.append(yservicea)
-		        drawRect(c,ssss.title,str(ssss.color),xserver,yservicea,w,h)
-		        if ssss.service_type not in colorDict:
-			    colorDict[ssss.service_type] = str(ssss.color)
-	        else:
-		    xxservice = xserver
-		    for ss in serviceServers:
-		        yservice = yserver - h
-		        services_s = services.filter(server_id = ss.server_id)
-		        drawRect(c,ss.name+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']','white',xxservice,yservice,w,h)
-		        for sss in services_s:
-			    wservices = w
-			    yservice -= h
-			    yls.append(yservice)
-			    drawRect(c,sss.title,str(sss.color),xxservice,yservice,wservices,h)
-			    if sss.service_type not in colorDict:
-			        colorDict[sss.service_type] = str(sss.color)
-		        xxservice += w
-	        xserver += wserver
-	        ylist += yls
+            for s in pservers:
+                wx = len(Server.objects.filter(physical_server_ip = s.physical_server_ip))
+                if wx > 1:
+                    wx -= 1
+                wserver = w*wx
+                maxXX += wserver
+                if maxXX > maxX - 10:
+                    xserver = x
+                    maxXX = wserver
+                    yserver = min(yls) - 1.5*h
+                    yls = []
+                drawRect(c,'',"white",xserver,yserver,wserver,h)
+                c.drawCentredString(xserver+wserver/2,yserver+h*4/7,s.name+'('+s.ip[8:]+')')
+                c.drawCentredString(xserver+wserver/2,yserver+h*1/7,'['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+']')
+                serviceServers = servers.filter(physical_server_ip = s.physical_server_ip).exclude(ip = s.physical_server_ip)
+                if len(serviceServers) == 0:
+                    yservicea = yserver
+                    for ssss in services.filter(ip = s.ip):
+                        yservicea -= h
+                        yls.append(yservicea)
+                        drawRect(c,ssss.title,str(ssss.color),xserver,yservicea,w,h)
+                        if ssss.service_type not in colorDict:
+                            colorDict[ssss.service_type] = str(ssss.color)
+                else:
+                    xxservice = xserver
+                    for ss in serviceServers:
+                        yservice = yserver - h
+                        services_s = services.filter(server_id = ss.server_id)
+                        drawRect(c,ss.name+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']','white',xxservice,yservice,w,h)
+                        for sss in services_s:
+                            wservices = w
+                            yservice -= h
+                            yls.append(yservice)
+                            drawRect(c,sss.title,str(sss.color),xxservice,yservice,wservices,h)
+                            if sss.service_type not in colorDict:
+                                colorDict[sss.service_type] = str(sss.color)
+                        xxservice += w
+                xserver += wserver
+                ylist += yls
 
-	    xp = maxX-250;yp=maxY-50;wp=70;hp=15;z=4;i=0
-	    for d in colorDict.keys():
-	        i += 1
-	        if i > z:
-		    z += 4
-		    yp = maxY-50
-		    xp += wp
-	        drawRect(c,d,colorDict[d],xp,yp,wp,hp)
-	        yp -= hp
+            xp = maxX-250;yp=maxY-50;wp=70;hp=15;z=4;i=0
+            for d in colorDict.keys():
+                i += 1
+                if i > z:
+                    z += 4
+                    yp = maxY - 50
+                    xp += wp
+                drawRect(c,d,colorDict[d],xp,yp,wp,hp)
+                yp -= hp
             if logo == len(projects):
                 c.setFillColor("black")
                 c.drawCentredString(maxX/2,5,r'(c) Mozat Pte Ltd. All rights reserved.')
-	    c.showPage()    
+            c.showPage()
         c.save()
         
         return temp,min(ylist)
