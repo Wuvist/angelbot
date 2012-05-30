@@ -309,7 +309,7 @@ def cmdbDeployment(request):
             if logo == len(projects):
                 c.setFillColor("black")
                 c.drawCentredString(maxX/2,5,r'(c) Mozat Pte Ltd. All rights reserved.')
-            c.showPage()
+            c.showPage()    
         c.save()
         
         return temp,min(ylist)
@@ -322,11 +322,12 @@ def cmdbDeployment(request):
     if len(projects) == 0:
         projects = servers.values_list("project",flat = True).annotate()
     temp = StringIO()
-    tmp,yy = main(x,y)
+    temp,yy = main(x,y)
     if yy < 0:
-        tmp,yy = main(x,-1*yy + y + 30)
+        temp.reset()
+        temp,yy = main(x,-1*yy + y + 30)
     
-    response = HttpResponse(tmp.getvalue())
+    response = HttpResponse(temp.getvalue())
     response["conten-type"] = "application/pdf"
     response["Content-Disposition"] = ("attachment;filename=mozat_deployment_%s.pdf" % time.strftime("%Y-%m-%d"))
     
