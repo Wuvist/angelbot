@@ -47,3 +47,31 @@ def getLoad(server_id):
     except:
         pass
     return load
+
+@register.filter(name='getLoadWeek')
+def getLoadWeek(server_id):
+    ''' get server current load and one week load'''
+    import rrdtool
+    try:
+        widget = Service.objects.get(server_id = server_id,title__contains = "perfmon")
+        rrdPath = s_service.objects.get(id = widget.service_id).rrd.path()
+    except:
+        return ""
+    
+    info = rrdtool.info(rrdPath)
+    last_update = str(info["last_update"])
+    current = rrdtool.fetch(rrdPath, "-s", last_update + "-604801", "-e", last_update, "LAST")
+    load = "";ls = [];loadAvg = ""
+    for i in range(len(current[1])):
+        if current[1][i] == "load":
+            load = current[2][-1][i]
+            for l in current[2]:
+                if l[i] != None and l[i] != "nan":ls.append(l[i])
+    if load == "nan":load = ""
+    try:
+        load = int(load)
+    except:
+        pass
+    if ls != []:
+        loadAvg = int(sum(ls)/len(ls))
+    return str(load)+"</td><td>"+str(loadAvg)

@@ -90,7 +90,7 @@ $(function(){
 	</style>
 	<h2>servers:</h2>
 	<table id="tb">
-		<tr role="head" ><th sort="true" style="width:20px" ><a href="#">id</a></th><th sort="true"><a href="#">ip</a></th><th sort="true" style="width:150px" ><a href="#">server name</a></th><th>IDC</th><th>project</th><th>physical_server</th><th>physical ip</th><th style="width:50px" >core</th><th style="width:50px" >ram</th><th>hard disk</th><th>system</th><th>function</th><th sort="true" ><a href="#">load</a></th><th sort="true" style="width:150px" ><a href="#">created on</a></th></tr>
+		<tr role="head" ><th sort="true" style="width:25px" ><a href="#">id</a></th><th sort="true"><a href="#">ip</a></th><th sort="true" style="width:150px" ><a href="#">server name</a></th><th>IDC</th><th>project</th><th>physical_server</th><th>physical ip</th><th style="width:50px" >core</th><th style="width:50px" >ram</th><th>hard disk</th><th>system</th><th>function</th><th sort="true" ><a href="#">load</a></th><th sort="true" ><a href="#">load week</a></th><th sort="true" style="width:150px" ><a href="#">created on</a></th></tr>
 		{% for s in servers %}
 		{% if forloop.counter0|tr_color %}
 		<tr class="row1">
@@ -120,7 +120,7 @@ $(function(){
 			{% else %}
 			APP
 			{% endif %}</td>
-			<td>{{ s.server_id|getLoad }}</td>
+			<td>{{ s.server_id|getLoadWeek|safe }}</td>
 			<td>{{ s.created_on|date:"Y-m-d H:i:s" }}</td>
 		</tr>
 		{% endfor %}
