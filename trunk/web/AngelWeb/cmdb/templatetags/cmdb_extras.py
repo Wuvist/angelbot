@@ -30,10 +30,10 @@ def getLoad(server_id):
     import rrdtool
     try:
         widget = Service.objects.get(server_id = server_id,title__contains = "perfmon")
+        rrdPath = s_service.objects.get(id = widget.service_id).rrd.path()
     except:
         return ""
     
-    rrdPath = s_service.objects.get(id = widget.service_id).rrd.path()
     info = rrdtool.info(rrdPath)
     last_update = str(info["last_update"])
     current = rrdtool.fetch(rrdPath, "-s", last_update + "-1", "-e", "s+0", "LAST")
