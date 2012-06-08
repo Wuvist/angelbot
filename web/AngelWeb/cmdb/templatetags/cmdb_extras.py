@@ -56,11 +56,11 @@ def getLoadWeek(server_id):
         widget = Service.objects.get(server_id = server_id,title__contains = "perfmon")
         rrdPath = s_service.objects.get(id = widget.service_id).rrd.path()
     except:
-        return ""
+        return "</td><td>"
     
     info = rrdtool.info(rrdPath)
     last_update = str(info["last_update"])
-    current = rrdtool.fetch(rrdPath, "-s", last_update + "-604801", "-e", last_update, "LAST")
+    current = rrdtool.fetch(rrdPath, "-s", last_update + "-604801", "-e", last_update + "-1", "LAST")
     load = "";ls = [];loadAvg = ""
     for i in range(len(current[1])):
         if current[1][i] == "load":
