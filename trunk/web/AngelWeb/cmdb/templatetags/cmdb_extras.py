@@ -42,5 +42,8 @@ def getLoad(server_id):
         if current[1][i] == "load":
             load = current[2][0][i]
     if load == "nan":load = ""
-    
+    try:
+        load = int(load)
+    except:
+        pass
     return load
