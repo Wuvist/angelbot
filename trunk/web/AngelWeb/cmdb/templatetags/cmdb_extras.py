@@ -29,8 +29,7 @@ def getLoad(server_id):
     ''' get server load'''
     import rrdtool
     try:
-        widget = Service.objects.get(server_id = server_id,title__contains = "perfmon")
-        rrdPath = s_service.objects.get(id = widget.service_id).rrd.path()
+        rrdPath = s_service.objects.get(server__id = server_id,category__title__contains = "Perfmon").rrd.path()
     except:
         return ""
     
@@ -53,20 +52,24 @@ def getLoadWeek(server_id):
     ''' get server current load and one week load'''
     import rrdtool
     try:
-        widget = Service.objects.get(server_id = server_id,title__contains = "perfmon")
-        rrdPath = s_service.objects.get(id = widget.service_id).rrd.path()
+        rrdPath = s_service.objects.get(server__id = server_id,category__title__contains = "Perfmon").rrd.path()
     except:
         return "</td><td>"
     
     info = rrdtool.info(rrdPath)
     last_update = str(info["last_update"])
-    current = rrdtool.fetch(rrdPath, "-s", last_update + "-604801", "-e", last_update + "-1", "LAST")
+    current = rrdtool.fetch(rrdPath, "-s", last_update + "-604801", "-e", last_update, "LAST")
     load = "";ls = [];loadAvg = ""
     for i in range(len(current[1])):
         if current[1][i] == "load":
             load = current[2][-1][i]
+            if load == None or load == "nan":
+                load = current[2][-2][i]
             for l in current[2]:
-                if l[i] != None and l[i] != "nan":ls.append(l[i])
+                try:
+                    ls.append(float(l[i]))
+                except:
+                    pass
     if load == "nan":load = ""
     try:
         load = int(load)
