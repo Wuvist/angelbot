@@ -90,7 +90,7 @@ $(function(){
 	</style>
 	<h2>servers:</h2>
 	<table id="tb">
-		<tr style="background:#f7f89a" role="head" ><th sort="true" style="width:25px" >id</th><th sort="true">ip></th><th sort="true" style="width:150px" >server name</th><th sort="true" >IDC</th><th sort="true" >project</th><th sort="true" >physical_server</th><th sort="true" >physical ip</th><th sort="true"  style="width:50px" >core</th><th sort="true"  style="width:50px" >ram</th><th sort="true" >hard disk</th><th sort="true" >system</th><th sort="true" >function</th><th sort="true" >load</th><th sort="true" >load week</th><th sort="true" style="width:150px" >created on</th></tr>
+		<tr style="background:#f7f89a" role="head" ><th sort="true" style="width:25px" >id</th><th sort="true">ip</th><th sort="true" style="width:150px" >server name</th><th sort="true" >IDC</th><th sort="true" >project</th><th sort="true" >physical_server</th><th sort="true" >physical ip</th><th sort="true"  style="width:50px" >core</th><th sort="true"  style="width:50px" >ram</th><th sort="true" >hard disk</th><th sort="true" >system</th><th sort="true" >function</th><th sort="true" >load</th><th sort="true" >load week</th><th sort="true" style="width:150px" >created on</th></tr>
 		{% for s in servers %}
 		{% if forloop.counter0|tr_color %}
 		<tr class="row1">
