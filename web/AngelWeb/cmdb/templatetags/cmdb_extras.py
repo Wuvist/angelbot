@@ -62,9 +62,9 @@ def getLoadWeek(server_id):
     load = "";ls = [];loadAvg = ""
     for i in range(len(current[1])):
         if current[1][i] == "load":
-            load = current[2][-1][i]
-            if load == None or load == "nan":
-                load = current[2][-2][i]
+            for l in current[2][-10:]:
+                if l[i] != None and l[i] != "nan":
+                    load = l[i]
             for l in current[2]:
                 try:
                     ls.append(float(l[i]))
@@ -76,5 +76,5 @@ def getLoadWeek(server_id):
     except:
         pass
     if ls != []:
-        loadAvg = int(sum(ls)/len(ls))
-    return str(load)+"</td><td>"+str(loadAvg)
+        loadAvg = str(sum(ls)/len(ls))[:5]
+    return str(load)+"</td><td>"+loadAvg
