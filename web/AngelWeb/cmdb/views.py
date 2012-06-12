@@ -221,22 +221,22 @@ def cmdbDeployment(request):
         c.rect(x,y,w,h,stroke=1,fill=1)
         if len(rectStr) <= 15:
             c.setFillColor("black")
-            c.setFont("Times-Roman", 10)
+            c.setFont("Helvetica", 10)
             c.drawCentredString(x+w/2,y+h/3,rectStr)
         elif 15 < len(rectStr) < 20:
             c.setFillColor("black")
-            c.setFont("Times-Roman", 8)
+            c.setFont("Helvetica", 8)
             c.drawCentredString(x+w/2,y+h/3,rectStr)
         elif len(rectStr) >= 20:
             if '[' in rectStr and ']' in rectStr:
                 c.setFillColor("black")
-                c.setFont("Times-Roman", 7)
+                c.setFont("Helvetica", 7)
                 t = c.beginText(x+10,y+2*h/3)
                 t.textLines(rectStr.split(";"))
                 c.drawText(t)
             else:
                 c.setFillColor("black")
-                c.setFont("Times-Roman", 7)
+                c.setFont("Helvetica", 7)
                 t = c.beginText(x+10,y+2*h/3)
                 t.textLines(rectStr.split("-"))
                 c.drawText(t)
@@ -249,11 +249,11 @@ def cmdbDeployment(request):
             logo += 1
             x=10;y=maxY-100;w=100;h=20;yserver = y - 20;xserver = x;xservice = x;maxXX = x;yls = [];colorDict = {}
             pservers = servers_p.filter(project = pro)
-            c.setFont("Times-Roman", 12)
+            c.setFont("Helvetica", 12)
             c.drawCentredString(maxX/2,maxY-20,pro +" deployment")
             c.setStrokeColor("black")
             c.setFillColor("white")
-            c.rect(maxX-250,maxY-35,140,15,stroke=1,fill=1)
+            c.rect(maxX-250,maxY-35,160,15,stroke=1,fill=1)
             c.setFillColor("black")
             c.drawString(maxX-247,maxY-30,"Server(ip)[cores-RAM-HD]")
             c.drawString(x+20,maxY-50,"IDC: " + pservers[0].idc)
@@ -274,7 +274,7 @@ def cmdbDeployment(request):
                 serviceServers = servers.filter(physical_server_ip = s.physical_server_ip).exclude(ip = s.physical_server_ip)
                 if len(serviceServers) == 0:
                     yservicea = yserver
-                    for ssss in services.filter(ip = s.ip):
+                    for ssss in services.filter(ip = s.ip).exclude(title__contains="perfmon"):
                         yservicea -= h
                         yls.append(yservicea)
                         drawRect(c,ssss.title,str(ssss.color),xserver,yservicea,w,h)
@@ -284,9 +284,8 @@ def cmdbDeployment(request):
                     xxservice = xserver
                     for ss in serviceServers:
                         yservice = yserver - h
-                        services_s = services.filter(server_id = ss.server_id)
                         drawRect(c,ss.name+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']','white',xxservice,yservice,w,h)
-                        for sss in services_s:
+                        for sss in services.filter(server_id = ss.server_id).exclude(title__contains="perfmon"):
                             wservices = w
                             yservice -= h
                             yls.append(yservice)
@@ -297,7 +296,7 @@ def cmdbDeployment(request):
                 xserver += wserver
                 ylist += yls
 
-            xp = maxX-250;yp=maxY-50;wp=70;hp=15;z=4;i=0
+            xp = maxX-250;yp=maxY-50;wp=80;hp=15;z=4;i=0
             for d in colorDict.keys():
                 i += 1
                 if i > z:
@@ -308,7 +307,7 @@ def cmdbDeployment(request):
                 yp -= hp
             if logo == len(projects):
                 c.setFillColor("black")
-                c.drawCentredString(maxX/2,5,r'(c) Mozat Pte Ltd. All rights reserved.')
+                c.drawCentredString(maxX/2,5,'(c) Mozat Pte Ltd. All rights reserved.')
             c.showPage()    
         c.save()
         

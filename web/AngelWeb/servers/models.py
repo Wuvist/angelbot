@@ -24,12 +24,10 @@ ALARM_TYPE_CHOICES = (
 )
 
 SERVICETYPE_COLOR_CHOICES = (
-    ('beige','beige'),('black','black'), ('brown', 'brown'),('blue', 'blue'),
-    ('darksalmon','darksalmon'),('darkseagreen','darkseagreen'),
-    ('darkslateblue','darkslateblue'),('green','green'),('red','red'),
-    ('tomato','tomato'),('transparent','transparent'),('turquoise','turquoise'),
-    ('violet','violet'),('wheat','wheat'),('whitesmoke','whitesmoke'),
-    ('yellow','yellow'),('yellowgreen','yellowgreen'),('pink', 'pink'),
+    ('antiquewhite','antiquewhite'),('blue','blue'),('brown','brown'),('coral','coral'),('gray','gray'),('green','green'),
+    ('lightblue','lightblue'),('lightcoral','lightcoral'),('lightcyan','lightcyan'),('lightgreen','lightgreen'),
+    ('lightgrey','lightgrey'),('lightpink','lightpink'),('lightskyblue','lightskyblue'),('lightyellow','lightyellow'),
+    ('orange','orange'),('orchid','orchid'),('red','red'),('teal','teal'),('yellow','yellow'),
 )
 
 # Create your models here.
