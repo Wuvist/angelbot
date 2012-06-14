@@ -214,6 +214,7 @@ def cmdbDeployment(request):
     from reportlab.pdfgen import canvas
     from reportlab.lib import colors
     import time
+    import re
     
     def drawRect(c,rectStr,color,x,y,w,h):
         c.setStrokeColor("black")
@@ -274,10 +275,10 @@ def cmdbDeployment(request):
                 serviceServers = servers.filter(physical_server_ip = s.physical_server_ip).exclude(ip = s.physical_server_ip)
                 if len(serviceServers) == 0:
                     yservicea = yserver
-                    for ssss in services.filter(ip = s.ip).exclude(title__contains="perfmon"):
+                    for ssss in services.filter(ip = s.ip).exclude(service_type__contains="IDC"):
                         yservicea -= h
                         yls.append(yservicea)
-                        drawRect(c,ssss.title,str(ssss.color),xserver,yservicea,w,h)
+                        drawRect(c,re.sub('\(\d+\.\d+\)','',ssss.title),str(ssss.color),xserver,yservicea,w,h)
                         if ssss.service_type not in colorDict:
                             colorDict[ssss.service_type] = str(ssss.color)
                 else:
@@ -285,11 +286,11 @@ def cmdbDeployment(request):
                     for ss in serviceServers:
                         yservice = yserver - h
                         drawRect(c,ss.name+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']','white',xxservice,yservice,w,h)
-                        for sss in services.filter(server_id = ss.server_id).exclude(title__contains="perfmon"):
+                        for sss in services.filter(server_id = ss.server_id).exclude(service_type__contains="IDC"):
                             wservices = w
                             yservice -= h
                             yls.append(yservice)
-                            drawRect(c,sss.title,str(sss.color),xxservice,yservice,wservices,h)
+                            drawRect(c,re.sub('\(\d+\.\d+\)','',sss.title),str(sss.color),xxservice,yservice,wservices,h)
                             if sss.service_type not in colorDict:
                                 colorDict[sss.service_type] = str(sss.color)
                         xxservice += w
