@@ -35,11 +35,10 @@ class execute(Resource):
         cmd = request.args["cmd"]
         server_info = {"host":host}
         try:
-            conn = MySQLdb.connect(host=dbHost, user=dbUser,passwd=dbPassword,port=int(dbPort))
+            conn = MySQLdb.connect(host=dbHost,user=dbUser,passwd=dbPassword,port=int(dbPort),db=dbName)
         except:
             return "unable to connect database."
         cursor = conn.cursor()
-        conn.select_db(dbName)
         cursor.execute("select username,password,server_type from servers_server where ip='%s'" % host)
         result = cursor.fetchone()
         conn.close()
