@@ -9,6 +9,7 @@ Copyright (c) 2010 . All rights reserved.
 
 from django.contrib import admin
 from AngelWeb.servers.models import *
+from django.forms import ModelForm, PasswordInput
 
 class WidgetAdmin(admin.ModelAdmin):
     list_display = ('title', 'rrd', 'category')
@@ -40,7 +41,20 @@ class ServicesTypeAdmin(admin.ModelAdmin):
     list_display = ('name', 'color')
     ordering = ('name',)
 
-admin.site.register(Server)
+class ServerServerForm(ModelForm):
+    class Meta:
+        model = Server
+        widgets = {
+            'password': PasswordInput(),
+        }
+
+class ServerServerAdmin(admin.ModelAdmin):
+    form = ServerServerForm
+    list_display = ('name', 'ip', 'idc')
+    search_fields = ('ip','name' )
+    ordering = ('name',)
+
+admin.site.register(Server,ServerServerAdmin)
 admin.site.register(CmdLog)
 admin.site.register(Cmd)
 admin.site.register(Rrd, RrdAdmin)

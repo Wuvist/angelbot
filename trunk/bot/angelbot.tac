@@ -6,10 +6,11 @@ angelbot.py
 Created by Wuvist on 2010-06-27.
 Copyright (c) 2010 __MyCompanyName__. All rights reserved.
 """
-import os
-import sys
+import MySQLdb
+import os,sys
 sys.path.append(os.path.abspath(os.path.curdir))
-
+sys.path.append("../web/AngelWeb/")
+import settings
 from twisted.web.resource import Resource
 from twisted.web import server, resource
 from twisted.internet import defer, protocol, reactor
@@ -18,6 +19,11 @@ from twisted.application import service, internet
 from hosts import logins
 
 RRD_PATH = '../rrds/'
+dbName = settings.DATABASE_NAME
+dbUser = settings.DATABASE_USER
+dbPassword = settings.DATABASE_PASSWORD
+dbHost = settings.DATABASE_HOST
+dbPort = settings.DATABASE_PORT
 
 class MyResource(Resource):
     def render_GET(self, request):
@@ -25,9 +31,24 @@ class MyResource(Resource):
 
 class execute(Resource):
     def render_GET(self, request):
-        server_name = request.args["server"][0]
+        host = request.args["host"][0]
         cmd = request.args["cmd"]
-        server_info = logins[server_name]
+        server_info = {"host":host}
+        try:
+            conn = MySQLdb.connect(host=dbHost, user=dbUser,passwd=dbPassword,port=int(dbPort))
+        except:
+            return "unable to connect database."
+        cursor = conn.cursor()
+        conn.select_db(dbName)
+        cursor.execute("select username,password,server_type from servers_server where ip='%s'" % host)
+        result = cursor.fetchone()
+        conn.close()
+        serverType = "windows"
+        if result[2] == "L":
+            serverType = "linux"
+        server_info["username"] = result[0]
+        server_info["password"] = result[1]
+        server_info["type"] = serverType
         request.setHeader("content-type", "text/plain")
         
         def cb(cmd, data):
