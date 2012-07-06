@@ -16,14 +16,15 @@ from twisted.web import server, resource
 from twisted.internet import defer, protocol, reactor
 from clients import ssh, telnet
 from twisted.application import service, internet
-from hosts import logins
+#from hosts import logins
 
 RRD_PATH = '../rrds/'
-dbName = settings.DATABASE_NAME
-dbUser = settings.DATABASE_USER
-dbPassword = settings.DATABASE_PASSWORD
-dbHost = settings.DATABASE_HOST
-dbPort = settings.DATABASE_PORT
+DBCONF = settings.DATABASES["default"]
+dbName = DBCONF["NAME"]
+dbUser = DBCONF["USER"]
+dbPassword = DBCONF["PASSWORD"]
+dbHost = DBCONF["HOST"]
+dbPort = DBCONF["PORT"]
 
 class MyResource(Resource):
     def render_GET(self, request):
