@@ -166,6 +166,16 @@ class WidgetServiceType(models.Model):
     class Meta:
         ordering = ["name"]
 
+class WidgetGrade(models.Model):
+    title = models.CharField(max_length=50)
+    remark = models.CharField(max_length=256, null = True, blank = True)
+    
+    def __unicode__(self):
+        return self.title
+    
+    class Meta:
+        ordering = ["title"]
+
 WIDGET_TYPE_CHOICES = (
     ('1', 'Show Current Value Only'),
     ('2', 'Show Current / Yesterday / Last Week Value'),
@@ -177,6 +187,7 @@ class Widget(models.Model):
     server = models.ForeignKey(Server, null = True, blank=True)
     rrd = models.ForeignKey(Rrd)
     category = models.ForeignKey(WidgetCategory)
+    grade = models.ForeignKey(WidgetGrade, null = True, blank=True)
     widget_type = models.CharField(max_length=1, choices=WIDGET_TYPE_CHOICES)
     project = models.ManyToManyField(Project)
     service_type = models.ForeignKey(WidgetServiceType, null = True, blank = True)
