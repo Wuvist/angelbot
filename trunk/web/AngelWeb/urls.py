@@ -41,5 +41,9 @@ urlpatterns = patterns('',
     (r'^cmdb/services/$', 'cmdb.views.show_services'),
     (r'^cmdb/updateservices/$', 'cmdb.views.syncdbservices'),
     (r'^cmdb/deployment/$', 'cmdb.views.cmdbDeployment'),
+    (r'^statistics/update/$', 'servers.viewstatistics.statistics_update'),
+    (r'^statistics/show/$', 'servers.viewstatistics.statistics_show'),
+    (r'^statistics/show/download/$', 'servers.viewstatistics.statistics_show_download'),
+    (r'^ticket/show/(\d+)$', 'servers.viewstatistics.ticket_show'),
     
 )

@@ -1,0 +1,129 @@
+{% extends "base_site.html" %}
+
+{% block content %}
+<!--<link rel="stylesheet" type="text/css" href="http://ticket.mozat.com/Content/Site.css" media="all"/>--!>
+<form action="" enctype="multipart/form-data" method="post">
+<table width = "1200" align="center" style = "border:1px solid #000 ;word-break:break-all">
+    <tr class="row-1" style="height:20px">
+    <td class = "category" width="20%" style="height:50px"> Ticket ID:</td>
+    <td width="30%">{{ticket.id}}</td>
+    <td class = "category"> Keyword:</td>
+    <td>{{ ticket.title }}</td>
+    </tr>
+    <tr class="row-2" style="height:30px">    
+     <td class = "category" style="height:50px"> Operator:</td>
+      <td>
+	{% for p in ticket.project.all %}
+	{{ p.name }},
+	{% endfor %}
+	</td> 
+      <td class = "category" style="height:50px"> Service:</td>
+     <td>{{ ticket.service.name }}</td>
+    </tr>
+    <tr class="row-1" style="height:30px">
+    <td class = "category" style="height:50px">Assign  To:</td>
+    <td>
+	{% if edit %}
+            <select class = "inputboxTwo" name="assto">
+            <option value="---">---</option>
+            {% for u in users %}
+              <option value="{{ u.id }}" {% if u == ticket.assignto %} selected="selected"{% endif %}>{{ u.username }}</option>  
+            {% endfor %}
+            </select>
+	{% else %}
+	{{ ticket.assignto }}
+	{% endif %}
+     </td>
+     <td class = "category">Status:</td>   
+     <td>
+	{% if edit %}
+     <select class = "inputboxTwo" name="status">
+     <option value="New" {% if ticket.status == "New" %}selected="selected"{% endif %}>New</option>
+     <option value="Processing" {% if ticket.status == "Processing" %}selected="selected"{% endif %}>Processing</option>
+     <option value="Closed" {% if ticket.status == "Closed" %}selected="selected"{% endif %}>Closed</option>
+     <option value="Done" {% if ticket.status == "Done" %}selected="selected"{% endif %}>Done</option>
+     </select>
+	{% else %}
+	{{ ticket.status }}
+	{% endif %}
+     </td>
+    </tr>
+    <tr class="row-2" style="height:50px">
+    <td>incident type</td>
+     <td>
+	{% if edit %}
+     <select class = "inputboxTwo" name="inctype">
+     <option value=>---</option>  
+     <option value="硬件" {% if ticket.incidenttype == "硬件" %}selected="selected"{% endif %}>硬件</option>
+     <option value="网络" {% if ticket.incidenttype == "网络" %}selected="selected"{% endif %}>网络</option>
+     <option value="负载" {% if ticket.incidenttype == "负载" %}selected="selected"{% endif %}>负载</option>
+     <option value="变更" {% if ticket.incidenttype == "变更" %}selected="selected"{% endif %}>变更</option>
+     <option value="接口" {% if ticket.incidenttype == "接口" %}selected="selected"{% endif %}>接口</option>
+     <option value="缺陷" {% if ticket.incidenttype == "缺陷" %}selected="selected"{% endif %}>缺陷</option>
+     <option value="误告警" {% if ticket.incidenttype == "误告警" %}selected="selected"{% endif %}>误告警</option>
+     <option value="其它" {% if ticket.incidenttype == "其它" %}selected="selected"{% endif %}>其它</option>
+     </select>
+	{% else %}
+	{{ ticket.incidenttype }}
+	{% endif %}
+    </td>
+    <td class = "category"> Incident:</td>
+    <td>{{ ticket.incident }}</td>
+    </tr>
+    <tr class="row-2">
+    <td class = "category" style="height:30px">Start Time:</td>
+    <td>{{ ticket.starttime|date:"Y-m-d H:i:s" }}</td>
+    <td class = "category">Last Update:</td>
+    <td>{{ ticket.lastupdate|date:"Y-m-d H:i:s" }}</td>
+    </tr>
+	{% if edit %}
+    <tr style="height:160px">
+    <td class = "category">Action Taken:</td>
+    <td colspan = "3"><textarea class = "inputboxThree" name="addaction" cols="40" rows="7"></textarea>
+    <input type="hidden" name="id" value="{{ ticket.id }}">
+    <input class = "inputbuttonTwo" type="submit"  value = "Update Ticket"  /></td>
+    </tr>
+	{% endif %}
+</table>
+</form>
+
+<form action="" method="post">
+<table width = "1200" align="center" style = "border:1px solid #000 ;word-break:break-all">
+    <tr style="height:160px">
+    <td class = "category">Add Comment:</td>
+    <td colspan = "3"><textarea class = "inputboxThree" name="addcomment" cols="40" rows="7"></textarea>
+    <input type="hidden" name="id" value="{{ ticket.id }}">
+    <input class = "inputbuttonTwo" type="submit"  value = "Add comment"  /></td>
+      </tr>
+     </table>
+</form>
+
+<table width = "1200" align="center" style = "border:1px solid #000 ;word-break:break-all">
+        <tr class="index">
+         <td colspan = "5">Comments </td>
+         </tr>
+         <tr>
+         <td width = "15%" class = "category">Username </td>
+         <td class = "category">Type </td>
+         <td class = "category">Remark </td>
+         <td class = "category"  width = "15%">Create time</td>
+         </tr>
+        {% for a in ticket.action.all %}
+        <tr class="row-1">
+            <td class = "category" style="height:70px">{{ a.user.username }}</td>
+            <td class = "category" style="height:70px">{{ a.actiontype }}</td>
+            <td>{{ a.action }}</td>
+            <td class = "category">{{ a.created_on|date:"Y-m-d H:i:s" }}</td>
+        </tr> 
+        {% endfor%}
+     
+</table>
+
+<table width = "1200" align="center" style = "border:1px solid #000 ;word-break:break-all;overflow-x:hidden;" >
+    <tr class="index"><td colspan = "5">History</td></tr>
+    <tr class="row-2"><td class = "category">Sequence Number</td><td>user</td><td>Record</td><td class = "category">Operator Time</td></tr>
+    {% for h in ticket.history.all %}
+    <tr class="row-1"><td class = "category">{{ forloop.counter }}</td><td>{{ h.user.username }}</td><td>{{ h.content|safe  }}</td><td class = "category">{{ h.created_on|date:"Y-m-d H:i:s" }}</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}

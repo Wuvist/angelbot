@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib import admin
@@ -203,6 +204,15 @@ class Widget(models.Model):
     class Meta:
         ordering = ["title"]
 
+class StatisticsDay(models.Model):
+    widget = models.ForeignKey(Widget)
+    content = models.TextField(max_length = 10240,null = True, blank = True)
+    remark = models.CharField(max_length=256, null = True, blank = True)
+    date = models.DateField()
+    
+    def __unicode__(self):
+        return self.widget.title
+
 class AlarmUser(models.Model):
     name = models.CharField(max_length=50)
     phone = models.CharField(max_length=50)
@@ -330,3 +340,59 @@ class DashboardError(models.Model):
     
     class Meta:
         ordering = ["title"]
+
+TICKET_ACTION_CHOICES = (
+    ('action', 'action'),
+    ('comment', 'comment'),
+)
+
+class TicketAction(models.Model):
+    user = models.ForeignKey(User)
+    actiontype = models.CharField(max_length=20, choices=TICKET_ACTION_CHOICES)
+    action = models.TextField(null = True, blank = True)
+    created_on = models.DateTimeField(auto_now_add = True)
+    
+    def __unicode__(self):
+        return self.action
+    
+    class Meta:
+        ordering = ["-created_on"]
+    
+class TicketHistory(models.Model):
+    user = models.ForeignKey(User)
+    content = models.TextField(null = True, blank = True)
+    created_on = models.DateTimeField(auto_now_add = True)
+    
+    def __unicode__(self):
+        return self.content
+
+    class Meta:
+        ordering = ["-created_on"]
+
+TICKET_STATUS_CHOICES = (
+    ('New', 'New'),
+    ('Processing', 'Processing'),
+    ('Closed','Closed'),
+    ('Done','Done'),
+)
+
+class Ticket(models.Model):
+    title = models.CharField(max_length=200)
+    assignto = models.ForeignKey(User, null = True, blank = True, related_name = 'Ticket_assignto_set')
+    recorder = models.ForeignKey(User, related_name = 'Ticket_recorder_set')
+    service = models.ForeignKey(WidgetServiceType)
+    status = models.CharField(max_length=20, choices=TICKET_STATUS_CHOICES)
+    incident = models.TextField(null = True, blank = True)
+    incidenttype = models.CharField(max_length=20,null = True, blank = True)
+    project = models.ManyToManyField(Project, null = True, blank = True)
+    action = models.ManyToManyField(TicketAction,null = True, blank = True)
+    history = models.ManyToManyField(TicketHistory,null = True, blank = True)
+    starttime = models.DateTimeField(auto_now_add = True)
+    lastupdate = models.DateTimeField(auto_now = True)
+    
+    def __unicode__(self):
+        return self.title
+    
+    class Meta:
+        ordering = ["title"]
+

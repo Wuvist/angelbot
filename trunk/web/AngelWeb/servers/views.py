@@ -1052,28 +1052,24 @@ def graph_aiders(request,aiderid):
 
 def alarm(request):
     import time
-    
+    from django.contrib.auth.models import User
     contact_users = {1:"firstcontact",2:"secondcontact",3:"thirdcontact",4:"fourthcontact",5:"fifthcontact",6:"sixthcontact"}
-    def createTicket(subject,result,users,assign="no"):
-        import pyodbc
+    def createTicket(errorType,widget,result,users,assign="no"):
         
         timeNow = '\''+str(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()))+'\''
         ticketId = ""
-        ticketValues = ('\''+subject+'\'',"'mo'","'angel'","'angel'",'\''+str(result)+'\'',timeNow,timeNow,timeNow)
-        host = settings.TICKET_DATABASE_HOST
-        port = settings.TICKET_DATABASE_PORT
-        databaseName = settings.TICKET_DATABASE_NAME
-        userName = settings.TICKET_DATABASE_USERNAME
-        passWord = settings.TICKET_DATABASE_PASSWORD
         try:
-            cnxn = pyodbc.connect("DRIVER={FreeTDS};SERVER="+host+";PORT="+port+";DATABASE="+databaseName+";UID="+userName+";PWD="+passWord)
-            cursor = cnxn.cursor()
-            sql = "insert into mo_ticket(keyword,ticket_type,username,update_unername,incident,time,create_on,modified_on) values(%s, %s, %s, %s, %s, %s, %s, %s)" % ticketValues
-            cursor.execute(sql)
-            cnxn.commit()
-            ticketId = cursor.execute("select top 1 id from mo_ticket order by id desc").fetchone()[0]
-            cursor.close()
-            cnxn.close()
+            ticket = Ticket()
+            ticket.service = widget.service_type
+            ticket.title = errorType + str(widget.title)
+            ticket.recorder = User.objects.get(username="angel")
+            ticket.status = "New"
+            ticket.incident = result
+            ticket.incidenttype = "---"
+            ticket.save()
+            for i in widget.project.all():
+                ticket.project.add(i)
+            ticketId = Ticket.objects.all().order_by("-id")[0].id
             result = ""
             contactReault = "suc"
         except:
@@ -1220,7 +1216,7 @@ def alarm(request):
                         assign = eval(alarmDataDef[i])["assign"]
                     except:
                         assign = "no"
-                    ticketId,resultAlarm,contactReault = createTicket("[long_time]"+str(widget.title),result,contactUsers,assign)
+                    ticketId,resultAlarm,contactReault = createTicket("[long_time]",widget,result,contactUsers,assign)
                 if "email" in alarmMode:
                     resultAlarm,contactReault = sendMail(contactUsers,widget.title,result,ticketId)
                 if "sms" in alarmMode:
@@ -1291,7 +1287,7 @@ def alarm(request):
                     assign = eval(alarmDataDef[alarmLevel])["assign"]
                 except:
                     assign = "no"
-                ticketId,resultAlarm,contactReault = createTicket("[frequent]"+str(widget.title),result,contactUsers,assign)
+                ticketId,resultAlarm,contactReault = createTicket("[frequent]",widget,result,contactUsers,assign)
                 frequentAlarmLog = saveFrequentLog(frequentAlarmLog,alarmLevel,alarmMode,ticketId,contactReault,result,contactUsers)
             if "email" in str(alarmMode):
                 resultAlarm,contactReault = sendMail(contactUsers,widget.title,result,frequentAlarmLog.ticketid)
