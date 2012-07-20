@@ -54,6 +54,9 @@ class ServerServerAdmin(admin.ModelAdmin):
     search_fields = ('ip','name' )
     ordering = ('name',)
 
+class StatisticsDayAdmin(admin.ModelAdmin):
+    list_display = ('widget', 'date')
+    ordering = ('-date',)
 admin.site.register(Server,ServerServerAdmin)
 admin.site.register(CmdLog)
 admin.site.register(Cmd)
@@ -75,3 +78,7 @@ admin.site.register(IDC)
 admin.site.register(ServiceType,ServicesTypeAdmin)
 admin.site.register(WidgetServiceType)
 admin.site.register(WidgetGrade)
+admin.site.register(StatisticsDay,StatisticsDayAdmin)
+admin.site.register(Ticket)
+admin.site.register(TicketAction)
+admin.site.register(TicketHistory)

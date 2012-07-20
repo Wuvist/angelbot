@@ -1,0 +1,67 @@
+{% extends "base_site.html" %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="/media/css/forms.css" />
+<!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="/media/css/ie.css" /><![endif]-->
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="/media/js/core.js"></script>
+<script type="text/javascript" src="/media/js/calendar.js"></script>
+<script type="text/javascript" src="/media/js/admin/DateTimeShortcuts.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+
+<form action="" method="GET">
+	{{ warn|safe }}
+	<h class="datetime">Start Date: <input name="start" value="{{ start }}" class="vDateField" type="text" id="id_date_start" size="10" >
+	&nbsp; &nbsp;
+	<h class="datetime">End &nbsp;Date: <input name="end" value="{{ end }}" class="vDateField" type="text" id="id_date_end" size="10" />
+	<input type="submit" value = "Show Date" id = "showDate" />
+</form>
+<br><br>
+<style>
+	th {width:100px;}
+	</style>
+<h2>1,项目运行情况</h2>
+<table>
+<tr>
+<th>指标名称</th><th>中断时长</th><th>可用性</th><th>原因</th>
+</tr>
+{% for s in sla %}
+<tr>
+<td>{{ s.p }}</td><td>{{ s.badTime }}</td><td>{{ s.keyong }}</td><td></td>
+</tr>
+{% endfor %}
+</table>
+<h2>2,故障解决时间&nbsp;&nbsp; <a href="/statistics/show/download/?start={{ start }}&end={{ end }}">下载故障详情</a></h2>
+<table>
+<tr>
+<th></th><th></th><th>重大故障</th><th></th><th></th><th>严重故障</th><th></th><th></th><th>一般故障</th></tr>
+<tr><td>指标名称</td><td>各服务故障次数</td><td>平均解决时间</td><td>及时率</td><td>各服务故障次数</td><td>平均解决时间</td><td>及时率</td><td>各服务故障次数</td><td>平均解决时间</td><td>及时率</td></tr>
+{% for s in errors %}
+<tr>
+<td>{{ s.p }}</td><td>{{ s.grade.serious.error_times }}</td><td>{{ s.grade.serious.solveTimeAvg }}</td><td></td>
+		<td>{{ s.grade.major.error_times }}</td><td>{{ s.grade.major.solveTimeAvg }}</td><td></td>
+		<td>{{ s.grade.minor.error_times }}</td><td>{{ s.grade.minor.solveTimeAvg }}</td><td></td>
+</tr>
+{% endfor %}
+</table>
+
+<h2>3,top10异常服务<h2>
+<table>
+<th>序号</th><th>项目</th><th>服务</th><th>故障次数</th>
+{% for e in toperror %}
+<tr>
+<td>{{ forloop.counter }}</td><td>{{ e.project }}</td><td>{{ e.service }}</td><td>{{ e.error_times }}</td>
+</tr>
+{% endfor %}
+</table>
+
+
+
+
+
+
+
+
+
+
+{% endblock %}
