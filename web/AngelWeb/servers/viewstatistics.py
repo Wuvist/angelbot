@@ -178,7 +178,6 @@ def statistics_update(request):
                     dt,data = operation(self.widget,self.startTamp,self.startTamp+86400,"login","homepage")
                     getwidgeterrortimes(self.widget,dt,data,self.startTamp)
                 except:
-                    raise
                     pass
         mythr = []
         for w in widgets:
@@ -224,7 +223,7 @@ def statistics_show_download(request):
     start = time.strftime("%Y-%m-%d",time.localtime(startTamp))
     widgets = Widget.objects.all()
     statisticsDay = StatisticsDay.objects.filter(date__gte = start,date__lte=end)
-    projects = ["shabik360","voda","zoota_vivas"];result = ["编号,项目,级别,报错widget,字段,开始时间,结束时间,解决办法"]
+    projects = ["shabik360","voda","zoota_vivas"];result = [u"编号,项目,级别,服务大类,服务小类,报错widget,字段,开始时间,结束时间,解决办法"]
     x = 1
     for p in projects:
         grade = ["serious","major","minor"];ls = []
@@ -240,6 +239,8 @@ def statistics_show_download(request):
                                 tmp = [str(x)]
                                 tmp.append(p)
                                 tmp.append(g)
+                                tmp.append(str(i.widget.service_type.type.name))
+                                tmp.append(str(i.widget.service_type.name))
                                 tmp.append(str(i.widget.title))
                                 tmp.append(k.split("_in")[0])
                                 tmp+=data[k][l:l+2]
@@ -302,18 +303,18 @@ def statistics_show(request):
                         if k.endswith("error_interval_times"):
                             error_times.append(data[k])
                         elif k.endswith("error_interval_avg"):
-                            if data[k] != 0:
+                            if int(data[k]) != 0:
                                 solveTime.append(data[k])
                 except:
                      pass
             if solveTime != []:
-               solveTimeAvg = float(sum(solveTime))/len(solveTime)
+               solveTimeAvg = sum(solveTime)/len(solveTime)
             tmp["error_times"] = sum(error_times)
-            tmp["solveTimeAvg"] = str(solveTimeAvg)[:5]
+            tmp["solveTimeAvg"] = str(solveTimeAvg)
             tmpgrade[g] = tmp
         tmppro["grade"] = tmpgrade
         errors.append(tmppro)
-    serviceType = WidgetServiceType.objects.all()
+    serviceType = WidgetServiceType.objects.all().exclude(name="others")
     for p in projects:
         for s in serviceType:
             dt = {"project":p,"service":s.name}
@@ -324,11 +325,11 @@ def statistics_show(request):
                 try:
                     data = eval(i.content)
                     for k in data.keys():
-                        if k.endswith("error_times"):
+                        if k.endswith("error_interval_times"):
                             error_times += data[k]
                 except:
                     pass
-            dt["error_times"] = error_times
+            dt["error_times"] = int(error_times)
             toperror.append(dt)
     toperror = sorted(toperror,key=lambda l:l["error_times"],reverse = True)
     c = RequestContext(request,{
