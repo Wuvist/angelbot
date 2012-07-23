@@ -76,7 +76,7 @@ def statistics_update(request):
     def operation(widget,startTamp,endTamp,*kw):
         data = rrdtool.fetch(widget.rrd.path(), "-s", str(startTamp), "-e",str(endTamp), "LAST")
         dt = {}
-        data_def = eval(widget.data_def)
+        data_def = eval(widget.data_def.replace("\r","").replace("\n",""))
         for i in range(len(data[1])):
             if data[1][i] in data_def.keys():
                 dt[data[1][i]] = [i,data_def[data[1][i]]]
