@@ -51,7 +51,7 @@
 						{% endif %}
 						{% endif %}
 				</td>
-				<td>{{ alarmlog.ticketid }}</td>
+				<td><a href="/ticket/show/{{ alarmlog.ticketid }}" >{{ alarmlog.ticketid }}</a></td>
 				<td>{% if alarmlog.overdue == "1" %}Not{% else %}<div style="background-color:#9AFF02;" >Yes</div>{% endif %}</td>
 				<td>
 						{% if alarmlog.contact_result == "fail" %}
