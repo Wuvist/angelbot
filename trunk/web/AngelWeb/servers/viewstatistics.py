@@ -34,9 +34,9 @@ def ticket_show(request,ticketID):
         log.save()
         ticket.history.add(log)
     elif request.POST.has_key("addaction"):
-        his = "";assto = int(request.POST["assto"]);status = request.POST["status"]
+        his = "";status = request.POST["status"]
         inctype = request.POST["inctype"];addaction =  request.POST["addaction"]
-        if assto != ticket.assignto.id:
+        if request.POST["assto"].isdigit() and int(request.POST["assto"]) != ticket.assignto.id:
             his += "Assign to: "+ticket.assignto.username+" --->"+users.get(id=assto).username+"<br>\n"
             ticket.assignto = users.get(id=assto)
             ticket.save()
