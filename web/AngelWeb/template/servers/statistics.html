@@ -18,5 +18,8 @@
 </form>
 <br><br>
 <li>start: {{ mystart }}</li><br>
-<li>end: {{ myend }}</li>
+<li>end: {{ myend }}</li><br>
+{% for d in parseDays %}
+{{ d.date|date:"Y-m-d" }} &nbsp;
+{% endfor %}
 {% endblock %}

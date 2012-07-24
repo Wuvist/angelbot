@@ -198,16 +198,19 @@ def statistics_update(request):
     start = time.strftime("%Y-%m-%d",time.localtime(startTamp))
     widgets = Widget.objects.all()
     mystart = time.strftime("%Y-%m-%d %H:%M:%S")
-    while startTamp < endTamp:
-        for i in range(0,len(widgets),10):
-            parsewidget(widgets[i:i+10],startTamp)
-        startTamp += 86400
+    if request.GET.has_key("end"):
+        while startTamp < endTamp:
+            for i in range(0,len(widgets),10):
+                parsewidget(widgets[i:i+10],startTamp)
+            startTamp += 86400
+    
     myend = time.strftime("%Y-%m-%d %H:%M:%S")
     c = RequestContext(request,{
         "start":start,
         "end":end,
         "mystart":mystart,
         "myend":myend,
+        "parseDays":StatisticsDay.objects.values("date").order_by("-date").annotate(),
     })
     return render_to_response('servers/statistics.html',c)
 
@@ -223,7 +226,7 @@ def statistics_show_download(request):
     start = time.strftime("%Y-%m-%d",time.localtime(startTamp))
     widgets = Widget.objects.all()
     statisticsDay = StatisticsDay.objects.filter(date__gte = start,date__lte=end)
-    projects = ["shabik360","voda","zoota_vivas"];result = [u"编号,项目,级别,服务大类,服务小类,报错widget,字段,开始时间,结束时间,解决办法"]
+    projects = ["shabik360","voda","zoota_vivas"];result = [u"编号,项目,级别,服务大类,服务小类,报错widget,字段,开始时间,结束时间,时长(分钟),解决办法"]
     x = 1
     for p in projects:
         grade = ["serious","major","minor"];ls = []
@@ -244,6 +247,7 @@ def statistics_show_download(request):
                                 tmp.append(str(i.widget.title))
                                 tmp.append(k.split("_in")[0])
                                 tmp+=data[k][l:l+2]
+                                tmp.append((time.mktime(time.strptime(data[k][l:l+2][1],"%Y-%m-%d %H:%M"))-time.mktime(time.strptime(data[k][l:l+2][0],"%Y-%m-%d %H%M")))/60)
                                 ls.append(",".join(tmp))
                                 x += 1
                 except:
@@ -309,8 +313,8 @@ def statistics_show(request):
                      pass
             if solveTime != []:
                solveTimeAvg = sum(solveTime)/len(solveTime)
-            tmp["error_times"] = sum(error_times)
-            tmp["solveTimeAvg"] = str(solveTimeAvg)
+            tmp["error_times"] = int(sum(error_times))
+            tmp["solveTimeAvg"] = int(solveTimeAvg)
             tmpgrade[g] = tmp
         tmppro["grade"] = tmpgrade
         errors.append(tmppro)
