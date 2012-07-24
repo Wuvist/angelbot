@@ -7,6 +7,13 @@ from django.http import HttpResponse, HttpResponseRedirect
 from servers.models import *
 from django.conf import settings
 
+def ticket(request):
+    c = RequestContext(request,{
+        "tickets":Ticket.objects.all().order_by("-id"),
+        
+    })
+    return render_to_response("servers/ticket.html",c)
+    
 def ticket_show(request,ticketID):
     ticket = get_object_or_404(Ticket,id = ticketID)
     users = User.objects.filter(is_staff=True).order_by("username")
@@ -64,8 +71,7 @@ def ticket_show(request,ticketID):
         "users":users,
         
     })
-    return render_to_response("servers/ticket.html",c)
-
+    return render_to_response("servers/ticket_show.html",c)
 
 
 def statistics_update(request):
@@ -247,7 +253,7 @@ def statistics_show_download(request):
                                 tmp.append(str(i.widget.title))
                                 tmp.append(k.split("_in")[0])
                                 tmp+=data[k][l:l+2]
-                                tmp.append(str((time.mktime(time.strptime(data[k][l:l+2][1],"%Y-%m-%d %H:%M"))-time.mktime(time.strptime(data[k][l:l+2][0],"%Y-%m-%d %H%M")))/60))
+                                tmp.append(str((time.mktime(time.strptime(data[k][l:l+2][1],"%Y-%m-%d %H:%M:%S"))-time.mktime(time.strptime(data[k][l:l+2][0],"%Y-%m-%d %H:%M:%S")))/60))
                                 ls.append(",".join(tmp))
                                 x += 1
                 except:
