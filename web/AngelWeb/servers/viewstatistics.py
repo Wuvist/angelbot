@@ -247,7 +247,7 @@ def statistics_show_download(request):
                                 tmp.append(str(i.widget.title))
                                 tmp.append(k.split("_in")[0])
                                 tmp+=data[k][l:l+2]
-                                tmp.append((time.mktime(time.strptime(data[k][l:l+2][1],"%Y-%m-%d %H:%M"))-time.mktime(time.strptime(data[k][l:l+2][0],"%Y-%m-%d %H%M")))/60)
+                                tmp.append(str((time.mktime(time.strptime(data[k][l:l+2][1],"%Y-%m-%d %H:%M"))-time.mktime(time.strptime(data[k][l:l+2][0],"%Y-%m-%d %H%M")))/60))
                                 ls.append(",".join(tmp))
                                 x += 1
                 except:
