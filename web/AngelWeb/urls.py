@@ -44,6 +44,7 @@ urlpatterns = patterns('',
     (r'^statistics/update/$', 'servers.viewstatistics.statistics_update'),
     (r'^statistics/show/$', 'servers.viewstatistics.statistics_show'),
     (r'^statistics/show/download/$', 'servers.viewstatistics.statistics_show_download'),
+    (r'^ticket/$', 'servers.viewstatistics.ticket'),
     (r'^ticket/show/(\d+)$', 'servers.viewstatistics.ticket_show'),
     
 )
