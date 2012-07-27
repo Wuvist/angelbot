@@ -378,6 +378,7 @@ TICKET_STATUS_CHOICES = (
 
 class Ticket(models.Model):
     title = models.CharField(max_length=200)
+    widget = models.ForeignKey(Widget, null = True, blank = True)
     assignto = models.ForeignKey(User, null = True, blank = True, related_name = 'Ticket_assignto_set')
     recorder = models.ForeignKey(User, related_name = 'Ticket_recorder_set')
     service = models.ForeignKey(WidgetServiceType)

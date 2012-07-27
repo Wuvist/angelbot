@@ -19,7 +19,7 @@
 <br><br>
 <style>
 	th {width:100px;}
-	</style>
+</style>
 <h2>1,项目运行情况</h2>
 <table>
 <tr>
@@ -35,7 +35,7 @@
 <table>
 <tr>
 <th></th><th></th><th>重大故障</th><th></th><th></th><th>严重故障</th><th></th><th></th><th>一般故障</th></tr>
-<tr><td>指标名称</td><td>各服务故障次数</td><td>平均解决时间</td><td>及时率</td><td>各服务故障次数</td><td>平均解决时间</td><td>及时率</td><td>各服务故障次数</td><td>平均解决时间</td><td>及时率</td></tr>
+<tr><td>指标名称</td><td>各服务故障次数</td><td>平均解决时间(分钟)</td><td>及时率</td><td>各服务故障次数</td><td>平均解决时间(分钟)</td><td>及时率</td><td>各服务故障次数</td><td>平均解决时间(分钟)</td><td>及时率</td></tr>
 {% for s in errors %}
 <tr>
 <td>{{ s.p }}</td><td>{{ s.grade.serious.error_times }}</td><td>{{ s.grade.serious.solveTimeAvg }}</td><td></td>
@@ -45,7 +45,34 @@
 {% endfor %}
 </table>
 
-<h2>3,top10异常服务<h2>
+<h2>3,故障分析<h2>
+<!--<table>
+<tr><th>STC</th>
+<th>
+--!>
+<table><th>项目</th><th>故障类型</th><th>重大故障</th><th>严重故障</th><th>一般故障</th><th>小计</th><th>故障类型比例%</th>
+	{% for i in stc_incidents %}
+	<tr>
+	<td>{% if forloop.last %} STC {% endif %}</td><td>{{ i.incidenttype }}</td><td>{{ i.serious }}</td><td>{{ i.major }}</td><td>{{ i.minor }}</td><td>{{ i.subtotal }}</td><td>{{ i.rate }}%</td>
+	</tr>
+	{% endfor %}
+	{% for i in voda_incidents %}
+	<tr>
+	<td>{% if forloop.last %} voda {% endif %}</td><td>{{ i.incidenttype }}</td><td>{{ i.serious }}</td><td>{{ i.major }}</td><td>{{ i.minor }}</td><td>{{ i.subtotal }}</td><td>{{ i.rate }}%</td>
+	</tr>
+	{% endfor %}
+	{% for i in zoota_incidents %}
+	<tr>
+	<td>{% if forloop.last %} zoota_vivas {% endif %}</td><td>{{ i.incidenttype }}</td><td>{{ i.serious }}</td><td>{{ i.major }}</td><td>{{ i.minor }}</td><td>{{ i.subtotal }}</td><td>{{ i.rate }}%</td>
+	</tr>
+	{% endfor %}
+</table>
+<!--
+</th>
+</tr>
+</table>
+--!>
+<h2>4,top10异常服务<h2>
 <table>
 <th>序号</th><th>项目</th><th>服务</th><th>故障次数</th>
 {% for e in toperror %}

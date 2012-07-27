@@ -132,7 +132,7 @@ th {width:100px;}
 {% if dashboard.des %}
 	<div class="system-message">{{ dashboard.des|safe }}</div>
 {% endif %}
-
+<h2>All ticket status: {% for t in ticket %}{{ t.status }}:{{ t.count }}&nbsp;{% endfor %}</h2>
 {% regroup dashboard.widget_set.all|dictsort:"category.title" by category as widgets %}
 	
 {% for category in widgets %}
