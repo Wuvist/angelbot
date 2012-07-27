@@ -235,7 +235,7 @@ def statistics_show_download(request):
     start = time.strftime("%Y-%m-%d",time.localtime(startTamp))
     widgets = Widget.objects.all()
     statisticsDay = StatisticsDay.objects.filter(date__gte = start,date__lte=end)
-    projects = ["stc","voda","zoota_vivas","fast_50","mozat"];result = [u"编号,项目,级别,服务大类,服务小类,报错widget,字段,开始时间,结束时间,时长(分钟),解决办法".encode("utf-8")]
+    projects = ["stc","voda","zoota_vivas","fast_50","mozat"];result = [u"编号,项目,级别,服务大类,服务小类,报错widget,字段,开始时间,结束时间,时长(分钟),解决办法".encode("gbk")]
     x = 1
     for p in projects:
         grade = ["serious","major","minor"];ls = []
