@@ -235,7 +235,7 @@ def statistics_show_download(request):
     start = time.strftime("%Y-%m-%d",time.localtime(startTamp))
     widgets = Widget.objects.all()
     statisticsDay = StatisticsDay.objects.filter(date__gte = start,date__lte=end)
-    projects = ["shabik360","voda","zoota_vivas"];result = [u"编号,项目,级别,服务大类,服务小类,报错widget,字段,开始时间,结束时间,时长(分钟),解决办法"]
+    projects = ["stc","voda","zoota_vivas","fast_50","mozat"];result = [u"编号,项目,级别,服务大类,服务小类,报错widget,字段,开始时间,结束时间,时长(分钟),解决办法".encode("utf-8")]
     x = 1
     for p in projects:
         grade = ["serious","major","minor"];ls = []
@@ -304,7 +304,7 @@ def statistics_show(request):
             incident["subtotal"] = incident_total
             incident["rate"] = int(float(incident_total)/total*100)
             if i == "---":
-                incident["incidenttype"] == "未定义"
+                incident["incidenttype"] = "未定义"
             else:
                 incident["incidenttype"] = i
             incidents.append(incident)
@@ -323,7 +323,7 @@ def statistics_show(request):
     start = time.strftime("%Y-%m-%d",time.localtime(startTamp))
     widgets = Widget.objects.all()
     statisticsDay = StatisticsDay.objects.filter(date__gte = start,date__lte=end)
-    projects = ["shabik360","voda","zoota_vivas"];sla=[];errors=[];toperror=[]
+    projects = ["stc","voda","zoota_vivas","fast_50","mozat"];sla=[];errors=[];toperror=[]
     for p in projects:
         tmp = {"p":p}
         wgls = widgets.filter(project__name=p,service_type__name="sla")

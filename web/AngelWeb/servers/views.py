@@ -51,7 +51,6 @@ def dashboard_show(request, dashboard_id):
         "alarmlogs":alarmlogs,
         "showAlarms":showAlarms,
         "frequentAlarmLogs":frequentAlarmLogs,
-        "ticket":Ticket.objects.values("status").annotate(count=Count("status"))
         })
     return render_to_response('servers/show_dashboard.html',c)
 
