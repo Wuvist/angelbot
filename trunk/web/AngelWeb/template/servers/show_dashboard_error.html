@@ -4,7 +4,7 @@
 {% block content %}
 
 {% if dashboard.des %}
-       <div class="system-message">{{ dashboard.des|safe }} <p style="padding:0;margin:0;text-align:right">All ticket status: {% for t in ticket %}{{ t.status }}:{{ t.count }}&nbsp;{% endfor %}</p> </div>
+       <div class="system-message">{{ dashboard.des|safe }} <p align="right">All ticket status:&nbsp;&nbsp; {% for t in ticket %}{{ t.status }}:{{ t.count }},&nbsp;&nbsp;{% endfor %}</p> </div>
 {% endif %}
 <div id="data" style="width:900px;float:left;">
 {% if showAlarms %}
