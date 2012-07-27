@@ -4,6 +4,7 @@ from django.views.generic.simple import direct_to_template
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import Context, loader, RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
+from django.db.models import Count
 from servers.models import *
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -50,6 +51,7 @@ def dashboard_show(request, dashboard_id):
         "alarmlogs":alarmlogs,
         "showAlarms":showAlarms,
         "frequentAlarmLogs":frequentAlarmLogs,
+        "ticket":Ticket.objects.values("status").annotate(count=Count("status"))
         })
     return render_to_response('servers/show_dashboard.html',c)
 
@@ -79,6 +81,7 @@ def dashboard_show_error(request,dashboard_error_id):
         "startTime":startTime,
         "endTime":endTime,
         "imgs":imgs,
+        "ticket":Ticket.objects.values("status").annotate(count=Count("status"))
         })
     return render_to_response('servers/show_dashboard_error.html',c)
 
@@ -1060,6 +1063,7 @@ def alarm(request):
         ticketId = ""
         try:
             ticket = Ticket()
+            ticket.widget = widget
             ticket.service = widget.service_type
             ticket.title = errorType + str(widget.title)
             ticket.recorder = User.objects.get(username="angel")

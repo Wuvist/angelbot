@@ -6,6 +6,7 @@ from django.template import Context, loader, RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
 from servers.models import *
 from django.conf import settings
+from django.db.models import Count
 
 def ticket(request):
     c = RequestContext(request,{
@@ -36,11 +37,13 @@ def ticket_show(request,ticketID):
     elif request.POST.has_key("addaction"):
         his = "";status = request.POST["status"]
         inctype = request.POST["inctype"];addaction =  request.POST["addaction"]
+        if status == "Closed" and inctype == "" or status == "Done" and inctype == "":
+            return HttpResponse('<script type="text/javascript">alert("incident type 必须选择 !");window.history.back();</script>')
         if request.POST["assto"].isdigit() and int(request.POST["assto"]) != ticket.assignto.id:
             his += "Assign to: "+ticket.assignto.username+" --->"+users.get(id=assto).username+"<br>\n"
             ticket.assignto = users.get(id=assto)
             ticket.save()
-        if inctype != ticket.incidenttype:
+        if inctype !="" and inctype != ticket.incidenttype:
             his += "Incident type: "+ticket.incidenttype+" --->"+inctype+"<br>\n"
             ticket.incidenttype = inctype
             ticket.save()
@@ -268,6 +271,46 @@ def statistics_show_download(request):
     
 def statistics_show(request):
     import time
+    def get_incidents(project,start,end):
+        incidents = [];total = 0;incidenttype = [];serious = [];minor = [];major = []
+        incid = Ticket.objects.filter(project__name=project,starttime__gte=start,starttime__lte=end).values("incidenttype","project__name","widget__grade__title").annotate(count=Count('incidenttype'))
+        for i in incid:
+            if i.has_key("serious"):
+                serious.append(i["serious"])
+            elif i.has_key("minor"):
+                minor.append(i["minor"])
+            elif i.has_key("major"):
+                major.append(i["major"])
+            total += i["count"]
+            incidenttype.append(i["incidenttype"])
+        for i in incidenttype:
+            incident_total = 0;incident={}
+            for l in incid:
+                if l["incidenttype"] == i:
+                    incident_total += l["count"]
+                    #incident[l["widget__grade__title"]] = l["count"]
+                if l.has_key("serious"):
+                    incident["serious"] = l["count"]
+                else:
+                    incident["serious"] = 0
+                if l.has_key("minor"):
+                    incident["minor"] = l["count"]
+                else:
+                    incident["minor"] = 0
+                if l.has_key("major"):
+                    incident["major"] = l["count"]
+                else:
+                    incident["major"] = 0
+            incident["subtotal"] = incident_total
+            incident["rate"] = int(float(incident_total)/total*100)
+            incident["incidenttype"] = i
+            incidents.append(incident)
+        rate = 100
+        if total == 0:rate = 0
+        incidents.append({"incidenttype":"total","serious":sum(serious),"major":sum(major),"minor":sum(minor),"subtotal":total,"rate":rate})
+        
+        return incidents
+    
     end = request.GET.get("end",time.strftime("%Y-%m-%d"))
     start = request.GET.get("start","")
     endTamp = int(time.mktime(time.strptime(end,"%Y-%m-%d")))
@@ -324,6 +367,7 @@ def statistics_show(request):
             tmpgrade[g] = tmp
         tmppro["grade"] = tmpgrade
         errors.append(tmppro)
+    
     serviceType = WidgetServiceType.objects.all().exclude(name="others")
     for p in projects:
         for s in serviceType:
@@ -348,5 +392,8 @@ def statistics_show(request):
         "sla":sla,
         "errors":errors,
         "toperror":toperror[:10],
+        "stc_incidents":get_incidents("stc",start,end),
+        "voda_incidents":get_incidents("voda",start,end),
+        "zoota_incidents":get_incidents("zoota_vivas",start,end),
     })
     return render_to_response('servers/statistics_show.html',c)
