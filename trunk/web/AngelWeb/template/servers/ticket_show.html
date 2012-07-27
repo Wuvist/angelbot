@@ -52,7 +52,7 @@
      <td>
 	{% if edit %}
      <select class = "inputboxTwo" name="inctype">
-     <option value=>---</option>  
+     <option value="---">---</option>  
      <option value="硬件" {% if ticket.incidenttype == "硬件" %}selected="selected"{% endif %}>硬件</option>
      <option value="网络" {% if ticket.incidenttype == "网络" %}selected="selected"{% endif %}>网络</option>
      <option value="负载" {% if ticket.incidenttype == "负载" %}selected="selected"{% endif %}>负载</option>

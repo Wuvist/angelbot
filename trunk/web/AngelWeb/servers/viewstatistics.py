@@ -37,13 +37,13 @@ def ticket_show(request,ticketID):
     elif request.POST.has_key("addaction"):
         his = "";status = request.POST["status"]
         inctype = request.POST["inctype"];addaction =  request.POST["addaction"]
-        if status == "Closed" and inctype == "" or status == "Done" and inctype == "":
+        if status == "Closed" and inctype == "---" or status == "Done" and inctype == "---":
             return HttpResponse('<script type="text/javascript">alert("incident type 必须选择 !");window.history.back();</script>')
         if request.POST["assto"].isdigit() and int(request.POST["assto"]) != ticket.assignto.id:
             his += "Assign to: "+ticket.assignto.username+" --->"+users.get(id=assto).username+"<br>\n"
             ticket.assignto = users.get(id=assto)
             ticket.save()
-        if inctype !="" and inctype != ticket.incidenttype:
+        if inctype !="---" and inctype != ticket.incidenttype:
             his += "Incident type: "+ticket.incidenttype+" --->"+inctype+"<br>\n"
             ticket.incidenttype = inctype
             ticket.save()
@@ -273,7 +273,7 @@ def statistics_show(request):
     import time
     def get_incidents(project,start,end):
         incidents = [];total = 0;incidenttype = [];serious = [];minor = [];major = []
-        incid = Ticket.objects.filter(project__name=project,starttime__gte=start,starttime__lte=end).values("incidenttype","project__name","widget__grade__title").annotate(count=Count('incidenttype'))
+        incid = Ticket.objects.filter(project__name=project,starttime__gte=start,starttime__lte=end,widget__grade__title__in=["serious","major","minor"]).values("incidenttype","project__name","widget__grade__title").annotate(count=Count('incidenttype'))
         for i in incid:
             if i.has_key("serious"):
                 serious.append(i["serious"])
@@ -289,26 +289,28 @@ def statistics_show(request):
                 if l["incidenttype"] == i:
                     incident_total += l["count"]
                     #incident[l["widget__grade__title"]] = l["count"]
-                if l.has_key("serious"):
-                    incident["serious"] = l["count"]
-                else:
-                    incident["serious"] = 0
-                if l.has_key("minor"):
-                    incident["minor"] = l["count"]
-                else:
-                    incident["minor"] = 0
-                if l.has_key("major"):
-                    incident["major"] = l["count"]
-                else:
-                    incident["major"] = 0
+                    if l["widget__grade__title"] == "serious":
+                        incident["serious"] = l["count"]
+                    else:
+                        incident["serious"] = 0
+                    if l["widget__grade__title"] == "minor":
+                        incident["minor"] = l["count"]
+                    else:
+                        incident["minor"] = 0
+                    if l["widget__grade__title"] == "major":
+                        incident["major"] = l["count"]
+                    else:
+                        incident["major"] = 0
             incident["subtotal"] = incident_total
             incident["rate"] = int(float(incident_total)/total*100)
-            incident["incidenttype"] = i
+            if i == "---":
+                incident["incidenttype"] == "未定义"
+            else:
+                incident["incidenttype"] = i
             incidents.append(incident)
         rate = 100
         if total == 0:rate = 0
         incidents.append({"incidenttype":"total","serious":sum(serious),"major":sum(major),"minor":sum(minor),"subtotal":total,"rate":rate})
-        
         return incidents
     
     end = request.GET.get("end",time.strftime("%Y-%m-%d"))
