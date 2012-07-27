@@ -149,7 +149,7 @@ def statistics_update(request):
                 if len(normal) != 0:normalAvg = sum(normal)/len(normal)
                 if len(bad) != 0:badAvg = sum(bad)/len(bad)
                 if len(alls) != 0:allsAvg = sum(alls)/len(alls)
-                if len(intervalErrorTime) == 1:intervalErrorTime.append(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(self.time[0]+86400)))
+                if len(intervalErrorTime) % 2 == 1:intervalErrorTime.append(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(self.time[0]+86400)))
                 rdt[self.key+"_error_times"] = flags 
                 rdt[self.key+"_error_avg"] = errorTimeAvg 
                 rdt[self.key+"_error_interval_times"] = fls 
