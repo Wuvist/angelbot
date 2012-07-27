@@ -208,7 +208,7 @@ def statistics_update(request):
     widgets = Widget.objects.all()
     mystart = time.strftime("%Y-%m-%d %H:%M:%S")
     if request.GET.has_key("end"):
-        while startTamp < endTamp:
+        while startTamp < endTamp and startTamp < time.time()-86400:
             for i in range(0,len(widgets),10):
                 parsewidget(widgets[i:i+10],startTamp)
             startTamp += 86400
