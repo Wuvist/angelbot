@@ -407,7 +407,10 @@ def statistics_show(request):
                     elif l["incidentgrade"] == u"严重故障":
                         incident["serious"] = l["count"]
             incident["subtotal"] = incident_total
-            incident["rate"] = int(float(incident_total)/total*100)
+            if total != 0:
+                incident["rate"] = int(float(incident_total)/total*100)
+            else:
+                incident["rate"] = 0
             if i == "---":
                 incident["incidenttype"] = "未定义"
             else:
