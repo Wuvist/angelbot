@@ -12,6 +12,15 @@ def widget_category_cut(title):
     
     return title.replace(".","_").replace(" ","_").replace("(","").replace(")","").replace("&","")
 
+@register.filter(name='ticket_action')
+def ticket_action(ticket):
+    "return last ticket action"
+    try:
+        result = ticket.action.filter(actiontype="action").order_by("-id")[0].action
+    except:
+        result = ""
+    return result
+
 @register.filter(name='show_rrd')
 def show_rrd(rrd):
     "Format a rrd object in HTML"
