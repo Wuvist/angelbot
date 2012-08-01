@@ -451,7 +451,7 @@ def statistics_show(request):
         if allTimes != 0:
             keyong = 1-badTimes/float(allTimes)/len(wgls)
         tmp["badTime"]=badTimes
-        tmp["keyong"]=str(keyong*100)[:5]+"%"
+        tmp["keyong"]=str(keyong*100)[:10]+"%"
         sla.append(tmp)
     for p in projects:
         grade = ["major","minor","serious"];tmppro = {"p":p}; tmpgrade={}
