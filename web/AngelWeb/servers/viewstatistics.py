@@ -306,10 +306,11 @@ def statistics_show_download(request):
             ws.write_merge(x,x,y+10,y+16,data[5],get_style())
             ws.write_merge(x,x,y+17,y+18,data[6],get_style())
             ws.write_merge(x,x,y+19,y+20,data[7],get_style())
+            ws.write_merge(x,x,y+21,y+27,data[8],get_style())
             h=800
             if head:h=400
             ws.row(x).set_style(get_style_row(h)) 
-        write_xls(0 ,0 ,[u"项目",u"故障级别",u"服务大类",u"服务小类",u"报错widget",u"内容",u"开始时间",u"最后更新时间"],True)
+        write_xls(0 ,0 ,[u"项目",u"故障级别",u"服务大类",u"服务小类",u"报错widget",u"内容",u"开始时间",u"最后更新时间","Action taken"],True)
         projects = ["stc","voda","zoota_vivas"];grade = [u"严重故障",u"一般故障"];x=1
         tickets = Ticket.objects.filter(starttime__gte=start,starttime__lte=end)
         for p in projects:
@@ -325,6 +326,10 @@ def statistics_show_download(request):
                         tmp.append(str(t.incident))
                         tmp.append(str(t.starttime))
                         tmp.append(str(t.lastupdate))
+                        try:
+                            tmp.append(str(t.action.filter(actiontype="action").order_by("-id")[0].action))
+                        except:
+                            tmp.append("")
                         write_xls(x,0,tmp)
                         x += 1
                     except:
