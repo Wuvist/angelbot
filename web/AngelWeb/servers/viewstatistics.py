@@ -17,6 +17,7 @@ def ticket(request):
     
 def ticket_show(request,ticketID):
     ticket = get_object_or_404(Ticket,id = ticketID)
+    ticket.incident = ticket.incident.replace("\n","<br>")
     users = User.objects.filter(is_staff=True).order_by("username")
     edit = False
     if request.user == ticket.recorder or request.user == ticket.assignto or request.user.id == 3 or ticket.assignto==None:
@@ -35,17 +36,23 @@ def ticket_show(request,ticketID):
         log.save()
         ticket.history.add(log)
     elif request.POST.has_key("addaction"):
-        his = "";status = request.POST["status"]
+        his = "";status = request.POST["status"];incgrade = request.POST["incgrade"]
         inctype = request.POST["inctype"];addaction =  request.POST["addaction"]
         if status == "Closed" and inctype == "---" or status == "Done" and inctype == "---":
             return HttpResponse('<script type="text/javascript">alert("incident type 必须选择 !");window.history.back();</script>')
         if request.POST["assto"].isdigit() and int(request.POST["assto"]) != ticket.assignto.id:
-            his += "Assign to: "+ticket.assignto.username+" --->"+users.get(id=assto).username+"<br>\n"
+            his += "Assign to: "+ticket.assignto.username+" ---> "+users.get(id=assto).username+"<br>\n"
             ticket.assignto = users.get(id=assto)
             ticket.save()
         if inctype !="---" and inctype != ticket.incidenttype:
-            his += "Incident type: "+ticket.incidenttype+" --->"+inctype+"<br>\n"
+            his += "Incident type: "+ticket.incidenttype+" ---> "+inctype+"<br>\n"
             ticket.incidenttype = inctype
+            ticket.save()
+        if incgrade != ticket.incidentgrade:
+            his += "Incident grade: " + " ---> "+incgrade
+            if ticket.incidentgrade != None:
+                his += "Incident grade: " + ticket.incidentgrade+" ---> "+incgrade
+            ticket.incidentgrade = incgrade
             ticket.save()
         if addaction != "":
             his += "Add action taken<br>\n"
@@ -56,7 +63,7 @@ def ticket_show(request,ticketID):
             action.save()
             ticket.action.add(action)
         if status != ticket.status:
-            his += "Status: "+ticket.status+" --->"+status+"<br>\n"
+            his += "Status: "+ticket.status+" ---> "+status+"<br>\n"
             ticket.status = status
             ticket.incidenttype = inctype
             ticket.save()
@@ -226,6 +233,134 @@ def statistics_update(request):
 
 def statistics_show_download(request):
     import time
+    import xlwt
+    def error_time(start,end):
+        widgets = Widget.objects.all()
+        statisticsDay = StatisticsDay.objects.filter(date__gte = start,date__lte=end)
+        projects = ["stc","voda","zoota_vivas","fast_50","mozat"];result = [u"编号,项目,级别,服务大类,服务小类,报错widget,字段,开始时间,结束时间,时长(分钟),解决办法".encode("gbk")]
+        x = 1
+        for p in projects:
+            grade = ["serious","major","minor"];ls = []
+            for g in grade:
+                wgls = widgets.filter(project__name=p,grade__title=g)
+                slas = statisticsDay.filter(widget__in = wgls)
+                for i in slas:
+                    try:
+                        data = eval(i.content)
+                        for k in data.keys():
+                            if k.endswith("_interval_error_time") and len(data[k]) != 0:
+                                for l in range(0,len(data[k]),2):
+                                    tmp = [str(x)]
+                                    tmp.append(p)
+                                    tmp.append(g)
+                                    tmp.append(str(i.widget.service_type.type.name))
+                                    tmp.append(str(i.widget.service_type.name))
+                                    tmp.append(str(i.widget.title))
+                                    tmp.append(k.split("_in")[0])
+                                    tmp+=data[k][l:l+2]
+                                    tmp.append(str((time.mktime(time.strptime(data[k][l:l+2][1],"%Y-%m-%d %H:%M:%S"))-time.mktime(time.strptime(data[k][l:l+2][0],"%Y-%m-%d %H:%M:%S")))/60))
+                                    ls.append(",".join(tmp))
+                                    x += 1
+                    except:
+                         pass
+            result.append("\n".join(ls)) 
+        data = "\n".join(result)
+        return data
+    def get_ticket(start,end):
+        from cStringIO import StringIO
+        from xlwt.Formatting import Font
+        from xlwt.Formatting import Borders
+        from xlwt.Formatting import Alignment
+        from xlwt import XFStyle
+        temp = StringIO()
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet('Ticket info')
+        def get_style_row(h):
+            fnt = Font()
+            fnt.height = h
+            style = XFStyle()
+            style.font = fnt
+            return style    
+        def get_style():
+            fnt = Font()
+            fnt.bold = True
+            bor = Borders()
+            bor.top = 1
+            bor.right = 1
+            bor.bottom = 1
+            bor.left = 1
+            al = Alignment()
+            al.horz = Alignment.HORZ_CENTER
+            al.vert = Alignment.VERT_CENTER
+            style = XFStyle()
+            style.font = fnt
+            style.borders = bor
+            style.alignment = al
+            return style
+        def write_xls(x,y,data,head=False):
+            ws.write_merge(x,x,y,y+1,data[0],get_style())
+            ws.write_merge(x,x,y+2,y+3,data[1],get_style())
+            ws.write_merge(x,x,y+4,y+5,data[2],get_style())
+            ws.write_merge(x,x,y+6,y+7,data[3],get_style())
+            ws.write_merge(x,x,y+8,y+9,data[4],get_style())
+            ws.write_merge(x,x,y+10,y+16,data[5],get_style())
+            ws.write_merge(x,x,y+17,y+18,data[6],get_style())
+            ws.write_merge(x,x,y+19,y+20,data[7],get_style())
+            h=800
+            if head:h=400
+            ws.row(x).set_style(get_style_row(h)) 
+        write_xls(0 ,0 ,[u"项目",u"故障级别",u"服务大类",u"服务小类",u"报错widget",u"内容",u"开始时间",u"最后更新时间"],True)
+        projects = ["stc","voda","zoota_vivas"];grade = [u"严重故障",u"一般故障"];x=1
+        tickets = Ticket.objects.filter(starttime__gte=start,starttime__lte=end)
+        for p in projects:
+            ticket = tickets.filter(project__name=p)
+            for g in grade:
+                for t in ticket.filter(incidentgrade=g):
+                    try:
+                        tmp = [p]
+                        tmp.append(g)
+                        tmp.append(str(t.widget.service_type.type.name))
+                        tmp.append(str(t.widget.service_type.name))
+                        tmp.append(str(t.widget.title))
+                        tmp.append(str(t.incident))
+                        tmp.append(str(t.starttime))
+                        tmp.append(str(t.lastupdate))
+                        write_xls(x,0,tmp)
+                        x += 1
+                    except:
+                        pass
+        wb.save(temp)
+        return temp.getvalue()
+    def get_sla(start,end):
+        from datetime import datetime
+        from subprocess import Popen, PIPE
+        start = str(int(time.mktime(datetime.strptime(request.GET["start"], "%Y-%m-%d").timetuple())))
+        end = str(int(time.mktime(datetime.strptime(request.GET["end"], "%Y-%m-%d").timetuple())))
+        projects = ["stc","voda","zoota_vivas","fast_50","mozat"];result = [u"项目,节点,中断时间,login,homepage".encode("gbk")]
+        for project in projects:
+            widgets = Widget.objects.filter(project__name=project,service_type__name="sla")
+            for widget in widgets:
+                cmd = 'rrdtool fetch %s LAST -s %s -e %s' % (widget.rrd.path(), start, end)
+                p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+                stdout, stderr = p.communicate() 
+                ls = stdout.split("\n")[1:-2]
+                try:
+                    data_def = eval(widget.data_def.replace("\n","").replace("\r",""))
+                    for i in ls:
+                        try:
+                            tmp = [project,widget.title.encode("gbk")]
+                            i = i.split()
+                            login = str(int(float(i[1])));homepage = str(int(float(i[2])))
+                            if eval(login+data_def["login"][2]) or eval(homepage+data_def["homepage"][2]):
+                                 tmp.append(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(i[0][:-1]))))
+                                 tmp.append(login)
+                                 tmp.append(homepage)
+                                 result.append(",".join(tmp))
+                        except:
+                            pass
+                except:
+                    pass
+        return "\n".join(result)
     end = request.GET.get("end",time.strftime("%Y-%m-%d"))
     start = request.GET.get("start","")
     endTamp = int(time.mktime(time.strptime(end,"%Y-%m-%d")))
@@ -234,74 +369,43 @@ def statistics_show_download(request):
     else:
         startTamp = int(time.mktime(time.strptime(start,"%Y-%m-%d")))
     start = time.strftime("%Y-%m-%d",time.localtime(startTamp))
-    widgets = Widget.objects.all()
-    statisticsDay = StatisticsDay.objects.filter(date__gte = start,date__lte=end)
-    projects = ["stc","voda","zoota_vivas","fast_50","mozat"];result = [u"编号,项目,级别,服务大类,服务小类,报错widget,字段,开始时间,结束时间,时长(分钟),解决办法".encode("gbk")]
-    x = 1
-    for p in projects:
-        grade = ["serious","major","minor"];ls = []
-        for g in grade:
-            wgls = widgets.filter(project__name=p,grade__title=g)
-            slas = statisticsDay.filter(widget__in = wgls)
-            for i in slas:
-                try:
-                    data = eval(i.content)
-                    for k in data.keys():
-                        if k.endswith("_interval_error_time"):
-                            for l in range(0,len(data[k]),2):
-                                tmp = [str(x)]
-                                tmp.append(p)
-                                tmp.append(g)
-                                tmp.append(str(i.widget.service_type.type.name))
-                                tmp.append(str(i.widget.service_type.name))
-                                tmp.append(str(i.widget.title))
-                                tmp.append(k.split("_in")[0])
-                                tmp+=data[k][l:l+2]
-                                tmp.append(str((time.mktime(time.strptime(data[k][l:l+2][1],"%Y-%m-%d %H:%M:%S"))-time.mktime(time.strptime(data[k][l:l+2][0],"%Y-%m-%d %H:%M:%S")))/60))
-                                ls.append(",".join(tmp))
-                                x += 1
-                except:
-                     pass
-        result.append("\n".join(ls)) 
-    data = "\n".join(result)
+    if request.GET["action"] == "error":
+        data = error_time(start,end)
+        fileName = "error_report_"+start+"_"+end+".csv"
+    elif request.GET["action"] == "ticket":
+        data = get_ticket(start,end)
+        fileName = "ticket_report_"+start+"_"+end+".xls"
+    elif request.GET["action"] == "sla":
+        data = get_sla(start,end)
+        fileName = "sla_report_"+start+"_"+end+".csv"
     response = HttpResponse(data)
     response["content-type"] = "text/csv"
-    response["content-disposition"] = "attachment; filename=error_report_"+start+"_"+end+".csv"
+    response["content-disposition"] = "attachment; filename=%s" % fileName
     return response
     
     
 def statistics_show(request):
     import time
     def get_incidents(project,start,end):
-        incidents = [];total = 0;incidenttype = [];serious = [];minor = [];major = []
-        incid = Ticket.objects.filter(project__name=project,starttime__gte=start,starttime__lte=end,widget__grade__title__in=["serious","major","minor"]).values("incidenttype","project__name","widget__grade__title").annotate(count=Count('incidenttype'))
+        incidents = [];total = 0;incidenttype = [];serious = [];minor = [];
+        incid = Ticket.objects.filter(project__name=project,starttime__gte=start,starttime__lte=end).values("incidenttype","project__name","incidentgrade").annotate(count=Count('incidentgrade'))
         for i in incid:
-            if i.has_key("serious"):
-                serious.append(i["serious"])
-            elif i.has_key("minor"):
-                minor.append(i["minor"])
-            elif i.has_key("major"):
-                major.append(i["major"])
+            if i["incidentgrade"] == u"严重故障":
+                serious.append(i["count"])
+            elif i["incidentgrade"] == u"一般故障":
+                minor.append(i["count"])
             total += i["count"]
             incidenttype.append(i["incidenttype"])
+        incidenttype = list(set(incidenttype))
         for i in incidenttype:
-            incident_total = 0;incident={}
+            incident_total = 0;incident={"serious":0,"minor":0}
             for l in incid:
                 if l["incidenttype"] == i:
                     incident_total += l["count"]
-                    #incident[l["widget__grade__title"]] = l["count"]
-                    if l["widget__grade__title"] == "serious":
-                        incident["serious"] = l["count"]
-                    else:
-                        incident["serious"] = 0
-                    if l["widget__grade__title"] == "minor":
+                    if l["incidentgrade"] == u"一般故障":
                         incident["minor"] = l["count"]
-                    else:
-                        incident["minor"] = 0
-                    if l["widget__grade__title"] == "major":
-                        incident["major"] = l["count"]
-                    else:
-                        incident["major"] = 0
+                    elif l["incidentgrade"] == u"严重故障":
+                        incident["serious"] = l["count"]
             incident["subtotal"] = incident_total
             incident["rate"] = int(float(incident_total)/total*100)
             if i == "---":
@@ -311,7 +415,7 @@ def statistics_show(request):
             incidents.append(incident)
         rate = 100
         if total == 0:rate = 0
-        incidents.append({"incidenttype":"total","serious":sum(serious),"major":sum(major),"minor":sum(minor),"subtotal":total,"rate":rate})
+        incidents.append({"incidenttype":"total","serious":sum(serious),"minor":sum(minor),"subtotal":total,"rate":rate})
         return incidents
     
     end = request.GET.get("end",time.strftime("%Y-%m-%d"))
@@ -334,15 +438,15 @@ def statistics_show(request):
             data = eval(i.content)
             try:
                 login_bad_times += data['login_bad_times']
-                homepage_bad_times += data['homepage_bad_times']
-                homepage_all_times += data['homepage_bad_times']
                 login_all_times += data['login_all_times']
+                homepage_bad_times += data['homepage_bad_times']
+                homepage_all_times += data['homepage_all_times']
             except:
                 pass
         badTimes = login_bad_times+homepage_bad_times
         allTimes = login_all_times+homepage_all_times
         if allTimes != 0:
-            keyong = 1-badTimes/float(allTimes)
+            keyong = 1-badTimes/float(allTimes)/len(wgls)
         tmp["badTime"]=badTimes
         tmp["keyong"]=str(keyong*100)[:5]+"%"
         sla.append(tmp)
