@@ -385,6 +385,7 @@ class Ticket(models.Model):
     status = models.CharField(max_length=20, choices=TICKET_STATUS_CHOICES)
     incident = models.TextField(null = True, blank = True)
     incidenttype = models.CharField(max_length=20,null = True, blank = True)
+    incidentgrade = models.CharField(max_length=20,null = True, blank = True)
     project = models.ManyToManyField(Project, null = True, blank = True)
     action = models.ManyToManyField(TicketAction,null = True, blank = True)
     history = models.ManyToManyField(TicketHistory,null = True, blank = True)

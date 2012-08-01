@@ -1,21 +1,23 @@
 {% extends "base_site.html" %}
 
 {% block content %}
+<button><a href="/ticket/">back to ticket list</a></button>
 <form action="" enctype="multipart/form-data" method="post">
 <table width = "1200" align="center" style = "border:1px solid #000 ;word-break:break-all">
     <tr class="row-1" style="height:20px">
-    <td class = "category" width="20%" style="height:50px"> Ticket ID:</td>
-    <td width="30%">{{ticket.id}}</td>
-    <td class = "category"> Keyword:</td>
-    <td>{{ ticket.title }}</td>
-    </tr>
-    <tr class="row-2" style="height:30px">    
-     <td class = "category" style="height:50px"> Operator:</td>
-      <td>
+    <td class = "category" width="10%" style="height:50px"> Keyword:</td>
+    <td width="50%">{{ ticket.title }}</td>
+     <td class = "category" width="10%"> Operator:</td>
+      <td width="20%">
 	{% for p in ticket.project.all %}
 	{{ p.name }},
 	{% endfor %}
 	</td> 
+    </tr>
+    <tr class="row-2" style="height:30px">    
+    <td class = "category"> Incident:</td>
+    <td>{{ ticket.incident|safe }}</td>
+
       <td class = "category" style="height:50px"> Service:</td>
      <td>{{ ticket.service.name }}</td>
     </tr>
@@ -48,7 +50,7 @@
      </td>
     </tr>
     <tr class="row-2" style="height:50px">
-    <td>incident type</td>
+    <td>Incident type:</td>
      <td>
 	{% if edit %}
      <select class = "inputboxTwo" name="inctype">
@@ -66,8 +68,13 @@
 	{{ ticket.incidenttype }}
 	{% endif %}
     </td>
-    <td class = "category"> Incident:</td>
-    <td>{{ ticket.incident }}</td>
+    <td class = "category"> Incident grade:</td>
+    <td>
+     <select class = "inputboxTwo" name="incgrade">
+     <option value="一般故障" {% if ticket.incidentgrade == "一般故障" %}selected="selected"{% endif %} >一般故障</option>
+     <option value="严重故障" {% if ticket.incidentgrade == "严重故障" %}selected="selected"{% endif %}>严重故障</option>
+     </select>
+    </td>
     </tr>
     <tr class="row-2">
     <td class = "category" style="height:30px">Start Time:</td>
@@ -77,10 +84,10 @@
     </tr>
 	{% if edit %}
     <tr style="height:160px">
-    <td class = "category">Action Taken:</td>
-    <td colspan = "3"><textarea class = "inputboxThree" name="addaction" cols="40" rows="7"></textarea>
+    <td class = "category" width="10%">Action Taken:</td>
+    <td colspan = "3" ><textarea style="width:400px;height:120px"  name="addaction" cols="40" rows="7"></textarea>
     <input type="hidden" name="id" value="{{ ticket.id }}">
-    <input class = "inputbuttonTwo" type="submit"  value = "Update Ticket"  /></td>
+    <input style="position:relative;top:100px;" type="submit"  value = "Update Ticket"  /></td>
     </tr>
 	{% endif %}
 </table>
@@ -89,17 +96,17 @@
 <form action="" method="post">
 <table width = "1200" align="center" style = "border:1px solid #000 ;word-break:break-all">
     <tr style="height:160px">
-    <td class = "category">Add Comment:</td>
-    <td colspan = "3"><textarea class = "inputboxThree" name="addcomment" cols="40" rows="7"></textarea>
+    <td class = "category" width="11%">Add Comment:</td>
+    <td colspan = "3"><textarea style="width:400px;height:120px" name="addcomment" cols="40" rows="7"></textarea>
     <input type="hidden" name="id" value="{{ ticket.id }}">
-    <input class = "inputbuttonTwo" type="submit"  value = "Add comment"  /></td>
+    <input style="position:relative;top:100px;"  type="submit"  value = "Add comment"  /></td>
       </tr>
      </table>
 </form>
 
 <table width = "1200" align="center" style = "border:1px solid #000 ;word-break:break-all">
         <tr class="index">
-         <td colspan = "5">Comments </td>
+         <td colspan = "5">Action or Comments</td>
          </tr>
          <tr>
          <td width = "15%" class = "category">Username </td>
