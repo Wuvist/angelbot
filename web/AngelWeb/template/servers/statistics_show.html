@@ -45,7 +45,19 @@
 {% endfor %}
 </table>
 
-<h2>3,故障分析&nbsp;&nbsp; <a href="/statistics/show/download/?action=ticket&start={{ start }}&end={{ end }}">明细</a><h2>
+
+<h2>3,top10异常服务<h2>
+<table>
+<th>序号</th><th>项目</th><th>服务</th><th>故障次数</th>
+{% for e in toperror %}
+<tr>
+<td>{{ forloop.counter }}</td><td>{{ e.project }}</td><td>{{ e.service }}</td><td>{{ e.error_times }}</td>
+</tr>
+{% endfor %}
+</table>
+
+
+<h2>4,故障分析&nbsp;&nbsp; <a href="/statistics/show/download/?action=ticket&start={{ start }}&end={{ end }}">明细</a><h2>
 <table><th>项目</th><th>故障类型</th><th>严重故障</th><th>一般故障</th><th>小计</th><th>故障类型比例%</th>
 	{% for i in stc_incidents %}
 	{% if forloop.last %}<tr style="background-color: #d0d0d0;"><td> STC {% else %}<tr><td>{% endif %}</td><td>{{ i.incidenttype }}</td><td>{{ i.serious }}</td><td>{{ i.minor }}</td><td>{{ i.subtotal }}</td><td>{{ i.rate }}%</td>
@@ -60,18 +72,6 @@
 	</tr>
 	{% endfor %}
 </table>
-
-<h2>4,top10异常服务<h2>
-<table>
-<th>序号</th><th>项目</th><th>服务</th><th>故障次数</th>
-{% for e in toperror %}
-<tr>
-<td>{{ forloop.counter }}</td><td>{{ e.project }}</td><td>{{ e.service }}</td><td>{{ e.error_times }}</td>
-</tr>
-{% endfor %}
-</table>
-
-
 
 
 
