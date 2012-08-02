@@ -32,7 +32,7 @@
 <textarea style="width:600px;height:100px" name="comment" cols="40" rows="7">{{ commentSLA.content }}</textarea>
 <input type="hidden" name="type" value="sla">
 <input type="hidden" name="time" value="{{ commentTime }}">
-<input style="position:relative;top:80px;" type="submit" value="Add comment">
+<input style="position:relative;top:80px;" type="submit" value="Save">
 </form>
 评论人员: {{ commentSLA.user.username }}   最后评论时间: {{ commentSLA.created_on|date:"Y-m-d H:i:s" }}
 
@@ -54,7 +54,7 @@
 <textarea style="width:600px;height:100px" name="comment" cols="40" rows="7">{{ commentError.content }}</textarea>
 <input type="hidden" name="type" value="error">
 <input type="hidden" name="time" value="{{ commentTime }}">
-<input style="position:relative;top:80px;" type="submit" value="Add comment">
+<input style="position:relative;top:80px;" type="submit" value="Save">
 </form>
 评论人员: {{ commentError.user.username }}   最后评论时间: {{ commentError.created_on|date:"Y-m-d H:i:s" }}
 
@@ -72,7 +72,7 @@
 <textarea style="width:600px;height:100px" name="comment" cols="40" rows="7">{{ commentTop.content }}</textarea>
 <input type="hidden" name="type" value="top">
 <input type="hidden" name="time" value="{{ commentTime }}">
-<input style="position:relative;top:80px;" type="submit" value="Add comment">
+<input style="position:relative;top:80px;" type="submit" value="Save">
 </form>
 评论人员: {{ commentTop.user.username }}   最后评论时间: {{ commentTop.created_on|date:"Y-m-d H:i:s" }}
 
@@ -97,7 +97,7 @@
 <textarea style="width:600px;height:100px" name="comment" cols="40" rows="7">{{ commentTicket.content }}</textarea>
 <input type="hidden" name="type" value="ticket">
 <input type="hidden" name="time" value="{{ commentTime }}">
-<input style="position:relative;top:80px;" type="submit" value="Add comment">
+<input style="position:relative;top:80px;" type="submit" value="Save">
 </form>
 评论人员: {{ commentTop.user.username }}   最后评论时间: {{ commentTop.created_on|date:"Y-m-d H:i:s" }}
 

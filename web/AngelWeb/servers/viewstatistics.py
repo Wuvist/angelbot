@@ -35,7 +35,7 @@ def ticket_show(request,ticketID):
         msg['From'] = "Mozat Angel"
         msg['To'] = ruser.email
         s = smtplib.SMTP('i-smtp.mozat.com')
-        s.sendmail(sender, receivers, msg.as_string())
+        s.sendmail(sender, ruser.email, msg.as_string())
         s.close()
     ticket = get_object_or_404(Ticket,id = ticketID)
     users = User.objects.filter(is_staff=True).order_by("username")
