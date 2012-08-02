@@ -398,3 +398,15 @@ class Ticket(models.Model):
     class Meta:
         ordering = ["title"]
 
+class StatisticsComment(models.Model):
+    user = models.ForeignKey(User)
+    comment_type = models.CharField(max_length=64)
+    content = models.TextField(null = True, blank = True)
+    comment_time = models.TextField(null = True, blank = True)
+    created_on = models.DateTimeField(auto_now_add = True)
+    
+    def __unicode__(self):
+        return self.comment_type+" "+self.content
+
+    class Meta:
+        ordering = ["-created_on"]

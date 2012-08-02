@@ -20,17 +20,23 @@
 <style>
 	th {width:100px;}
 </style>
-<h2>1,项目运行情况&nbsp;&nbsp; <a href="/statistics/show/download/?action=sla&start={{ start }}&end={{ end }}">明细</a><h2>
+<h2>1,项目运行情况&nbsp;&nbsp; <a href="/statistics/show/download/?action=sla&start={{ start }}&end={{ end }}">明细</a></h2>
+
 <table>
-<tr>
-<th>指标名称</th><th>中断时长(分钟)</th><th>可用性</th><th>原因</th>
-</tr>
+<tr><th>指标名称</th><th>中断时长(分钟)</th><th>可用性</th><th>原因</th></tr>
 {% for s in sla %}
-<tr>
-<td>{{ s.p }}</td><td>{{ s.badTime }}</td><td>{{ s.keyong }}</td><td></td>
-</tr>
+<tr><td>{{ s.p }}</td><td>{{ s.badTime }}</td><td>{{ s.keyong }}</td><td></td></tr>
 {% endfor %}
 </table>
+<form action="addcomment/">
+<textarea style="width:600px;height:100px" name="comment" cols="40" rows="7">{{ commentSLA.content }}</textarea>
+<input type="hidden" name="type" value="sla">
+<input type="hidden" name="time" value="{{ commentTime }}">
+<input style="position:relative;top:80px;" type="submit" value="Add comment">
+</form>
+评论人员: {{ commentSLA.user.username }}   最后评论时间: {{ commentSLA.created_on|date:"Y-m-d H:i:s" }}
+
+
 <h2>2,故障解决时间&nbsp;&nbsp; <a href="/statistics/show/download/?action=error&start={{ start }}&end={{ end }}">明细</a></h2>
 <table>
 <tr>
@@ -44,9 +50,16 @@
 </tr>
 {% endfor %}
 </table>
+<form action="addcomment/">
+<textarea style="width:600px;height:100px" name="comment" cols="40" rows="7">{{ commentError.content }}</textarea>
+<input type="hidden" name="type" value="error">
+<input type="hidden" name="time" value="{{ commentTime }}">
+<input style="position:relative;top:80px;" type="submit" value="Add comment">
+</form>
+评论人员: {{ commentError.user.username }}   最后评论时间: {{ commentError.created_on|date:"Y-m-d H:i:s" }}
 
 
-<h2>3,top10异常服务<h2>
+<h2>3,top10异常服务</h2>
 <table>
 <th>序号</th><th>项目</th><th>服务</th><th>故障次数</th>
 {% for e in toperror %}
@@ -55,9 +68,17 @@
 </tr>
 {% endfor %}
 </table>
+<form action="addcomment/">
+<textarea style="width:600px;height:100px" name="comment" cols="40" rows="7">{{ commentTop.content }}</textarea>
+<input type="hidden" name="type" value="top">
+<input type="hidden" name="time" value="{{ commentTime }}">
+<input style="position:relative;top:80px;" type="submit" value="Add comment">
+</form>
+评论人员: {{ commentTop.user.username }}   最后评论时间: {{ commentTop.created_on|date:"Y-m-d H:i:s" }}
 
 
-<h2>4,故障分析&nbsp;&nbsp; <a href="/statistics/show/download/?action=ticket&start={{ start }}&end={{ end }}">明细</a><h2>
+
+<h2>4,故障分析&nbsp;&nbsp; <a href="/statistics/show/download/?action=ticket&start={{ start }}&end={{ end }}">明细</a></h2>
 <table><th>项目</th><th>故障类型</th><th>严重故障</th><th>一般故障</th><th>小计</th><th>故障类型比例%</th>
 	{% for i in stc_incidents %}
 	{% if forloop.last %}<tr style="background-color: #d0d0d0;"><td> STC {% else %}<tr><td>{% endif %}</td><td>{{ i.incidenttype }}</td><td>{{ i.serious }}</td><td>{{ i.minor }}</td><td>{{ i.subtotal }}</td><td>{{ i.rate }}%</td>
@@ -72,6 +93,13 @@
 	</tr>
 	{% endfor %}
 </table>
+<form action="addcomment/">
+<textarea style="width:600px;height:100px" name="comment" cols="40" rows="7">{{ commentTicket.content }}</textarea>
+<input type="hidden" name="type" value="ticket">
+<input type="hidden" name="time" value="{{ commentTime }}">
+<input style="position:relative;top:80px;" type="submit" value="Add comment">
+</form>
+评论人员: {{ commentTop.user.username }}   最后评论时间: {{ commentTop.created_on|date:"Y-m-d H:i:s" }}
 
 
 

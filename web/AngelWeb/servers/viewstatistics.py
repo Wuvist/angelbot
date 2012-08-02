@@ -16,8 +16,28 @@ def ticket(request):
     return render_to_response("servers/ticket.html",c)
     
 def ticket_show(request,ticketID):
+    def sendMail(ruser,suser,ticket):
+        import smtplib
+        from email.mime.text import MIMEText
+
+        des = u'''Dear %s,\n
+            Is proud to tell you %s assign one ticket to you,
+            blow is this ticket content:
+            Incident type: %s,
+            Incident grade: %s,
+            Incident content: %s,
+            for more detail, please visit: http://angel.morange.com/ticket/show/%d
+            This email auto send by Mozat Angel, if any questions, please kindly feed back to operation team. thanks !\nBest Regards\nMozat Angel'''
+        result =  des % (ruser.username,suser.username,ticket.incidenttype,ticket.incidentgrade,ticket.incident,ticket.id)
+        sender = 'wumingyou@mozat.com'
+        msg = MIMEText(result.encode("utf-8"))
+        msg['Subject'] = "Angel %s" % ticket.title
+        msg['From'] = "Mozat Angel"
+        msg['To'] = ruser.email
+        s = smtplib.SMTP('i-smtp.mozat.com')
+        s.sendmail(sender, receivers, msg.as_string())
+        s.close()
     ticket = get_object_or_404(Ticket,id = ticketID)
-    ticket.incident = ticket.incident.replace("\n","<br>")
     users = User.objects.filter(is_staff=True).order_by("username")
     edit = False
     if request.user == ticket.recorder or request.user == ticket.assignto or request.user.id == 3 or ticket.assignto==None:
@@ -36,14 +56,13 @@ def ticket_show(request,ticketID):
         log.save()
         ticket.history.add(log)
     elif request.POST.has_key("addaction"):
-        his = "";status = request.POST["status"];incgrade = request.POST["incgrade"]
-        inctype = request.POST["inctype"];addaction =  request.POST["addaction"]
+        his="";status=request.POST["status"];incgrade=request.POST["incgrade"];sendEmail=False
+        inctype=request.POST["inctype"];addaction=request.POST["addaction"];oldassignto="";oldassigntoname=""
         if status == "Closed" and inctype == "---" or status == "Done" and inctype == "---":
             return HttpResponse('<script type="text/javascript">alert("incident type 必须选择 !");window.history.back();</script>')
-        if request.POST["assto"].isdigit() and int(request.POST["assto"]) != ticket.assignto.id:
-            his += "Assign to: "+ticket.assignto.username+" ---> "+users.get(id=assto).username+"<br>\n"
-            ticket.assignto = users.get(id=assto)
-            ticket.save()
+        if ticket.assignto != None:
+            oldassignto = ticket.assignto.id
+            oldassigntoname = ticket.assignto.username
         if inctype !="---" and inctype != ticket.incidenttype:
             his += "Incident type: "+ticket.incidenttype+" ---> "+inctype+"<br>\n"
             ticket.incidenttype = inctype
@@ -54,7 +73,11 @@ def ticket_show(request,ticketID):
                 his += "Incident grade: " + ticket.incidentgrade+" ---> "+incgrade
             ticket.incidentgrade = incgrade
             ticket.save()
-        if addaction != "":
+        try:
+            oldaction = ticket.action.all()[0].action
+        except:
+            oldaction = None
+        if addaction != "" and addaction != oldaction:
             his += "Add action taken<br>\n"
             action = TicketAction()
             action.user = request.user
@@ -67,14 +90,25 @@ def ticket_show(request,ticketID):
             ticket.status = status
             ticket.incidenttype = inctype
             ticket.save()
+        if request.POST["assto"].isdigit() and int(request.POST["assto"]) != oldassignto:
+            his += "Assign to: "+oldassigntoname+" ---> "+users.get(id=int(request.POST["assto"])).username+"<br>\n"
+            ticket.assignto = users.get(id=int(request.POST["assto"]))
+            ticket.save()
+            sendEmail = True
         if his != "":
             log = TicketHistory()
             log.user = request.user
             log.content = his
             log.save()
             ticket.history.add(log)
+        if sendEmail:
+            try:
+                sendMail(users.get(id=int(request.POST["assto"])),request.user,ticket)
+            except Exception, e:
+                return HttpResponse('<script type="text/javascript">alert("保存成功,但发送邮件失败.错误码:%s");window.history.back();</script>' % str(e))
             
     
+    ticket.incident = ticket.incident.replace("\n","<br>")
     c = RequestContext(request,{
         "ticket":ticket,
         "edit":edit,
@@ -391,6 +425,12 @@ def statistics_show_download(request):
     
 def statistics_show(request):
     import time
+    def get_comment(commentType,commentTime):
+        try:
+            result = StatisticsComment.objects.get(comment_type=commentType,comment_time=commentTime)
+        except:
+            result = ""
+        return result
     def get_incidents(project,start,end):
         incidents = [];total = 0;incidenttype = [];serious = [];minor = [];
         incid = Ticket.objects.filter(project__name=project,starttime__gte=start,starttime__lte=end).values("incidenttype","project__name","incidentgrade").annotate(count=Count('incidentgrade'))
@@ -501,14 +541,39 @@ def statistics_show(request):
             dt["error_times"] = int(error_times)
             toperror.append(dt)
     toperror = sorted(toperror,key=lambda l:l["error_times"],reverse = True)
+    commentTime=start+"_"+end
     c = RequestContext(request,{
         "start":start,
         "end":end,
         "sla":sla,
         "errors":errors,
         "toperror":toperror[:10],
+        "commentTime":commentTime,
+        "commentSLA":get_comment("sla",commentTime),
+        "commentError":get_comment("error",commentTime),
+        "commentTop":get_comment("top",commentTime),
+        "commentTicket":get_comment("ticket",commentTime),
         "stc_incidents":get_incidents("stc",start,end),
         "voda_incidents":get_incidents("voda",start,end),
         "zoota_incidents":get_incidents("zoota_vivas",start,end),
     })
     return render_to_response('servers/statistics_show.html',c)
+@login_required
+def addComment(request):
+    commentType = request.GET["type"]
+    comment = request.GET["comment"]
+    commentTime = request.GET["time"]
+    try:
+        c = StatisticsComment.objects.get(comment_time=commentTime,comment_type=commentType)
+        c.user = request.user
+        c.comment_type=commentType
+        c.content=comment
+        c.comment_time=commentTime
+        c.save()
+    except:
+        try:
+            StatisticsComment(user=request.user,comment_type=commentType,content=comment,comment_time=commentTime).save()
+        except:
+            return HttpResponse(u'<meta http-equiv="Refresh" content="0;URL=../?start=%s" /><script type="text/javascript">alert("更新失败 !");</script>' % commentTime.replace("_","&end="))
+    
+    return HttpResponse(u'<meta http-equiv="Refresh" content="0;URL=../?start=%s" /><script type="text/javascript">alert("更新成功 !");</script>' % commentTime.replace("_","&end="))

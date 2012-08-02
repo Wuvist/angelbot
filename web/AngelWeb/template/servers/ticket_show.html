@@ -1,4 +1,5 @@
 {% extends "base_site.html" %}
+{% load rrd_extras %}
 
 {% block content %}
 <button><a href="/ticket/">back to ticket list</a></button>
@@ -85,7 +86,7 @@
 	{% if edit %}
     <tr style="height:160px">
     <td class = "category" width="10%">Action Taken:</td>
-    <td colspan = "3" ><textarea style="width:400px;height:120px"  name="addaction" cols="40" rows="7"></textarea>
+    <td colspan = "3" ><textarea style="width:400px;height:120px"  name="addaction" cols="40" rows="7">{{ ticket|ticket_action }}</textarea>
     <input type="hidden" name="id" value="{{ ticket.id }}">
     <input style="position:relative;top:100px;" type="submit"  value = "Update Ticket"  /></td>
     </tr>
