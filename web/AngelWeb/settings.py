@@ -20,12 +20,14 @@ DATABASES = {
     }
 }
 
+CACHE_BACKEND = 'memcached://192.168.0.186:11211'
+
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = 'America/Chicago'
+TIME_ZONE = 'Asia/Shanghai'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -83,14 +85,10 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'AngelWeb.servers',
+    'AngelWeb.cmdb',
 )
 
 BOT_URL = 'http://localhost:8080/foo?'
 RRD_PATH = '/Users/Wuvist/source/angelbot/rrds/'
 LOGIN_REDIRECT_URL = '/'
-TICKET_DATABASE_HOST = ''
-TICKET_DATABASE_PORT = ''
-TICKET_DATABASE_NAME = ''
-TICKET_DATABASE_USERNAME = ''
-TICKET_DATABASE_PASSWORD = ''
 SMS_API = ''
