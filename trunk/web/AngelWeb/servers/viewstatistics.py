@@ -4,6 +4,7 @@ from django.views.generic.simple import direct_to_template
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import Context, loader, RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
+from django.core.cache import cache
 from servers.models import *
 from django.conf import settings
 from django.db.models import Count
@@ -408,14 +409,27 @@ def statistics_show_download(request):
     else:
         startTamp = int(time.mktime(time.strptime(start,"%Y-%m-%d")))
     start = time.strftime("%Y-%m-%d",time.localtime(startTamp))
+    mykey = (start+"_"+end).replace("-","")
     if request.GET["action"] == "error":
-        data = error_time(start,end)
+        if cache.get("error_download_"+mykey) != None:
+            data = cache.get("error_download_"+mykey)
+        else:
+            data = error_time(start,end)
+            cache.set("error_download_"+mykey,data,31536000)
         fileName = "error_report_"+start+"_"+end+".csv"
     elif request.GET["action"] == "ticket":
-        data = get_ticket(start,end)
+        if cache.get("ticket_download_"+mykey) != None:
+            data = cache.get("ticket_download_"+mykey)
+        else:
+            data = get_ticket(start,end)
+            cache.set("ticket_download_"+mykey,data,31536000)
         fileName = "ticket_report_"+start+"_"+end+".xls"
     elif request.GET["action"] == "sla":
-        data = get_sla(start,end)
+        if cache.get("sla_download_"+mykey) != None:
+            data = cache.get("sla_download_"+mykey)
+        else:
+            data = get_sla(start,end)
+            cache.set("sla_download_"+mykey,data,31536000)
         fileName = "sla_report_"+start+"_"+end+".csv"
     response = HttpResponse(data)
     response["content-type"] = "text/csv"
@@ -474,74 +488,101 @@ def statistics_show(request):
     else:
         startTamp = int(time.mktime(time.strptime(start,"%Y-%m-%d")))
     start = time.strftime("%Y-%m-%d",time.localtime(startTamp))
+    mykey = (start+"_"+end).replace("-","")
     widgets = Widget.objects.all()
     statisticsDay = StatisticsDay.objects.filter(date__gte = start,date__lte=end)
-    projects = ["stc","stc_local","voda","zoota_vivas","fast_50","mozat"];sla=[];errors=[];toperror=[]
-    for p in projects:
-        tmp = {"p":p}
-        wgls = widgets.filter(project__name=p,service_type__name="sla")
-        slas = statisticsDay.filter(widget__in = wgls)
-        login_bad_times=0;homepage_bad_times=0;login_all_times=0;homepage_all_times=0;keyong=100
-        for i in slas:
-            data = eval(i.content)
-            try:
-                login_bad_times += data['login_bad_times']
-                login_all_times += data['login_all_times']
-                homepage_bad_times += data['homepage_bad_times']
-                homepage_all_times += data['homepage_all_times']
-            except:
-                pass
-        badTimes = login_bad_times+homepage_bad_times
-        allTimes = login_all_times+homepage_all_times
-        if allTimes != 0:
-            keyong = 1-badTimes/float(allTimes)/len(wgls)
-        tmp["badTime"]=badTimes
-        tmp["keyong"]=str(keyong*100)[:10]+"%"
-        sla.append(tmp)
-    for p in projects:
-        grade = ["major","minor","serious"];tmppro = {"p":p}; tmpgrade={}
-        for g in grade:
-            tmp={};solveTime=[];solveTimeAvg=0;error_times=[]
-            wgls = widgets.filter(project__name=p,grade__title=g)
+    if cache.get("sla_"+mykey) != None:
+        sla =  cache.get("sla_"+mykey)
+    else:
+        projects = ["stc","stc_local","voda","zoota_vivas","fast_50","mozat"];sla=[];errors=[];toperror=[]
+        for p in projects:
+            tmp = {"p":p}
+            wgls = widgets.filter(project__name=p,service_type__name="sla")
             slas = statisticsDay.filter(widget__in = wgls)
+            login_bad_times=0;homepage_bad_times=0;login_all_times=0;homepage_all_times=0;keyong=1
             for i in slas:
+                data = eval(i.content)
                 try:
-                    data = eval(i.content)
-                    for k in data.keys():
-                        if k.endswith("error_interval_times"):
-                            error_times.append(data[k])
-                        elif k.endswith("error_interval_avg"):
-                            if int(data[k]) != 0:
-                                solveTime.append(data[k])
-                except:
-                     pass
-            if solveTime != []:
-               solveTimeAvg = sum(solveTime)/len(solveTime)
-            tmp["error_times"] = int(sum(error_times))
-            tmp["solveTimeAvg"] = int(solveTimeAvg)
-            tmpgrade[g] = tmp
-        tmppro["grade"] = tmpgrade
-        errors.append(tmppro)
-    
-    serviceType = WidgetServiceType.objects.all().exclude(name="others")
-    for p in projects:
-        for s in serviceType:
-            dt = {"project":p,"service":s.name}
-            wgls = widgets.filter(project__name=p,service_type=s)
-            slas = statisticsDay.filter(widget__in = wgls)
-            error_times = 0
-            for i in slas:
-                try:
-                    data = eval(i.content)
-                    for k in data.keys():
-                        if k.endswith("error_interval_times"):
-                            error_times += data[k]
+                    login_bad_times += data['login_bad_times']
+                    login_all_times += data['login_all_times']
+                    homepage_bad_times += data['homepage_bad_times']
+                    homepage_all_times += data['homepage_all_times']
                 except:
                     pass
-            dt["error_times"] = int(error_times)
-            toperror.append(dt)
-    toperror = sorted(toperror,key=lambda l:l["error_times"],reverse = True)
+            badTimes = login_bad_times+homepage_bad_times
+            allTimes = login_all_times+homepage_all_times
+            if allTimes != 0:
+                keyong = 1-badTimes/float(allTimes)/len(wgls)
+            tmp["badTime"]=badTimes
+            tmp["keyong"]=str(keyong*100)[:10]+"%"
+            sla.append(tmp)
+        cache.set("sla_"+mykey,sla,31536000)
+    if cache.get("errors_"+mykey) != None:
+        errors = cache.get("errors_"+mykey)
+    else:
+        for p in projects:
+            grade = ["major","minor","serious"];tmppro = {"p":p}; tmpgrade={}
+            for g in grade:
+                tmp={};solveTime=[];solveTimeAvg=0;error_times=[]
+                wgls = widgets.filter(project__name=p,grade__title=g)
+                slas = statisticsDay.filter(widget__in = wgls)
+                for i in slas:
+                    try:
+                        data = eval(i.content)
+                        for k in data.keys():
+                            if k.endswith("error_interval_times"):
+                                error_times.append(data[k])
+                            elif k.endswith("error_interval_avg"):
+                                if int(data[k]) != 0:
+                                    solveTime.append(data[k])
+                    except:
+                         pass
+                if solveTime != []:
+                   solveTimeAvg = sum(solveTime)/len(solveTime)
+                tmp["error_times"] = int(sum(error_times))
+                tmp["solveTimeAvg"] = int(solveTimeAvg)
+                tmpgrade[g] = tmp
+            tmppro["grade"] = tmpgrade
+            errors.append(tmppro)
+            cache.set("errors_"+mykey,errors,31536000)
+    if cache.get("top_"+mykey) != None:
+        toperror = cache.get("top_"+mykey)
+    else:
+        serviceType = WidgetServiceType.objects.all().exclude(name="others")
+        for p in projects:
+            for s in serviceType:
+                dt = {"project":p,"service":s.name}
+                wgls = widgets.filter(project__name=p,service_type=s)
+                slas = statisticsDay.filter(widget__in = wgls)
+                error_times = 0
+                for i in slas:
+                    try:
+                        data = eval(i.content)
+                        for k in data.keys():
+                            if k.endswith("error_interval_times"):
+                                error_times += data[k]
+                    except:
+                        pass
+                dt["error_times"] = int(error_times)
+                toperror.append(dt)
+        toperror = sorted(toperror,key=lambda l:l["error_times"],reverse = True)
+        cache.set("top_"+mykey,toperror,31536000)
     commentTime=start+"_"+end
+    if cache.get("stc_incidents_"+mykey) != None:
+        stc_incidents = cache.get("stc_incidents_"+mykey)
+    else:
+        stc_incidents = get_incidents("stc",start,end)
+        cache.set("stc_incidents_"+mykey,stc_incidents,31536000)
+    if cache.get("voda_incidents_"+mykey) != None:
+        voda_incidents = cache.get("voda_incidents_"+mykey)
+    else:
+        voda_incidents = get_incidents("voda",start,end)
+        cache.set("voda_incidents_"+mykey,voda_incidents,31536000)
+    if cache.get("zoota_incidents_"+mykey) != None:
+        zoota_incidents = cache.get("zoota_incidents_"+mykey)
+    else:
+        zoota_incidents = get_incidents("zoota_vivas",start,end)
+        cache.set("zoota_incidents_"+mykey,zoota_incidents,31536000)
     c = RequestContext(request,{
         "start":start,
         "end":end,
@@ -553,9 +594,9 @@ def statistics_show(request):
         "commentError":get_comment("error",commentTime),
         "commentTop":get_comment("top",commentTime),
         "commentTicket":get_comment("ticket",commentTime),
-        "stc_incidents":get_incidents("stc",start,end),
-        "voda_incidents":get_incidents("voda",start,end),
-        "zoota_incidents":get_incidents("zoota_vivas",start,end),
+        "stc_incidents":stc_incidents,
+        "voda_incidents":voda_incidents,
+        "zoota_incidents":zoota_incidents,
     })
     return render_to_response('servers/statistics_show.html',c)
 @login_required
@@ -576,4 +617,4 @@ def addComment(request):
         except:
             return HttpResponse(u'<meta http-equiv="Refresh" content="0;URL=../?start=%s" /><script type="text/javascript">alert("更新失败 !");</script>' % commentTime.replace("_","&end="))
     
-    return HttpResponse(u'<meta http-equiv="Refresh" content="0;URL=../?start=%s" /><script type="text/javascript">alert("更新成功 !");</script>' % commentTime.replace("_","&end="))
+    return HttpResponse(u'<meta http-equiv="Refresh" content="0;URL=../?start=%s" />' % commentTime.replace("_","&end="))
