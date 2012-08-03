@@ -483,11 +483,16 @@ def statistics_show(request):
     end = request.GET.get("end",time.strftime("%Y-%m-%d"))
     start = request.GET.get("start","")
     endTamp = int(time.mktime(time.strptime(end,"%Y-%m-%d")))
+    if endTamp > int(time.mktime(time.strptime(time.strftime("%Y-%m-%d"),"%Y-%m-%d"))):
+        endTamp = int(time.mktime(time.strptime(time.strftime("%Y-%m-%d"),"%Y-%m-%d")))
     if start == "" or start == end:
         startTamp = endTamp - 86400
     else:
         startTamp = int(time.mktime(time.strptime(start,"%Y-%m-%d")))
+        if startTamp < int(time.mktime(time.strptime("2012-07-01","%Y-%m-%d"))):
+            startTamp = int(time.mktime(time.strptime("2012-07-01","%Y-%m-%d")))
     start = time.strftime("%Y-%m-%d",time.localtime(startTamp))
+    end= time.strftime("%Y-%m-%d",time.localtime(endTamp))
     mykey = (start+"_"+end).replace("-","")
     widgets = Widget.objects.all()
     statisticsDay = StatisticsDay.objects.filter(date__gte = start,date__lte=end)
