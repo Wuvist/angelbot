@@ -476,12 +476,12 @@ def statistics_show(request):
     start = time.strftime("%Y-%m-%d",time.localtime(startTamp))
     widgets = Widget.objects.all()
     statisticsDay = StatisticsDay.objects.filter(date__gte = start,date__lte=end)
-    projects = ["stc","voda","zoota_vivas","fast_50","mozat"];sla=[];errors=[];toperror=[]
+    projects = ["stc","stc_local","voda","zoota_vivas","fast_50","mozat"];sla=[];errors=[];toperror=[]
     for p in projects:
         tmp = {"p":p}
         wgls = widgets.filter(project__name=p,service_type__name="sla")
         slas = statisticsDay.filter(widget__in = wgls)
-        login_bad_times=0;homepage_bad_times=0;login_all_times=0;homepage_all_times=0;keyong=0
+        login_bad_times=0;homepage_bad_times=0;login_all_times=0;homepage_all_times=0;keyong=100
         for i in slas:
             data = eval(i.content)
             try:
