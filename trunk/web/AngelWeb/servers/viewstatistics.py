@@ -376,7 +376,7 @@ def statistics_show_download(request):
         from subprocess import Popen, PIPE
         start = str(int(time.mktime(datetime.strptime(request.GET["start"], "%Y-%m-%d").timetuple())))
         end = str(int(time.mktime(datetime.strptime(request.GET["end"], "%Y-%m-%d").timetuple())))
-        projects = ["stc","voda","zoota_vivas","fast_50","mozat"];result = [u"项目,节点,中断时间,login,homepage".encode("gbk")]
+        projects = ["stc","stc_local","voda","zoota_vivas","fast_50","mozat"];result = [u"项目,节点,中断时间,login,homepage".encode("gbk")]
         for project in projects:
             widgets = Widget.objects.filter(project__name=project,service_type__name="sla")
             for widget in widgets:
