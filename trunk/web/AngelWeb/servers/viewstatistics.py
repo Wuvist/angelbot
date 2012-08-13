@@ -297,10 +297,42 @@ def statistics_show_download(request):
                                     ls.append(",".join(tmp))
                                     x += 1
                     except:
-                         pass
+                        pass
             result.append("\n".join(ls)) 
         data = "\n".join(result)
         return data
+    def get_top(star,end):
+        result = [u"编号,项目,服务重要性,服务大类,服务小类,报错widget,字段,开始时间,结束时间,时长(分钟),解决办法".encode("gbk")];x=1
+        serviceType = WidgetServiceType.objects.all().exclude(name__in=["others","windows_server_perfmon"])
+        statisticsDay = StatisticsDay.objects.filter(date__gte = start,date__lte=end)
+        for p in ["stc","stc_local","voda","zoota_vivas","fast_50","mozat"]:
+            ls = []
+            for s in serviceType:
+                wgls = Widget.objects.filter(project__name=p,service_type=s)
+                slas = statisticsDay.filter(widget__in = wgls)
+                for i in slas:
+                    try:
+                        data = eval(i.content)
+                        for k in data.keys():
+                            if k.endswith("_interval_error_time") and len(data[k]) != 0:
+                                for l in range(0,len(data[k]),2):
+                                    tmp = [str(x)]
+                                    tmp.append(p)
+                                    tmp.append(str(i.widget.grade.title))
+                                    tmp.append(str(i.widget.service_type.type.name))
+                                    tmp.append(str(i.widget.service_type.name))
+                                    tmp.append(str(i.widget.title))
+                                    tmp.append(k.split("_in")[0])
+                                    tmp+=data[k][l:l+2]
+                                    tmp.append(str((time.mktime(time.strptime(data[k][l:l+2][1],"%Y-%m-%d %H:%M:%S"))-time.mktime(time.strptime(data[k][l:l+2][0],"%Y-%m-%d %H:%M:%S")))/60))
+                                    ls.append(",".join(tmp))
+                                    x += 1
+                    except:
+                        pass
+            result.append("\n".join(ls)) 
+        data = "\n".join(result)
+        return data
+        
     def get_ticket(start,end):
         from cStringIO import StringIO
         from xlwt.Formatting import Font
@@ -431,6 +463,13 @@ def statistics_show_download(request):
             data = get_sla(start,end)
             cache.set("sla_download_"+mykey,data,31536000)
         fileName = "sla_report_"+start+"_"+end+".csv"
+    elif request.GET["action"] == "top":
+        if cache.get("top_download_"+mykey) != None:
+            data = cache.get("top_download_"+mykey)
+        else:
+            data = get_top(start,end)
+            cache.set("top_download_"+mykey,data,31536000)
+        fileName = "top_error_"+start+"_"+end+".csv"
     response = HttpResponse(data)
     response["content-type"] = "text/csv"
     response["content-disposition"] = "attachment; filename=%s" % fileName
@@ -496,10 +535,10 @@ def statistics_show(request):
     mykey = (start+"_"+end).replace("-","")
     widgets = Widget.objects.all()
     statisticsDay = StatisticsDay.objects.filter(date__gte = start,date__lte=end)
+    projects = ["stc","stc_local","voda","zoota_vivas","fast_50","mozat"];sla=[];errors=[];toperror=[]
     if cache.get("sla_"+mykey) != None:
         sla =  cache.get("sla_"+mykey)
     else:
-        projects = ["stc","stc_local","voda","zoota_vivas","fast_50","mozat"];sla=[];errors=[];toperror=[]
         for p in projects:
             tmp = {"p":p}
             wgls = widgets.filter(project__name=p,service_type__name="sla")
@@ -553,7 +592,7 @@ def statistics_show(request):
     if cache.get("top_"+mykey) != None:
         toperror = cache.get("top_"+mykey)
     else:
-        serviceType = WidgetServiceType.objects.all().exclude(name="others")
+        serviceType = WidgetServiceType.objects.all().exclude(name__in=["others","windows_server_perfmon"])
         for p in projects:
             for s in serviceType:
                 dt = {"project":p,"service":s.name}
