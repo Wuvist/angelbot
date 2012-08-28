@@ -286,7 +286,7 @@ def cmdbDeployment(request):
                     for ss in serviceServers:
                         yservice = yserver - h
                         drawRect(c,ss.name+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']','white',xxservice,yservice,w,h)
-                        for sss in services.filter(server_id = ss.server_id).exclude(service_type__contains="IDC"):
+                        for sss in services.filter(ip = ss.ip).exclude(service_type__contains="IDC"):
                             wservices = w
                             yservice -= h
                             yls.append(yservice)
