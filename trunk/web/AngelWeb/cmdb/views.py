@@ -43,7 +43,7 @@ def syncdbservers(request):
             ser.hard_disk = s.hard_disk
             ser.server_function = s.server_function
             ser.server_type = s.server_type
-            ser.idc = s.name
+            ser.idc = s.idc.name
             ser.remark = s.remark
             ser.available = "Y"
             ser.created_on = s.created_on
