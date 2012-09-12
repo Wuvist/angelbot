@@ -148,41 +148,46 @@ def statistics_update(request):
             def run(self):
                 flag=False;flags=0.0;fl=False;fls=0.0;errorTimes=0;i=0;intervalFl=False
                 good=[];normal=[];bad=[];gdef = self.ddef[1];bdef = self.ddef[2];
-                goodAvg=0;normalAvg=0;badAvg=0;a=0;x=[];y=0;interval=5
+                goodAvg=0;normalAvg=0;badAvg=0;a=0;x=[];y=0;interval=20
                 intervalErrorTime = [];errorTimeAvg = 0;allsAvg = 0;errorIntervalTimeAvg = 0
                 for d in self.data:
                     i += 60
-                    if d[self.index] != None:
-                        if eval(str(d[self.index])+bdef):
+                    if d[self.index] == None or eval(str(d[self.index])+bdef):
+                        if d[self.index] == None:
+                            bad.append(0)
+                        else:
                             bad.append(d[self.index])
-                        elif eval(str(d[self.index])+gdef):
+                    elif d[self.index] == None or eval(str(d[self.index])+gdef):
+                        if d[self.index] == None and self.widget.service_type.name=="sla":
+                            normal.append(0)
+                        elif d[self.index] != None:
                             normal.append(d[self.index])
                             if intervalFl:
                                 intervalErrorTime.append(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(self.time[0]+i)))
                                 intervalFl = False
-                        else:
-                            good.append(d[self.index])
-                            if intervalFl:
-                                intervalErrorTime.append(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(self.time[0]+i)))
-                                intervalFl = False
-                        if not flag and eval(str(d[self.index])+bdef):
-                            flag = True
-                            flags += 1
-                            a = 0
-                        elif not eval(str(d[self.index])+bdef) and flag:
-                           flag = False
-                        if flag:
-                            a += 1
-                            if not fl and a >= interval:
-                                fl = True
-                                fls += 1
-                                intervalErrorTime.append(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(self.time[0]+i-(interval-1)*60)))
-                                intervalFl = True
-                            elif a < interval and fl:
-                                fl = False
-                                x.append(y)
-                            if fl:
-                                y = a
+                    elif d[self.index] != None:
+                        good.append(d[self.index])
+                        if intervalFl:
+                            intervalErrorTime.append(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(self.time[0]+i)))
+                            intervalFl = False
+                    if not flag and d[self.index] == None or eval(str(d[self.index])+bdef):
+                        flag = True
+                        flags += 1
+                        a = 0
+                    elif d[self.index] != None and not eval(str(d[self.index])+bdef) and flag:
+                       flag = False
+                    if flag:
+                        a += 1
+                        if not fl and a >= interval:
+                            fl = True
+                            fls += 1
+                            intervalErrorTime.append(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(self.time[0]+i-(interval-1)*60)))
+                            intervalFl = True
+                        elif a < interval and fl:
+                            fl = False
+                            x.append(y)
+                        if fl:
+                            y = a
                 if fls != len(x):x.append(a)
                 alls = good + normal + bad
                 if flags != 0:errorTimeAvg = len(bad)/flags
@@ -425,7 +430,7 @@ def statistics_show_download(request):
                             tmp = [project,widget.title.encode("gbk")]
                             i = i.split()
                             login = str(int(float(i[1])));homepage = str(int(float(i[2])))
-                            if eval(login+data_def["login"][2]) or eval(homepage+data_def["homepage"][2]):
+                            if eval(login+data_def["login"][1]) or eval(homepage+data_def["homepage"][1]):
                                  tmp.append(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(i[0][:-1]))))
                                  tmp.append(login)
                                  tmp.append(homepage)
@@ -443,30 +448,31 @@ def statistics_show_download(request):
     else:
         startTamp = int(time.mktime(time.strptime(start,"%Y-%m-%d")))
     start = time.strftime("%Y-%m-%d",time.localtime(startTamp))
+    refresh = request.GET.get("refresh",False)
     mykey = (start+"_"+end).replace("-","")
     if request.GET["action"] == "error":
-        if cache.get("error_download_"+mykey) != None:
+        if cache.get("error_download_"+mykey) != None and refresh == False:
             data = cache.get("error_download_"+mykey)
         else:
             data = error_time(start,end)
             cache.set("error_download_"+mykey,data,31536000)
         fileName = "error_report_"+start+"_"+end+".csv"
     elif request.GET["action"] == "ticket":
-        if cache.get("ticket_download_"+mykey) != None:
+        if cache.get("ticket_download_"+mykey) != None and refresh == False:
             data = cache.get("ticket_download_"+mykey)
         else:
             data = get_ticket(start,end)
             cache.set("ticket_download_"+mykey,data,31536000)
         fileName = "ticket_report_"+start+"_"+end+".xls"
     elif request.GET["action"] == "sla":
-        if cache.get("sla_download_"+mykey) != None:
+        if cache.get("sla_download_"+mykey) != None and refresh == False:
             data = cache.get("sla_download_"+mykey)
         else:
             data = get_sla(start,end)
             cache.set("sla_download_"+mykey,data,31536000)
         fileName = "sla_report_"+start+"_"+end+".csv"
     elif request.GET["action"] == "top":
-        if cache.get("top_download_"+mykey) != None:
+        if cache.get("top_download_"+mykey) != None and refresh == False:
             data = cache.get("top_download_"+mykey)
         else:
             data = get_top(start,end)
@@ -534,11 +540,12 @@ def statistics_show(request):
             startTamp = int(time.mktime(time.strptime("2012-07-01","%Y-%m-%d")))
     start = time.strftime("%Y-%m-%d",time.localtime(startTamp))
     end= time.strftime("%Y-%m-%d",time.localtime(endTamp))
+    refresh = request.GET.get("refresh",False)
     mykey = (start+"_"+end).replace("-","")
     widgets = Widget.objects.all()
     statisticsDay = StatisticsDay.objects.filter(date__gte = start,date__lte=end)
     projects = ["stc","stc_local","voda","zoota_vivas","fast_50","mozat"];sla=[];errors=[];toperror=[]
-    if cache.get("sla_"+mykey) != None:
+    if cache.get("sla_"+mykey) != None and refresh == False:
         sla =  cache.get("sla_"+mykey)
     else:
         for p in projects:
@@ -549,9 +556,9 @@ def statistics_show(request):
             for i in slas:
                 data = eval(i.content)
                 try:
-                    login_bad_times += data['login_bad_times']
+                    login_bad_times += data['login_normal_times']
                     login_all_times += data['login_all_times']
-                    homepage_bad_times += data['homepage_bad_times']
+                    homepage_bad_times += data['homepage_normal_times']
                     homepage_all_times += data['homepage_all_times']
                 except:
                     pass
@@ -563,7 +570,7 @@ def statistics_show(request):
             tmp["keyong"]=str(keyong*100)[:10]+"%"
             sla.append(tmp)
         cache.set("sla_"+mykey,sla,31536000)
-    if cache.get("errors_"+mykey) != None:
+    if cache.get("errors_"+mykey) != None and refresh == False:
         errors = cache.get("errors_"+mykey)
     else:
         for p in projects:
@@ -591,7 +598,7 @@ def statistics_show(request):
             tmppro["grade"] = tmpgrade
             errors.append(tmppro)
             cache.set("errors_"+mykey,errors,31536000)
-    if cache.get("top_"+mykey) != None:
+    if cache.get("top_"+mykey) != None and refresh == False:
         toperror = cache.get("top_"+mykey)
     else:
         serviceType = WidgetServiceType.objects.all().exclude(name__in=["others","windows_server_perfmon"])
@@ -614,17 +621,17 @@ def statistics_show(request):
         toperror = sorted(toperror,key=lambda l:l["error_times"],reverse = True)
         cache.set("top_"+mykey,toperror,31536000)
     commentTime=start+"_"+end
-    if cache.get("stc_incidents_"+mykey) != None:
+    if cache.get("stc_incidents_"+mykey) != None and refresh == False:
         stc_incidents = cache.get("stc_incidents_"+mykey)
     else:
         stc_incidents = get_incidents("stc",start,end)
         cache.set("stc_incidents_"+mykey,stc_incidents,31536000)
-    if cache.get("voda_incidents_"+mykey) != None:
+    if cache.get("voda_incidents_"+mykey) != None and refresh == False:
         voda_incidents = cache.get("voda_incidents_"+mykey)
     else:
         voda_incidents = get_incidents("voda",start,end)
         cache.set("voda_incidents_"+mykey,voda_incidents,31536000)
-    if cache.get("zoota_incidents_"+mykey) != None:
+    if cache.get("zoota_incidents_"+mykey) != None and refresh == False:
         zoota_incidents = cache.get("zoota_incidents_"+mykey)
     else:
         zoota_incidents = get_incidents("zoota_vivas",start,end)
@@ -632,6 +639,7 @@ def statistics_show(request):
     c = RequestContext(request,{
         "start":start,
         "end":end,
+        "refresh":refresh,
         "sla":sla,
         "errors":errors,
         "toperror":toperror[:10],
