@@ -56,7 +56,7 @@
 <div id="download_div" style="display:none;width:800px">
 	<form action="/cmdb/deployment/" method="GET">
 		{% for p in projects_d %}
-			<h><input type='checkbox' class='usercheck' name = 'ps' value = {{p}} />{{p}}</h>&nbsp;
+			<h><input type='checkbox' class='usercheck' name = 'ps' value ='{{p}}' />{{p}}</h>&nbsp;
 			{% endfor %}
 			<h><input type='checkbox' id='chkAll' value = "checkall"  onclick='select_all()'/>All</h></h><br>
 			<input type="submit" value="Download"  />
