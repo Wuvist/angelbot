@@ -267,7 +267,9 @@ def cmdbDeployment(request):
                 if maxXX > maxX - 10:
                     xserver = x
                     maxXX = wserver
-                    if yls != []:
+                    if yls == []:
+                        yserver -= 60
+                    else:
                         yserver = min(yls) - 1.5*h
                         yls = []
                 drawRect(c,'',"white",xserver,yserver,wserver,h)
