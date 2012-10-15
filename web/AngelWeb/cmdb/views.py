@@ -267,8 +267,9 @@ def cmdbDeployment(request):
                 if maxXX > maxX - 10:
                     xserver = x
                     maxXX = wserver
-                    yserver = min(yls) - 1.5*h
-                    yls = []
+                    if yls != []:
+                        yserver = min(yls) - 1.5*h
+                        yls = []
                 drawRect(c,'',"white",xserver,yserver,wserver,h)
                 c.drawCentredString(xserver+wserver/2,yserver+h*4/7,s.name+'('+s.ip[8:]+')')
                 c.drawCentredString(xserver+wserver/2,yserver+h*1/7,'['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+']')
