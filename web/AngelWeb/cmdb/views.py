@@ -319,8 +319,8 @@ def cmdbDeployment(request):
     
     x = 1000;y = 500;
     services = Service.objects.filter(available = "Y").order_by("ip")
-    servers = Server.objects.all()
-    servers_p = Server.objects.filter(physical_server = "Y",available = "Y")
+    servers = Server.objects.filter(available = "Y")
+    servers_p = servers.objects.filter(physical_server = "Y")
     projects =  request.GET.getlist("ps")    
     if len(projects) == 0:
         projects = servers.values_list("project",flat = True).annotate()
