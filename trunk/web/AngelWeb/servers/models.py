@@ -15,8 +15,9 @@ PHYSICAL_SERVER_CHOICES = (
 )
 
 SERVER_FUNCTION_CHOICES = (
-    ('D', 'DB'),
     ('A', 'APP'),
+    ('D', 'DB'),
+    ('V', 'VMware'),
 )
 
 ALARM_TYPE_CHOICES = (

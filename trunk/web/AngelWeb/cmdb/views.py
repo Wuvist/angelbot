@@ -54,7 +54,7 @@ def syncdbservers(request):
     else:
         LastUpdate.objects.filter(title = "cmdbServerLastUpdate").update(created_on = datetime.now())
         
-    return HttpResponseRedirect('/cmdb/servers/')
+    return HttpResponse('<script type="text/javascript">window.history.back();</script>')
 
 @login_required
 def show_servers(request):
@@ -153,7 +153,7 @@ def syncdbservices(request):
     else:
         LastUpdate.objects.filter(title = "cmdbServiceLastUpdate").update(created_on = datetime.now())
         
-    return HttpResponseRedirect('/cmdb/services/')
+    return HttpResponse('<script type="text/javascript">window.history.back();</script>')
 
 
 @login_required
@@ -249,7 +249,7 @@ def cmdbDeployment(request):
         for pro in projects:
             logo += 1
             x=10;y=maxY-100;w=100;h=20;yserver = y - 20;xserver = x;xservice = x;maxXX = x;yls = [];colorDict = {}
-            pservers = servers_p.filter(project = pro)
+            pservers = servers_p.filter(project = pro).order_by("server_function")
             c.setFont("Helvetica", 12)
             c.drawCentredString(maxX/2,maxY-20,pro +" deployment")
             c.setStrokeColor("black")
