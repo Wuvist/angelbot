@@ -259,7 +259,7 @@ def cmdbDeployment(request):
             c.drawString(maxX-247,maxY-30,"Server(ip)[cores-RAM-HD]")
             c.drawString(x+20,maxY-50,"IDC: " + pservers[0].idc)
             for s in pservers:
-                wx = len(Server.objects.filter(physical_server_ip = s.physical_server_ip))
+                wx = len(servers.filter(physical_server_ip = s.physical_server_ip))
                 if wx > 1:
                     wx -= 1
                 wserver = w*wx
