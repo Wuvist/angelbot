@@ -13,8 +13,9 @@ YES_OR_NO_CHOICES = (
 )
 
 SERVER_FUNCTION_CHOICES = (
-    ('D', 'DB'),
     ('A', 'APP'),
+    ('D', 'DB'),
+    ('V', 'VMware'),
 )
 
 class Server(models.Model):
