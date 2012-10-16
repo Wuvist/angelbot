@@ -605,7 +605,7 @@ def statistics_show(request):
         for p in projects:
             for s in serviceType:
                 dt = {"project":p,"service":s.name}
-                wgls = widgets.filter(project__name=p,service_type=s)
+                wgls = widgets.filter(project__name=p,service_type=s,dashboard__id=1)
                 slas = statisticsDay.filter(widget__in = wgls)
                 error_times = 0
                 for i in slas:
