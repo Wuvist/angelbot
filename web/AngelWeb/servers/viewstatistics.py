@@ -313,7 +313,7 @@ def statistics_show_download(request):
         for p in ["stc","stc_local","voda","zoota_vivas","fast_50","mozat"]:
             ls = []
             for s in serviceType:
-                wgls = Widget.objects.filter(project__name=p,service_type=s)
+                wgls = Widget.objects.filter(project__name=p,service_type=s,dashboard__id=1)
                 slas = statisticsDay.filter(widget__in = wgls)
                 for i in slas:
                     try:
@@ -450,31 +450,32 @@ def statistics_show_download(request):
     start = time.strftime("%Y-%m-%d",time.localtime(startTamp))
     refresh = request.GET.get("refresh",False)
     mykey = (start+"_"+end).replace("-","")
+    if refresh:
+        cache.delete("error_download_"+mykey)
+        cache.delete("ticket_download_"+mykey)
+        cache.delete("sla_download_"+mykey)
+        cache.delete("top_download_"+mykey)
     if request.GET["action"] == "error":
-        if cache.get("error_download_"+mykey) != None and refresh == False:
-            data = cache.get("error_download_"+mykey)
-        else:
+        data = cache.get("error_download_"+mykey)
+        if data == None:
             data = error_time(start,end)
             cache.set("error_download_"+mykey,data,31536000)
         fileName = "error_report_"+start+"_"+end+".csv"
     elif request.GET["action"] == "ticket":
-        if cache.get("ticket_download_"+mykey) != None and refresh == False:
-            data = cache.get("ticket_download_"+mykey)
-        else:
+        data = cache.get("ticket_download_"+mykey)
+        if data == None:
             data = get_ticket(start,end)
             cache.set("ticket_download_"+mykey,data,31536000)
         fileName = "ticket_report_"+start+"_"+end+".xls"
     elif request.GET["action"] == "sla":
-        if cache.get("sla_download_"+mykey) != None and refresh == False:
-            data = cache.get("sla_download_"+mykey)
-        else:
+        data = cache.get("sla_download_"+mykey)
+        if data == None:
             data = get_sla(start,end)
             cache.set("sla_download_"+mykey,data,31536000)
         fileName = "sla_report_"+start+"_"+end+".csv"
     elif request.GET["action"] == "top":
-        if cache.get("top_download_"+mykey) != None and refresh == False:
-            data = cache.get("top_download_"+mykey)
-        else:
+        data = cache.get("top_download_"+mykey)
+        if data == None:
             data = get_top(start,end)
             cache.set("top_download_"+mykey,data,31536000)
         fileName = "top_error_"+start+"_"+end+".csv"
@@ -544,10 +545,9 @@ def statistics_show(request):
     mykey = (start+"_"+end).replace("-","")
     widgets = Widget.objects.all()
     statisticsDay = StatisticsDay.objects.filter(date__gte = start,date__lte=end)
-    projects = ["stc","stc_local","voda","zoota_vivas","fast_50","mozat"];sla=[];errors=[];toperror=[]
-    if cache.get("sla_"+mykey) != None and refresh == False:
-        sla =  cache.get("sla_"+mykey)
-    else:
+    projects = ["stc","stc_local","voda","zoota_vivas","fast_50","mozat"]
+    def get_sla():
+        sla = []
         for p in projects:
             tmp = {"p":p}
             wgls = widgets.filter(project__name=p,service_type__name="sla")
@@ -569,10 +569,9 @@ def statistics_show(request):
             tmp["badTime"]=badTimes
             tmp["keyong"]=str(keyong*100)[:10]+"%"
             sla.append(tmp)
-        cache.set("sla_"+mykey,sla,31536000)
-    if cache.get("errors_"+mykey) != None and refresh == False:
-        errors = cache.get("errors_"+mykey)
-    else:
+        return sla
+    def get_errors():
+        errors = []
         for p in projects:
             grade = ["major","minor","serious"];tmppro = {"p":p}; tmpgrade={}
             for g in grade:
@@ -597,10 +596,9 @@ def statistics_show(request):
                 tmpgrade[g] = tmp
             tmppro["grade"] = tmpgrade
             errors.append(tmppro)
-            cache.set("errors_"+mykey,errors,31536000)
-    if cache.get("top_"+mykey) != None and refresh == False:
-        toperror = cache.get("top_"+mykey)
-    else:
+            return errors
+    def top_error():
+        toperror = []
         serviceType = WidgetServiceType.objects.all().exclude(name__in=["others","windows_server_perfmon"])
         for p in projects:
             for s in serviceType:
@@ -619,21 +617,37 @@ def statistics_show(request):
                 dt["error_times"] = int(error_times)
                 toperror.append(dt)
         toperror = sorted(toperror,key=lambda l:l["error_times"],reverse = True)
-        cache.set("top_"+mykey,toperror,31536000)
+        return toperror
     commentTime=start+"_"+end
-    if cache.get("stc_incidents_"+mykey) != None and refresh == False:
-        stc_incidents = cache.get("stc_incidents_"+mykey)
-    else:
+    if refresh:
+        cache.delete("sla_"+mykey)
+        cache.delete("errors_"+mykey)
+        cache.delete("top_"+mykey)
+        cache.delete("stc_incidents_"+mykey)
+        cache.delete("voda_incidents_"+mykey)
+        cache.delete("zoota_incidents_"+mykey)
+    sla =  cache.get("sla_"+mykey)
+    if sla == None:
+        sla = get_sla()
+        cache.set("sla_"+mykey,sla,31536000)
+    errors = cache.get("errors_"+mykey)
+    if errors == None:
+        errors = get_errors()
+        cache.set("errors_"+mykey,errors,31536000)
+    toperror = cache.get("top_"+mykey)
+    if toperror == None:
+        toperror = top_error()
+        cache.set("top_"+mykey,toperror,31536000)
+    stc_incidents = cache.get("stc_incidents_"+mykey)
+    if stc_incidents == None:
         stc_incidents = get_incidents("stc",start,end)
         cache.set("stc_incidents_"+mykey,stc_incidents,31536000)
-    if cache.get("voda_incidents_"+mykey) != None and refresh == False:
-        voda_incidents = cache.get("voda_incidents_"+mykey)
-    else:
+    voda_incidents = cache.get("voda_incidents_"+mykey)
+    if voda_incidents == None:
         voda_incidents = get_incidents("voda",start,end)
         cache.set("voda_incidents_"+mykey,voda_incidents,31536000)
-    if cache.get("zoota_incidents_"+mykey) != None and refresh == False:
-        zoota_incidents = cache.get("zoota_incidents_"+mykey)
-    else:
+    zoota_incidents = cache.get("zoota_incidents_"+mykey)
+    if zoota_incidents == None:
         zoota_incidents = get_incidents("zoota_vivas",start,end)
         cache.set("zoota_incidents_"+mykey,zoota_incidents,31536000)
     c = RequestContext(request,{
