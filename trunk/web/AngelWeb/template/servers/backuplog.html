@@ -59,12 +59,12 @@
 	<th>序号</th><th>类型</th><th>负责人</th><th>邮箱</th><th>日记文件名</th><th>时间</th><th>状态</th><th>结果</th><th>执行</th><th>备注</th>
 	{% for i in result %}
 	<tr><td>{{ forloop.counter }}</td><td>{{i.0}}</td><td>{{i.1}}</td><td>{{i.2}}</td><td>{{i.3}}</td><td>{{i.4|safe}}</td><td>{{i.5|safe}}</td><td>{{i.6}}</td>
-	<td><input id="inputtext" type="text" name="name" value="10" styles="with:10">&nbsp;<input id="button" type="button" name="but" value = "Tail lines" /></td>
+	<td><input id="inputtext" type="text" name="name" value="10" styles="with:10">&nbsp;<input id="button" type="button" name="but" value = "查看行数" /></td>
 	<td>{{i.7}}</td><td><input id="edit" type="button" name="edit" value="编辑"></td></tr>
         {% endfor %}
 
 </table>
-<div id="logremark" style="display:none;position:absolute;left:30%;top:100px;width:400px;height:400px;background-color:#ddeeff;z-index:1">
+<div id="logremark" style="display:none;position:fixed;left:30%;top:20%;width:400px;height:400px;background-color:#ddeeff;z-index:1">
 	<form action="" method="GET">
 	<h2>&nbsp;编辑日记文件属性</h2>
 	<span style="position:absolute;right:.3em;top:5%;width:39px;margin:-10px 0 0 0;padding:1px;height:18px;"><input id="close" type="button" value = "关闭" /></span>

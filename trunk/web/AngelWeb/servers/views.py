@@ -1440,7 +1440,7 @@ def backuplog(request):
     c = RequestContext(request,
         {"result":result,
         })
-    return render_to_response('servers.backuplog.html',c)
+    return render_to_response('servers/backuplog.html',c)
 
 def showdetail(request):
     import os
