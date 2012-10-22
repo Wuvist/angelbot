@@ -7,6 +7,7 @@ from django.conf import settings
 SERVER_TYPE_CHOICES = (
     ('W', 'Windows'),
     ('L', 'Linux'),
+    ('V', 'VMware'),
 )
 
 PHYSICAL_SERVER_CHOICES = (
@@ -53,8 +54,8 @@ class IDC(models.Model):
         ordering = ["name"]
 
 class Server(models.Model):
-    ip = models.IPAddressField(max_length=200)
-    name = models.CharField(max_length=50)
+    ip = models.IPAddressField(max_length=200, unique = True)
+    name = models.CharField(max_length=50, unique = True)
     username = models.CharField(max_length=50)
     password = models.CharField(max_length=50)
     project = models.ForeignKey(Project)
@@ -409,5 +410,19 @@ class StatisticsComment(models.Model):
     def __unicode__(self):
         return self.comment_type+" "+self.content
 
+    class Meta:
+        ordering = ["-created_on"]
+
+class BackupLog(models.Model):
+    name = models.CharField(max_length=64, null = True, blank = True)
+    email= models.CharField(max_length=64, null = True, blank = True)
+    log_type = models.CharField(max_length=64, null = True, blank = True)
+    log_name = models.CharField(max_length=64, null = True, blank = True)
+    remark= models.TextField(null = True, blank = True)
+    created_on = models.DateTimeField(auto_now_add = True)
+    
+    def __unicode__(self):
+        return self.log_name+"  "+self.name
+    
     class Meta:
         ordering = ["-created_on"]

@@ -47,5 +47,8 @@ urlpatterns = patterns('',
     (r'^statistics/show/download/$', 'servers.viewstatistics.statistics_show_download'),
     (r'^ticket/$', 'servers.viewstatistics.ticket'),
     (r'^ticket/show/(\d+)$', 'servers.viewstatistics.ticket_show'),
+    (r'^backuplog/showinfo/$', 'servers.views.backuplog'),
+    (r'^backuplog/showinfo/showdetail/$', 'servers.views.showdetail'),
+
     
 )

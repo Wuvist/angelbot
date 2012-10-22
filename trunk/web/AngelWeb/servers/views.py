@@ -10,6 +10,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from datetime import datetime
+import time
 
 @login_required()
 def show(request, server_id):
@@ -1370,4 +1371,99 @@ def alarm(request):
         "frequentAlarmLogs":frequentAlarmLogs,
         })
     return render_to_response('servers/auto_alarm.html',c)
+
+def backuplog(request):
+    import os
+    from tail import tail
+    result = []
+    logpath = settings.LOGPATH
+    files = os.listdir(logpath)
+    timeNow = datetime.now()
+    logName = request.GET.get("logname",False)
+    if logName:
+        try:
+            try:
+                log = BackupLog.objects.get(log_name=logName)
+            except:
+                log = BackupLog()
+            log.name = request.GET["p"]
+            log.email = request.GET["e"]
+            log.log_type = request.GET["t"]
+            log.log_name = logName
+            log.remark = request.GET["r"]
+            log.save()
+        except:
+            pass
+        return HttpResponseRedirect("/backuplog/showinfo/")
+    for i in files:
+        try:
+            lsi=[]
+            try:
+                data = ""
+                data = os.popen("tail -1 "+(logpath+i).replace("(","\\(").replace(")","\\)").replace("\.","\\.")).read().split("^")
+            except:
+                data = tail(logpath+i,2)[0].split("^")
+            lsi.append(i)
+            lastTime = datetime.strptime(data[0], "%Y-%m-%d %H:%M:%S")
+            mytimes = timeNow- lastTime
+            if int(mytimes.days) > 0:
+                mytime = 1440 * int(mytimes.days) + mytimes.seconds/60
+            else:
+                mytime =  mytimes.seconds/60
+            if mytime > int(data[1]):
+                lsi.append(data[0]+"<div class='errornote'>No update</div>")
+            else:
+                lsi.append(data[0].replace("_"," "))
+            if data[2] == "error":
+                lsi.append("<div class='errornote'>error</div>")
+            else:
+                lsi.append(data[2])
+            if len(data[3]) > 40:
+                lsi.append(data[3].replace("nnn","")[:37]+"...")
+            else:
+                lsi.append(data[3].replace("nnn","")+"")
+            try:
+                data = BackupLog.objects.get(log_name=i)
+                lsi.insert(0,data.email)
+                lsi.insert(0,data.name)
+                lsi.insert(0,data.log_type)
+                lsi.append(data.remark)
+            except:
+                lsi.insert(0,"")
+                lsi.insert(0,"")
+                lsi.insert(0,"")
+                lsi.append("")
+            result.append(lsi)
+        except:
+            result.append(i+"<div class='errornote'>log format error</div>")
+
+    c = RequestContext(request,
+        {"result":result,
+        })
+    return render_to_response('servers.backuplog.html',c)
+
+def showdetail(request):
+    import os
+    from tail import tail
+    logPath = settings.LOGPATH
+    namels = ["win_C_IO.csv","linux_IO.csv","win_CPU.csv","linux_CPU.csv"]
+    name = request.GET["name"]
+    lines = request.GET["l"]
+    if name in namels:
+        result = []
+        f = os.popen("tail -" + lines+" " +(logPath+name).replace("(","\\(").replace(")","\\)").replace("\.","\\.")).read()
+        i = f.index("ip")
+        result.append(f[:i].replace("^"," ").replace("nnn","<br />"))
+        result.append("<table>\n")
+        for l in f[i:].split("nnn"): 
+            x = "<tr><td>"+"</td><td>".join(l.split(","))+"</td></tr>\n"
+            result.append(x)
+        result.append("</table>\n")
+        result = "".join(result)
+    else:
+        result = "<br />".join(tail(logPath+name,int(lines))).replace("^"," ").replace("nnn","<br />")
+
+    response = HttpResponse(result)
+    response["content-type"] = "text/plain"
+    return response
 

@@ -1,0 +1,388 @@
+{% extends "base_site.html" %}
+
+{% block content %}
+<!--<link rel="stylesheet" type="text/css" href="/media/css/forms.css" /> -->
+<link rel="stylesheet" type="text/css" href="/media/css/forms.css" />
+<style type="text/css">
+#inputtext {width:25px}
+.dialog-overlay {
+
+	BACKGROUND: gray; FILTER: alpha(opacity:50); opacity: 0.5
+
+}
+
+.dialog {
+
+	 PADDING-RIGHT: 10px; PADDING-LEFT: 10px; BACKGROUND: gray; FILTER: alpha(opacity:70); PADDING-BOTTOM: 10px; PADDING-TOP: 10px; opacity: 0.9; border-radius: 3px; -moz-border-radius: 3px; -webkit-border-radius: 3px
+
+}
+
+/*download by http://www.codefans.net*/
+
+.dialog .bar {
+
+	 PADDING-RIGHT: 6px; PADDING-LEFT: 6px; MIN-HEIGHT: 15px; BACKGROUND: #000; PADDING-BOTTOM: 6px; CURSOR: move; COLOR: #fff; PADDING-TOP: 6px
+
+}
+
+.dialog .bar .title {
+
+	FLOAT: left; MARGIN-RIGHT: 10px
+
+}
+
+.dialog .bar .close {
+
+	FLOAT: right; CURSOR: pointer; TEXT-DECORATION: underline
+
+}
+
+.dialog .content {
+
+	height:630px; width:1200px; overflow: auto; PADDING-RIGHT: 10px; PADDING-LEFT: 10px; BACKGROUND: #fff; PADDING-BOTTOM: 10px; PADDING-TOP: 10px
+
+}
+
+.dialog IFRAME {
+
+	WIDTH: 100%; HEIGHT: 100%
+
+}
+
+.content IMG {
+
+	MAX-WIDTH: 700px; OVERFLOW: auto; MAX-HEIGHT: 500px
+
+}
+</style>
+<table>
+	<th>序号</th><th>类型</th><th>负责人</th><th>邮箱</th><th>日记文件名</th><th>时间</th><th>状态</th><th>结果</th><th>执行</th><th>备注</th>
+	{% for i in result %}
+	<tr><td>{{ forloop.counter }}</td><td>{{i.0}}</td><td>{{i.1}}</td><td>{{i.2}}</td><td>{{i.3}}</td><td>{{i.4|safe}}</td><td>{{i.5|safe}}</td><td>{{i.6}}</td>
+	<td><input id="inputtext" type="text" name="name" value="10" styles="with:10">&nbsp;<input id="button" type="button" name="but" value = "Tail lines" /></td>
+	<td>{{i.7}}</td><td><input id="edit" type="button" name="edit" value="编辑"></td></tr>
+        {% endfor %}
+
+</table>
+<div id="logremark" style="display:none;position:absolute;left:30%;top:100px;width:400px;height:400px;background-color:#ddeeff;z-index:1">
+	<form action="" method="GET">
+	<h2>&nbsp;编辑日记文件属性</h2>
+	<span style="position:absolute;right:.3em;top:5%;width:39px;margin:-10px 0 0 0;padding:1px;height:18px;"><input id="close" type="button" value = "关闭" /></span>
+	</br>
+	<table>
+		<tr><td>日记文件名:</td><td><h id="l_name"></h></td></tr>
+		<tr><td>日记类型:</td><td><input name="t" type="text" value="" id="r_type"></td></tr>
+		<tr><td>负责人姓名:</td><td><input name="p" type="text" value="" id="r_person"></td></tr>
+		<tr><td>负责人邮箱:</td><td><input name="e" type="text" value="" id="r_email"></td></tr>
+		<tr><td>备注:</td><td><textarea name="r" type="textarea" value="" id="r_remark" cols="40" rows="7"></textarea></br>
+		<input type="hidden" name="logname" value="angelll">
+		<tr><td></td><td align="right"><input type="submit" value="提交" /></td></tr>
+	</table>
+	</form>
+</div>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript">
+/**
+ * Dialog
+ * Download by http://www.codefans.net
+ * @author    caixw <http://www.caixw.com>
+ * @copyright Copyright (C) 2010, http://www.caixw.com
+ * @license   FreeBSD license
+ */
+
+
+/**
+ * jQueryçš„Dialogæ’ä»¶ã€‚
+ *
+ * @param object content
+ * @param object options é€‰é¡¹ã€‚
+ * @return 
+ */
+function Dialog(content, options)
+{
+    var defaults = { // é»˜è®¤å€¼ã€‚ 
+        title:'æ ‡é¢˜',       // æ ‡é¢˜æ–‡æœ¬ï¼Œè‹¥ä¸æƒ³æ˜¾ç¤ºtitleè¯·é€šè¿‡CSSè®¾ç½®å…¶displayä¸ºnone 
+        showTitle:true,     // æ˜¯å¦æ˜¾ç¤ºæ ‡é¢˜æ ã€‚
+        closeText:'[å…³é—­]', // å…³é—­æŒ‰é’®æ–‡å­—ï¼Œè‹¥ä¸æƒ³æ˜¾ç¤ºå…³é—­æŒ‰é’®è¯·é€šè¿‡CSSè®¾ç½®å…¶displayä¸ºnone 
+        draggable:true,     // æ˜¯å¦ç§»åŠ¨ 
+        modal:true,         // æ˜¯å¦æ˜¯æ¨¡æ€å¯¹è¯æ¡† 
+        center:true,        // æ˜¯å¦å±…ä¸­ã€‚ 
+        fixed:true,         // æ˜¯å¦è·Ÿéšé¡µé¢æ»šåŠ¨ã€‚
+        time:0,             // è‡ªåŠ¨å…³é—­æ—¶é—´ï¼Œä¸º0è¡¨ç¤ºä¸ä¼šè‡ªåŠ¨å…³é—­ã€‚ 
+        id:false,            // å¯¹è¯æ¡†çš„idï¼Œè‹¥ä¸ºfalseï¼Œåˆ™ç”±ç³»ç»Ÿè‡ªåŠ¨äº§ç”Ÿä¸€ä¸ªå”¯ä¸€idã€‚ 
+	width:'100%', 
+        height:$(document).height(),
+        overflow:'auto',
+};
+    var options = $.extend(defaults, options);
+    options.id = options.id ? options.id : 'dialog-' + Dialog.__count; // å”¯ä¸€ID
+    var overlayId = options.id + '-overlay'; // é®ç½©å±‚ID
+    var timeId = null;  // è‡ªåŠ¨å…³é—­è®¡æ—¶å™¨ 
+    var isShow = false;
+    var isIe = $.browser.msie;
+    var isIe6 = $.browser.msie && ('6.0' == $.browser.version);
+
+    /* å¯¹è¯æ¡†çš„å¸ƒå±€åŠæ ‡é¢˜å†…å®¹ã€‚*/
+    var barHtml = !options.showTitle ? '' :
+        '<div class="bar"><span class="title">' + options.title + '</span><a class="close">' + options.closeText + '</a></div>';
+    var dialog = $('<div id="' + options.id + '" class="dialog">'+barHtml+'<div class="content"></div></div>').hide();
+    $('body').append(dialog);
+
+
+    /**
+     * é‡ç½®å¯¹è¯æ¡†çš„ä½ç½®ã€‚
+     *
+     * ä¸»è¦æ˜¯åœ¨éœ€è¦å±…ä¸­çš„æ—¶å€™ï¼Œæ¯æ¬¡åŠ è½½å®Œå†…å®¹ï¼Œéƒ½è¦é‡æ–°å®šä½
+     *
+     * @return void
+     */
+    var resetPos = function()
+    {
+        /* æ˜¯å¦éœ€è¦å±…ä¸­å®šä½ï¼Œå¿…éœ€åœ¨å·²ç»çŸ¥é“äº†dialogå…ƒç´ å¤§å°çš„æƒ…å†µä¸‹ï¼Œæ‰èƒ½æ­£ç¡®å±…ä¸­ï¼Œä¹Ÿå°±æ˜¯è¦å…ˆè®¾ç½®dialogçš„å†…å®¹ã€‚ */
+        if(options.center)
+        {
+            var left = ($(window).width() - dialog.width()) / 2;
+            var top = ($(window).height() - dialog.height()) / 2;
+            if(!isIe6 && options.fixed)
+            {   dialog.css({top:top,left:left});   }
+            else
+            {   dialog.css({top:top+$(document).scrollTop(),left:left+$(document).scrollLeft()});   }
+        }
+    }
+
+    /**
+     * åˆå§‹åŒ–ä½ç½®åŠä¸€äº›äº‹ä»¶å‡½æ•°ã€‚
+     *
+     * å…¶ä¸­çš„thisè¡¨ç¤ºDialogå¯¹è±¡è€Œä¸æ˜¯initå‡½æ•°ã€‚
+     */
+    var init = function()
+    {
+        /* æ˜¯å¦éœ€è¦åˆå§‹åŒ–èƒŒæ™¯é®ç½©å±‚ */
+        if(options.modal)
+        {
+            $('body').append('<div id="' + overlayId + '" class="dialog-overlay"></div>');
+            $('#' + overlayId).css({'left':0, 'top':0,
+                    /*'width':$(document).width(),*/
+                    'width':options.width,
+                    /*'height':'100%',*/
+                    /*'height':$(document).height(),*/
+		    'height':options.height,
+                    'z-index':++Dialog.__zindex,
+                    'position':'absolute'})
+                .hide();
+        }
+
+        dialog.css({'width':options.width,'height':options.height,'overflow':options.overflow, 'z-index':++Dialog.__zindex, 'position':options.fixed ? 'fixed' : 'absolute'});
+
+		/*  IE6 å…¼å®¹fixedä»£ç  */
+        if(isIe6 && options.fixed)
+        {
+            dialog.css('position','absolute');
+            resetPos();
+            var top = parseInt(dialog.css('top')) - $(document).scrollTop();
+            var left = parseInt(dialog.css('left')) - $(document).scrollLeft();
+            $(window).scroll(function(){
+                dialog.css({'top':$(document).scrollTop() + top,'left':$(document).scrollLeft() + left});
+            });
+        }
+
+        /* ä»¥ä¸‹ä»£ç å¤„ç†æ¡†ä½“æ˜¯å¦å¯ä»¥ç§»åŠ¨ */
+        var mouse={x:0,y:0};
+        function moveDialog(event)
+        {
+            var e = window.event || event;
+            var top = parseInt(dialog.css('top')) + (e.clientY - mouse.y);
+            var left = parseInt(dialog.css('left')) + (e.clientX - mouse.x);
+            dialog.css({top:top,left:left});
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        };
+        dialog.find('.bar').mousedown(function(event){
+            if(!options.draggable){  return; }
+
+            var e = window.event || event;
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            $(document).bind('mousemove',moveDialog);
+        });
+        $(document).mouseup(function(event){
+            $(document).unbind('mousemove', moveDialog);
+        });
+
+        /* ç»‘å®šä¸€äº›ç›¸å…³äº‹ä»¶ã€‚ */
+        dialog.find('.close').bind('click', this.close);
+        dialog.bind('mousedown', function(){  dialog.css('z-index', ++Dialog.__zindex); });
+
+        // è‡ªåŠ¨å…³é—­ 
+        if(0 != options.time){  timeId = setTimeout(this.close, options.time);    }
+    }
+
+
+    /**
+     * è®¾ç½®å¯¹è¯æ¡†çš„å†…å®¹ã€‚ 
+     *
+     * @param string c å¯ä»¥æ˜¯HTMLæ–‡æœ¬ã€‚
+     * @return void
+     */
+    this.setContent = function(c)
+    {
+        var div = dialog.find('.content');
+        if('object' == typeof(c))
+        {
+            switch(c.type.toLowerCase())
+            {
+            case 'id': // å°†IDçš„å†…å®¹å¤åˆ¶è¿‡æ¥ï¼ŒåŽŸæ¥çš„è¿˜åœ¨ã€‚
+                div.html($('#' + c.value).html());
+                break;
+            case 'img':
+                div.html('åŠ è½½ä¸­...');
+                $('<img alt="" />').load(function(){div.empty().append($(this));resetPos();})
+                    .attr('src',c.value);
+                break;
+            case 'url':
+                div.html('åŠ è½½ä¸­...');
+                $.ajax({url:c.value,
+                        success:function(html){div.html(html);resetPos();},
+                        error:function(xml,textStatus,error){div.html('å‡ºé”™å•¦')}
+                });
+                break;
+            case 'iframe':
+                div.append($('<iframe src="' + c.value + '" />'));
+                break;
+            case 'text':
+            default:
+                div.html(c.value);
+                break;
+            }
+        }
+        else
+        {   div.html(c); }
+    }
+
+    /**
+     * æ˜¾ç¤ºå¯¹è¯æ¡†
+     */
+    this.show = function()
+    {
+        if(undefined != options.beforeShow && !options.beforeShow())
+        {   return;  }
+
+        /**
+         * èŽ·å¾—æŸä¸€å…ƒç´ çš„é€æ˜Žåº¦ã€‚IEä»Žæ»¤å¢ƒä¸­èŽ·å¾—ã€‚
+         *
+         * @return float
+         */
+        var getOpacity = function(id)
+        {
+            if(!isIe)
+            {   return $('#' + id).css('opacity');    }
+
+            var el = document.getElementById(id);
+            return (undefined != el
+                    && undefined != el.filters
+                    && undefined != el.filters.alpha
+                    && undefined != el.filters.alpha.opacity)
+                ? el.filters.alpha.opacity / 100 : 1;
+        }
+        /* æ˜¯å¦æ˜¾ç¤ºèƒŒæ™¯é®ç½©å±‚ */
+        if(options.modal)
+        {   $('#' + overlayId).fadeTo('slow', getOpacity(overlayId));   }
+        dialog.fadeTo('slow', getOpacity(options.id), function(){
+            if(undefined != options.afterShow){   options.afterShow(); }
+            isShow = true;
+        });
+        // è‡ªåŠ¨å…³é—­ 
+        if(0 != options.time){  timeId = setTimeout(this.close, options.time);    }
+
+        resetPos();
+    }
+
+
+    /**
+     * éšè—å¯¹è¯æ¡†ã€‚ä½†å¹¶ä¸å–æ¶ˆçª—å£å†…å®¹ã€‚
+     */
+    this.hide = function()
+    {
+        if(!isShow){ return; }
+
+        if(undefined != options.beforeHide && !options.beforeHide())
+        {   return;  }
+
+        dialog.fadeOut('slow',function(){
+            if(undefined != options.afterHide){   options.afterHide(); }
+        });
+        if(options.modal)
+        {   $('#' + overlayId).fadeOut('slow');   }
+
+        isShow = false;
+    }
+
+    /**
+     * å…³é—­å¯¹è¯æ¡† 
+     *
+     * @return void
+     */
+    this.close = function()
+    {
+        if(undefined != options.beforeClose && !options.beforeClose())
+        {   return;  }
+
+        dialog.fadeOut('slow', function(){
+            $(this).remove();
+            isShow = false;
+            if(undefined != options.afterClose){   options.afterClose(); }
+        });
+        if(options.modal)
+        {   $('#'+overlayId).fadeOut('slow', function(){$(this).remove();}); }
+        clearTimeout(timeId);
+    }
+
+    
+
+    init.call(this);
+    this.setContent(content);
+    
+    Dialog.__count++;
+    Dialog.__zindex++;
+}
+Dialog.__zindex = 500;
+Dialog.__count = 1;
+Dialog.version = '1.0 beta';
+
+function dialog(content, options)
+{
+	var dlg = new Dialog(content, options);
+	dlg.show();
+	return dlg;
+}
+$("input[name^='but']").each(function(){
+	$(this).click(function(){
+		var $tr=$(this).parent().parent();
+		var $a=$tr.find("td").eq(4).text();
+		var $b=$tr.find("td").eq(8).find("input").eq(0).val();
+		$.get("./showdetail/", { name: $a, l: $b } ,function(data){
+			new Dialog(data,{title:$a,closeText:"Close",height:'680px',width:'1220px'}).show();
+
+
+		});
+	});
+});
+$("input[name^='edit']").each(function(){
+	$(this).click(function(){
+		var $tr=$(this).parent().parent();
+		$("input[name=logname]").val($tr.find("td").eq(4).text());
+		$("#l_name").text($tr.find("td").eq(4).text());
+		$("input[name=t]").val($tr.find("td").eq(1).text());
+		$("input[name=p]").val($tr.find("td").eq(2).text());
+		$("input[name=e]").val($tr.find("td").eq(3).text());
+		$("#r_remark").val($tr.find("td").eq(9).text());
+		$("#logremark").show();
+	});
+});
+$("#close").click(function(){
+	$("#logremark").toggle();
+});
+</script>
+
+
+{% endblock %}
