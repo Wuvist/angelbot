@@ -5,6 +5,7 @@ from django.db import models
 SERVER_TYPE_CHOICES = (
     ('W', 'Windows'),
     ('L', 'Linux'),
+    ('V', 'VMware'),
 )
 
 YES_OR_NO_CHOICES = (
