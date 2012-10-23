@@ -55,12 +55,28 @@
 
 }
 </style>
+
+<form action="" method="GET" id = "check">
+<fieldset class="module aligned ">
+	<div class="form-row title"> 
+	    <div> 
+			<label for="id_date" class="required">Date:</label> 
+			<input name="date" value="{{ mydate }}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
+			<input type="submit" value = "Show Date" />
+			</h>
+	    </div> 
+	</div>
+</fieldset>
+</form>
+
 <table>
-	<th>序号</th><th>类型</th><th>负责人</th><th>邮箱</th><th>日记文件名</th><th>时间</th><th>状态</th><th>结果</th><th>执行</th><th>备注</th>
+	<th>序号</th><th>类型</th><th>负责人</th><th>日记文件名</th><th>时间</th><th>状态</th><th>结果</th><th>备注</th><th>执行</th>
 	{% for i in result %}
-	<tr><td>{{ forloop.counter }}</td><td>{{i.0}}</td><td>{{i.1}}</td><td>{{i.2}}</td><td>{{i.3}}</td><td>{{i.4|safe}}</td><td>{{i.5|safe}}</td><td>{{i.6}}</td>
-	<td><input id="inputtext" type="text" name="name" value="10" styles="with:10">&nbsp;<input id="button" type="button" name="but" value = "查看行数" /></td>
-	<td>{{i.7}}</td><td><input id="edit" type="button" name="edit" value="编辑"></td></tr>
+	<tr><td>{{ forloop.counter }}</td><td>{{i.0}}</td><td>{{i.1}}</td><td style="display:none">{{i.2}}</td><td>{{i.3|safe}}</td><td>{{i.4|safe}}</td>
+	<td>{{i.5|safe}}</td><td>{{i.6}}</td><td>{{i.7}}</td>
+	<td><input id="inputtext" type="text" name="name" value="10" styles="with:10">&nbsp;
+	<input id="button" type="button" name="but" value = "查看行数" /><input type="button" name="showlogdate" value = "查看所选日期" /></td>
+	<td><input id="edit" type="button" name="edit" value="编辑"></td></tr>
         {% endfor %}
 
 </table>
@@ -81,23 +97,11 @@
 	</form>
 </div>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="/media/js/core.js"></script>
+<script type="text/javascript" src="/media/js/calendar.js"></script>
+<script type="text/javascript" src="/media/js/admin/DateTimeShortcuts.js"></script>
 <script type="text/javascript">
-/**
- * Dialog
- * Download by http://www.codefans.net
- * @author    caixw <http://www.caixw.com>
- * @copyright Copyright (C) 2010, http://www.caixw.com
- * @license   FreeBSD license
- */
-
-
-/**
- * jQueryçš„Dialogæ’ä»¶ã€‚
- *
- * @param object content
- * @param object options é€‰é¡¹ã€‚
- * @return 
- */
 function Dialog(content, options)
 {
     var defaults = { // é»˜è®¤å€¼ã€‚ 
@@ -128,17 +132,8 @@ function Dialog(content, options)
     var dialog = $('<div id="' + options.id + '" class="dialog">'+barHtml+'<div class="content"></div></div>').hide();
     $('body').append(dialog);
 
-
-    /**
-     * é‡ç½®å¯¹è¯æ¡†çš„ä½ç½®ã€‚
-     *
-     * ä¸»è¦æ˜¯åœ¨éœ€è¦å±…ä¸­çš„æ—¶å€™ï¼Œæ¯æ¬¡åŠ è½½å®Œå†…å®¹ï¼Œéƒ½è¦é‡æ–°å®šä½
-     *
-     * @return void
-     */
     var resetPos = function()
     {
-        /* æ˜¯å¦éœ€è¦å±…ä¸­å®šä½ï¼Œå¿…éœ€åœ¨å·²ç»çŸ¥é“äº†dialogå…ƒç´ å¤§å°çš„æƒ…å†µä¸‹ï¼Œæ‰èƒ½æ­£ç¡®å±…ä¸­ï¼Œä¹Ÿå°±æ˜¯è¦å…ˆè®¾ç½®dialogçš„å†…å®¹ã€‚ */
         if(options.center)
         {
             var left = ($(window).width() - dialog.width()) / 2;
@@ -150,11 +145,6 @@ function Dialog(content, options)
         }
     }
 
-    /**
-     * åˆå§‹åŒ–ä½ç½®åŠä¸€äº›äº‹ä»¶å‡½æ•°ã€‚
-     *
-     * å…¶ä¸­çš„thisè¡¨ç¤ºDialogå¯¹è±¡è€Œä¸æ˜¯initå‡½æ•°ã€‚
-     */
     var init = function()
     {
         /* æ˜¯å¦éœ€è¦åˆå§‹åŒ–èƒŒæ™¯é®ç½©å±‚ */
@@ -217,13 +207,6 @@ function Dialog(content, options)
         if(0 != options.time){  timeId = setTimeout(this.close, options.time);    }
     }
 
-
-    /**
-     * è®¾ç½®å¯¹è¯æ¡†çš„å†…å®¹ã€‚ 
-     *
-     * @param string c å¯ä»¥æ˜¯HTMLæ–‡æœ¬ã€‚
-     * @return void
-     */
     this.setContent = function(c)
     {
         var div = dialog.find('.content');
@@ -259,19 +242,11 @@ function Dialog(content, options)
         {   div.html(c); }
     }
 
-    /**
-     * æ˜¾ç¤ºå¯¹è¯æ¡†
-     */
     this.show = function()
     {
         if(undefined != options.beforeShow && !options.beforeShow())
         {   return;  }
 
-        /**
-         * èŽ·å¾—æŸä¸€å…ƒç´ çš„é€æ˜Žåº¦ã€‚IEä»Žæ»¤å¢ƒä¸­èŽ·å¾—ã€‚
-         *
-         * @return float
-         */
         var getOpacity = function(id)
         {
             if(!isIe)
@@ -298,9 +273,6 @@ function Dialog(content, options)
     }
 
 
-    /**
-     * éšè—å¯¹è¯æ¡†ã€‚ä½†å¹¶ä¸å–æ¶ˆçª—å£å†…å®¹ã€‚
-     */
     this.hide = function()
     {
         if(!isShow){ return; }
@@ -317,11 +289,6 @@ function Dialog(content, options)
         isShow = false;
     }
 
-    /**
-     * å…³é—­å¯¹è¯æ¡† 
-     *
-     * @return void
-     */
     this.close = function()
     {
         if(undefined != options.beforeClose && !options.beforeClose())
@@ -359,8 +326,20 @@ $("input[name^='but']").each(function(){
 	$(this).click(function(){
 		var $tr=$(this).parent().parent();
 		var $a=$tr.find("td").eq(4).text();
-		var $b=$tr.find("td").eq(8).find("input").eq(0).val();
+		var $b=$tr.find("td").eq(9).find("input").eq(0).val();
 		$.get("./showdetail/", { name: $a, l: $b } ,function(data){
+			new Dialog(data,{title:$a,closeText:"Close",height:'680px',width:'1220px'}).show();
+
+
+		});
+	});
+});
+$("input[name^='showlogdate']").each(function(){
+	$(this).click(function(){
+		var $tr=$(this).parent().parent();
+		var $a=$tr.find("td").eq(4).text();
+		var $b=$("#id_date").val();
+		$.get("./showdetail/", { name: $a, d: $b } ,function(data){
 			new Dialog(data,{title:$a,closeText:"Close",height:'680px',width:'1220px'}).show();
 
 
@@ -375,7 +354,7 @@ $("input[name^='edit']").each(function(){
 		$("input[name=t]").val($tr.find("td").eq(1).text());
 		$("input[name=p]").val($tr.find("td").eq(2).text());
 		$("input[name=e]").val($tr.find("td").eq(3).text());
-		$("#r_remark").val($tr.find("td").eq(9).text());
+		$("#r_remark").val($tr.find("td").eq(8).text());
 		$("#logremark").show();
 	});
 });
