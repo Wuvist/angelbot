@@ -1380,6 +1380,7 @@ def backuplog(request):
     files = os.listdir(logpath)
     timeNow = datetime.now()
     logName = request.GET.get("logname",False)
+    mydate = request.GET.get("date",time.strftime("%Y-%m-%d"))
     if logName:
         try:
             try:
@@ -1400,9 +1401,14 @@ def backuplog(request):
             lsi=[]
             try:
                 data = ""
-                data = os.popen("tail -1 "+(logpath+i).replace("(","\\(").replace(")","\\)").replace("\.","\\.")).read().split("^")
+                for l in open(logpath+i).readlines():
+                    if l[:15].startswith(mydate):
+                        data = l
+                        break
+                data = data.replace("(","\\(").replace(")","\\)").replace("\.","\\.").split("^")
+                if data == [""]:raise
             except:
-                data = tail(logpath+i,2)[0].split("^")
+                data = tail(logpath+i,2)[-1].split("^")
             lsi.append(i)
             lastTime = datetime.strptime(data[0], "%Y-%m-%d %H:%M:%S")
             mytimes = timeNow- lastTime
@@ -1410,7 +1416,7 @@ def backuplog(request):
                 mytime = 1440 * int(mytimes.days) + mytimes.seconds/60
             else:
                 mytime =  mytimes.seconds/60
-            if mytime > int(data[1]):
+            if mytime > int(data[1]) and mydate == time.strftime("%Y-%m-%d"):
                 lsi.append(data[0]+"<div class='errornote'>No update</div>")
             else:
                 lsi.append(data[0].replace("_"," "))
@@ -1435,10 +1441,11 @@ def backuplog(request):
                 lsi.append("")
             result.append(lsi)
         except:
-            result.append(i+"<div class='errornote'>log format error</div>")
-
+            result.append(['','','',i+"<div class='errornote'>log format error</div>",''])
+        result.sort()
     c = RequestContext(request,
         {"result":result,
+         "mydate":mydate,
         })
     return render_to_response('servers/backuplog.html',c)
 
@@ -1448,20 +1455,31 @@ def showdetail(request):
     logPath = settings.LOGPATH
     namels = ["win_C_IO.csv","linux_IO.csv","win_CPU.csv","linux_CPU.csv"]
     name = request.GET["name"]
-    lines = request.GET["l"]
-    if name in namels:
-        result = []
-        f = os.popen("tail -" + lines+" " +(logPath+name).replace("(","\\(").replace(")","\\)").replace("\.","\\.")).read()
-        i = f.index("ip")
-        result.append(f[:i].replace("^"," ").replace("nnn","<br />"))
-        result.append("<table>\n")
-        for l in f[i:].split("nnn"): 
-            x = "<tr><td>"+"</td><td>".join(l.split(","))+"</td></tr>\n"
-            result.append(x)
-        result.append("</table>\n")
-        result = "".join(result)
+    date = request.GET.get("d",False)
+    data = []
+    if date:
+        for l in open(logPath+name).readlines():
+            if l[:15].startswith(date):
+                data.append(l)
     else:
-        result = "<br />".join(tail(logPath+name,int(lines))).replace("^"," ").replace("nnn","<br />")
+        lines = request.GET["l"]
+        data = tail(logPath+name,int(lines))
+    if name in namels:
+        try:
+            result = []
+            f = "".join(data).replace("(","\\(").replace(")","\\)").replace("\.","\\.")
+            i = f.index("ip")
+            result.append(f[:i].replace("^"," ").replace("nnn","<br />"))
+            result.append("<table>\n")
+            for l in f[i:].split("nnn"): 
+                x = "<tr><td>"+"</td><td>".join(l.split(","))+"</td></tr>\n"
+                result.append(x)
+            result.append("</table>\n")
+            result = "".join(result)
+        except:
+            result = ""
+    else:
+        result = "<br />".join(data).replace("^"," ").replace("nnn","<br />")
 
     response = HttpResponse(result)
     response["content-type"] = "text/plain"
