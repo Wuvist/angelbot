@@ -310,7 +310,7 @@ def statistics_show_download(request):
         result = [u"编号,项目,服务重要性,服务大类,服务小类,报错widget,字段,开始时间,结束时间,时长(分钟),解决办法".encode("gbk")];x=1
         serviceType = WidgetServiceType.objects.all().exclude(name__in=["others","windows_server_perfmon"])
         statisticsDay = StatisticsDay.objects.filter(date__gte = start,date__lte=end)
-        for p in ["stc","stc_local","voda","zoota_vivas","fast_50","mozat"]:
+        for p in ["stc"]:
             ls = []
             for s in serviceType:
                 wgls = Widget.objects.filter(project__name=p,service_type=s,dashboard__id=1)
@@ -572,7 +572,7 @@ def statistics_show(request):
         return sla
     def get_errors():
         errors = []
-        for p in projects:
+        for p in ["stc"]:
             grade = ["major","minor","serious"];tmppro = {"p":p}; tmpgrade={}
             for g in grade:
                 tmp={};solveTime=[];solveTimeAvg=0;error_times=[]
@@ -600,7 +600,7 @@ def statistics_show(request):
     def top_error():
         toperror = []
         serviceType = WidgetServiceType.objects.all().exclude(name__in=["others","windows_server_perfmon"])
-        for p in projects:
+        for p in ["stc"]:
             for s in serviceType:
                 dt = {"project":p,"service":s.name}
                 wgls = widgets.filter(project__name=p,service_type=s,dashboard__id=1)
