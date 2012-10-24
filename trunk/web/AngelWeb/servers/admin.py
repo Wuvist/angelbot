@@ -13,7 +13,7 @@ from django.forms import ModelForm, PasswordInput
 
 class WidgetAdmin(admin.ModelAdmin):
     list_display = ('title', 'rrd', 'category')
-    search_fields = ('title', )
+    search_fields = ('title','server__ip' )
     ordering = ('title',)
 
 class RrdAdmin(admin.ModelAdmin):

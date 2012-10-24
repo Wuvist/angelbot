@@ -1391,8 +1391,16 @@ def backuplog(request):
             log.email = request.GET["e"]
             log.log_type = request.GET["t"]
             log.log_name = logName
-            log.remark = request.GET["r"]
             log.save()
+            remarks = log.remark.filter(created_on=mydate)
+            if remarks.count() == 0:
+                remark = BackupLogRemark(content = request.GET["r"])
+                remark.save()
+                log.remark.add(remark)
+            else:
+                remark = remarks[0]
+                remark.content = request.GET["r"]
+                remark.save()
         except:
             pass
         return HttpResponseRedirect("/backuplog/showinfo/")
@@ -1430,10 +1438,14 @@ def backuplog(request):
                 lsi.append(data[3].replace("nnn","")+"")
             try:
                 data = BackupLog.objects.get(log_name=i)
+                remarks = data.remark.filter(created_on=mydate)
                 lsi.insert(0,data.email)
                 lsi.insert(0,data.name)
                 lsi.insert(0,data.log_type)
-                lsi.append(data.remark)
+                if remarks.count() != 0:
+                    lsi.append(remarks[0].content)
+                else:
+                    lsi.append("")
             except:
                 lsi.insert(0,"")
                 lsi.insert(0,"")
