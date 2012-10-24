@@ -413,12 +413,19 @@ class StatisticsComment(models.Model):
     class Meta:
         ordering = ["-created_on"]
 
+class BackupLogRemark(models.Model):
+    content = models.TextField(null = True, blank = True)
+    created_on = models.DateField(auto_now_add = True)
+    
+    def __unicode__(self):
+        return self.content
+
 class BackupLog(models.Model):
     name = models.CharField(max_length=64, null = True, blank = True)
     email= models.CharField(max_length=64, null = True, blank = True)
     log_type = models.CharField(max_length=64, null = True, blank = True)
     log_name = models.CharField(max_length=64, null = True, blank = True)
-    remark= models.TextField(null = True, blank = True)
+    remark = models.ManyToManyField(BackupLogRemark,null = True, blank = True)
     created_on = models.DateTimeField(auto_now_add = True)
     
     def __unicode__(self):
