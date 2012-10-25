@@ -1497,3 +1497,67 @@ def showdetail(request):
     response["content-type"] = "text/plain"
     return response
 
+def backuplogemail(request):
+    import os
+    from tail import tail
+    def sendmail(c,n,r,d):
+        import smtplib
+        from email.mime.text import MIMEText
+
+        des = "\n\nThis email auto send by Mozat Angel, if any questions, please kindly feed back to operation team. thanks !\nBest Regards\nMozat Angel"
+        sender = 'wumingyou@mozat.com'
+        msg = MIMEText("Dear %s,\n%s backup log errors,pls visit bleow url for more details\n http://angel.morange.com/backuplog/showinfo/?date=%s" % (n,c,d))
+        msg['Subject'] = "Backup log error happen !"
+        msg['From'] = "Mozat Angel"
+        msg['To'] = r
+        s = smtplib.SMTP('i-smtp.mozat.com')
+        s.sendmail(sender, r, msg.as_string())
+        s.close()
+        
+    logpath = settings.LOGPATH
+    files = os.listdir(logpath)
+    timeNow = datetime.now()
+    mydate = time.strftime("%Y-%m-%d")
+    result = {}
+    for i in files:
+        try:
+            try:
+                data = ""
+                for l in open(logpath+i).readlines():
+                    if l[:15].startswith(mydate):
+                        data = l
+                        break
+                data = data.replace("(","\\(").replace(")","\\)").replace("\.","\\.").split("^")
+                if data == [""]:raise
+            except:
+                data = tail(logpath+i,2)[-1].split("^")
+            lastTime = datetime.strptime(data[0], "%Y-%m-%d %H:%M:%S")
+            mytimes = timeNow- lastTime
+            if int(mytimes.days) > 0:
+                mytime = 1440 * int(mytimes.days) + mytimes.seconds/60
+            else:
+                mytime =  mytimes.seconds/60
+            if mytime > int(data[1]) and mydate == time.strftime("%Y-%m-%d") or data[2] == "error":
+                try:
+                    b = BackupLog.objects.get(log_name=i)
+                    if b.mail.filter(name=i,log_date=data[0]).count() > 0:
+                        continue
+                except:
+                    continue
+                if result.has_key(b.name):
+                    result[b.name].append((i,data[0]))
+                else:
+                    result[b.name] = [b.email,(i,data[0])]
+        except:
+            pass
+    for i in result.keys():
+        try:
+            sendmail(",".join([x[0] for x in result[i][1:]]),i,result[i][0],mydate)
+            b = BackupLog.objects.get(name=i)
+            for x,y in result[i][1:]:
+                m = BackupLogMail(name=x,log_date=y)
+                m.save()
+                b.mail.add(m)
+        except:
+            pass
+    return HttpResponse("done")
