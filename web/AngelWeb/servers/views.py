@@ -1506,7 +1506,7 @@ def backuplogemail(request):
 
         des = "\n\nThis email auto send by Mozat Angel, if any questions, please kindly feed back to operation team. thanks !\nBest Regards\nMozat Angel"
         sender = 'wumingyou@mozat.com'
-        msg = MIMEText("Dear %s,\n%s backup log errors,pls visit bleow url for more details\n http://angel.morange.com/backuplog/showinfo/?date=%s" % (n,c,d))
+        msg = MIMEText("Dear %s,\n%s backup log errors,pls visit bleow url for more details\n http://angel.morange.com/backuplog/showinfo/?date=%s%s"  % (n,c,d,des))
         msg['Subject'] = "Backup log error happen !"
         msg['From'] = "Mozat Angel"
         msg['To'] = r
