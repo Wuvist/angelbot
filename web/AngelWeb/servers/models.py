@@ -420,12 +420,21 @@ class BackupLogRemark(models.Model):
     def __unicode__(self):
         return self.content
 
+class BackupLogMail(models.Model):
+    name = models.CharField(max_length = 50,null = True, blank = True)
+    log_date = models.CharField(max_length = 128,null = True, blank = True)
+    created_on = models.DateTimeField(auto_now_add = True)
+    
+    def __unicode__(self):
+        return self.name
+
 class BackupLog(models.Model):
     name = models.CharField(max_length=64, null = True, blank = True)
     email= models.CharField(max_length=64, null = True, blank = True)
     log_type = models.CharField(max_length=64, null = True, blank = True)
     log_name = models.CharField(max_length=64, null = True, blank = True)
     remark = models.ManyToManyField(BackupLogRemark,null = True, blank = True)
+    mail = models.ManyToManyField(BackupLogMail,null = True, blank = True)
     created_on = models.DateTimeField(auto_now_add = True)
     
     def __unicode__(self):
