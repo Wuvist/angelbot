@@ -1556,8 +1556,8 @@ def backuplogemail(request):
     for i in result.keys():
         try:
             sendmail(",".join([x[0] for x in result[i][1:]]),i,result[i][0],mydate)
-            b = BackupLog.objects.get(name=i)
             for x,y in result[i][1:]:
+                b = BackupLog.objects.get(log_name=x)
                 m = BackupLogMail(name=x,log_date=y)
                 m.save()
                 b.mail.add(m)
