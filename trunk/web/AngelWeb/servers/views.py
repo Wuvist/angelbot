@@ -1409,9 +1409,10 @@ def backuplog(request):
             lsi=[]
             try:
                 data = ""
-                for l in open(logpath+i).readlines():
-                    if l[:15].startswith(mydate):
-                        data = l
+                f = open(logpath+i).readlines()
+                for l in range(1,len(f)):
+                    if f[-l][:15].startswith(mydate):
+                        data = f[-l]
                         break
                 data = data.replace("(","\\(").replace(")","\\)").replace("\.","\\.").split("^")
                 if data == [""]:raise
@@ -1453,6 +1454,7 @@ def backuplog(request):
                 lsi.append("")
             result.append(lsi)
         except:
+            raise
             result.append(['','','',i+"<div class='errornote'>log format error</div>",''])
         result.sort()
     c = RequestContext(request,
@@ -1506,7 +1508,7 @@ def backuplogemail(request):
 
         des = "\n\nThis email auto send by Mozat Angel, if any questions, please kindly feed back to operation team. thanks !\nBest Regards\nMozat Angel"
         sender = 'wumingyou@mozat.com'
-        msg = MIMEText("Dear %s,\n%s backup log errors,pls visit bleow url for more details\n http://angel.morange.com/backuplog/showinfo/?date=%s%s"  % (n,c,d,des))
+        msg = MIMEText("Dear %s,\n\n%s backup log errors,pls visit bleow url for more details\n http://angel.morange.com/backuplog/showinfo/?date=%s%s"  % (n,c,d,des))
         msg['Subject'] = "Backup log error happen !"
         msg['From'] = "Mozat Angel"
         msg['To'] = r
@@ -1523,9 +1525,10 @@ def backuplogemail(request):
         try:
             try:
                 data = ""
-                for l in open(logpath+i).readlines():
-                    if l[:15].startswith(mydate):
-                        data = l
+                f = open(logpath+i).readlines()
+                for l in range(1,len(f)):
+                    if f[-l][:15].startswith(mydate):
+                        data = f[-l]
                         break
                 data = data.replace("(","\\(").replace(")","\\)").replace("\.","\\.").split("^")
                 if data == [""]:raise
