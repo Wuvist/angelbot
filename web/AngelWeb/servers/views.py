@@ -1454,7 +1454,7 @@ def backuplog(request):
                 lsi.append("")
             result.append(lsi)
         except:
-            raise
+            pass
             result.append(['','','',i+"<div class='errornote'>log format error</div>",''])
         result.sort()
     c = RequestContext(request,
@@ -1467,7 +1467,6 @@ def showdetail(request):
     import os
     from tail import tail
     logPath = settings.LOGPATH
-    namels = ["win_C_IO.csv","linux_IO.csv","win_CPU.csv","linux_CPU.csv"]
     name = request.GET["name"]
     date = request.GET.get("d",False)
     data = []
@@ -1478,7 +1477,7 @@ def showdetail(request):
     else:
         lines = request.GET["l"]
         data = tail(logPath+name,int(lines))
-    if name in namels:
+    if name.endswith(".end"):
         try:
             result = []
             f = "".join(data).replace("(","\\(").replace(")","\\)").replace("\.","\\.")
