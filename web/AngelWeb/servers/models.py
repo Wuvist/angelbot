@@ -16,9 +16,10 @@ PHYSICAL_SERVER_CHOICES = (
 )
 
 SERVER_FUNCTION_CHOICES = (
-    ('A', 'APP'),
-    ('D', 'DB'),
-    ('V', 'VMware'),
+    (1, 'Monet'),
+    (2, 'APP'),
+    (3, 'DB'),
+    (4, 'VMware'),
 )
 
 ALARM_TYPE_CHOICES = (
@@ -64,9 +65,10 @@ class Server(models.Model):
     core = models.IntegerField(max_length=2)
     ram = models.CharField(max_length=10)
     hard_disk = models.CharField(max_length=100)
-    server_function = models.CharField(max_length=1, default="A", choices=SERVER_FUNCTION_CHOICES)
+    server_function = models.IntegerField(max_length=2, default=2, choices=SERVER_FUNCTION_CHOICES)
     server_type = models.CharField(max_length=1, choices=SERVER_TYPE_CHOICES)
     idc = models.ForeignKey(IDC)
+    power_on = models.CharField(max_length=1, default='Y',choices=PHYSICAL_SERVER_CHOICES)
     remark = models.CharField(max_length=256, null = True, blank = True)
     created_on = models.DateTimeField(auto_now_add = True)
     
