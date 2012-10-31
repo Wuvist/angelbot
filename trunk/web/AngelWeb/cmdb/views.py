@@ -28,7 +28,7 @@ def syncdbservers(request):
             Server.objects.filter(server_id=s.id).update(ip = s.ip,server_id = s.id,name = s.name,password = s.password,\
             project = s.project.name,physical_server = s.physical_server,physical_server_ip = s.physical_server_ip,core = s.core,\
             ram = s.ram,hard_disk = s.hard_disk,server_function = s.server_function,server_type = s.server_type,\
-            idc = s.idc.name,remark = s.remark,available = "Y",created_on = s.created_on)
+            idc = s.idc.name,power_on=s.power_on,remark = s.remark,available = "Y",created_on = s.created_on)
         else:
             ser = Server()
             ser.ip = s.ip
@@ -44,6 +44,7 @@ def syncdbservers(request):
             ser.server_function = s.server_function
             ser.server_type = s.server_type
             ser.idc = s.idc.name
+            ser.power_on = s.power_on
             ser.remark = s.remark
             ser.available = "Y"
             ser.created_on = s.created_on
@@ -70,7 +71,7 @@ def show_servers(request):
     system = request.GET.get("system","")
     funtion = request.GET.get("funtion","")
     created_on = request.GET.get("created_on","")
-    servers = Server.objects.filter(ip__contains=ip,name__contains=name,idc__contains=idc,physical_server__contains=ispserver,\
+    servers = Server.objects.filter(ip__contains=ip,name__icontains=name,idc__contains=idc,physical_server__contains=ispserver,\
     physical_server_ip__contains=pip,server_type__contains=system, server_function__contains=funtion,available = "Y").order_by("ip")
     if project != "":
         servers = servers.filter(project__contains=project)
@@ -173,7 +174,7 @@ def show_services(request):
     remark = request.GET.get("remark","")
     created_on = request.GET.get("created_on","")
     
-    services = Service.objects.filter(available = "Y", ip__contains=ip, title__contains=title,\
+    services = Service.objects.filter(available = "Y", ip__contains=ip, title__icontains=title,\
     system__contains=system, physical_server_ip__contains=pip,remark__contains=remark,).order_by("title")
     if service_name != "":
         services = services.filter(service_name=service_name)
@@ -244,10 +245,10 @@ def cmdbDeployment(request):
     
 
     def main(maxX,maxY):
-        c = canvas.Canvas(temp,(maxX,maxY))
+        c = canvas.Canvas(temp,(maxX+30,maxY))
         ylist = [];logo = 0
         for pro in projects:
-            logo += 1
+            logo += 1;vm = True
             x=10;y=maxY-100;w=100;h=20;yserver = y - 20;xserver = x;xservice = x;maxXX = x;yls = [];colorDict = {}
             pservers = servers_p.filter(project = pro).order_by("server_function")
             c.setFont("Helvetica", 12)
@@ -259,8 +260,17 @@ def cmdbDeployment(request):
             c.drawString(maxX-247,maxY-30,"Server(ip)[cores-RAM-HD]")
             c.drawString(x+20,maxY-50,"IDC: " + pservers[0].idc)
             for s in pservers:
-                flag = False
+                flag = False;serverColor = 'white'
                 wx = len(servers.filter(physical_server_ip = s.physical_server_ip))
+                if vm and s.server_function == 4:
+                    vm = False
+                    xserver = x
+                    maxXX = x
+                    if yls == []:
+                        yserver -= 60
+                    else:
+                        yserver = min(yls) - 1.5*h
+                        yls = []
                 for n in range(wx):
                     n += 1
                     if w*n + xserver > maxX - 10:
@@ -282,7 +292,8 @@ def cmdbDeployment(request):
                     else:
                         yserver = min(yls) - 1.5*h
                         yls = []
-                drawRect(c,'',"white",xserver,yserver,wserver,h)
+                if s.power_on == 'N':serverColor = 'lightgrey'
+                drawRect(c,'',serverColor,xserver,yserver,wserver,h)
                 c.drawCentredString(xserver+wserver/2,yserver+h*4/7,s.name+'('+s.ip[8:]+')')
                 c.drawCentredString(xserver+wserver/2,yserver+h*1/7,'['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+']')
                 serviceServers = servers.filter(physical_server_ip = s.physical_server_ip).exclude(ip = s.physical_server_ip)
@@ -321,7 +332,9 @@ def cmdbDeployment(request):
                     xxservice = x
                     for ss in serviceServers[n:]:
                         yservice = yserver - h
-                        drawRect(c,ss.name+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']','white',xxservice,yservice,w,h)
+                        if s.power_on == 'N':serverColor = 'lightgrey'
+                        else:serverColor = 'white'
+                        drawRect(c,ss.name+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']',serverColor,xxservice,yservice,w,h)
                         for sss in services.filter(ip = ss.ip).exclude(service_type__contains="IDC"):
                             wservices = w
                             yservice -= h
@@ -334,7 +347,9 @@ def cmdbDeployment(request):
                     xxservice = xserver
                     for ss in serviceServers:
                         yservice = yserver - h
-                        drawRect(c,ss.name+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']','white',xxservice,yservice,w,h)
+                        if s.power_on == 'N':serverColor = 'lightgrey'
+                        else:serverColor = 'white'
+                        drawRect(c,ss.name+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']',serverColor,xxservice,yservice,w,h)
                         for sss in services.filter(ip = ss.ip).exclude(service_type__contains="IDC"):
                             wservices = w
                             yservice -= h
