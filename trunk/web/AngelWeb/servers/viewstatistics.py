@@ -148,7 +148,7 @@ def statistics_update(request):
             def run(self):
                 flag=False;flags=0.0;fl=False;fls=0.0;errorTimes=0;i=0;intervalFl=False
                 good=[];normal=[];bad=[];gdef = self.ddef[1];bdef = self.ddef[2];
-                goodAvg=0;normalAvg=0;badAvg=0;a=0;x=[];y=0;interval=20
+                goodAvg=0;normalAvg=0;badAvg=0;a=0;x=[];y=0;interval=15
                 intervalErrorTime = [];errorTimeAvg = 0;allsAvg = 0;errorIntervalTimeAvg = 0
                 for d in self.data:
                     i += 60
@@ -170,7 +170,7 @@ def statistics_update(request):
                         if intervalFl:
                             intervalErrorTime.append(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(self.time[0]+i)))
                             intervalFl = False
-                    if not flag and d[self.index] == None or eval(str(d[self.index])+bdef):
+                    if not flag and d[self.index] == None or not eval(str(d[self.index])+bdef):
                         flag = True
                         flags += 1
                         a = 0
