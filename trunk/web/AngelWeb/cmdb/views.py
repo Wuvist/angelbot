@@ -386,7 +386,7 @@ def cmdbDeployment(request):
     servers_p = servers.filter(physical_server = "Y")
     projects =  request.GET.getlist("ps")    
     if len(projects) == 0:
-        projects = servers_p.values_list("project",flat = True).annotate()
+        projects = ["shabik360"]+list(servers_p.exclude(project="shabik360").values_list("project",flat = True).annotate())
     temp = StringIO()
     temp,yy = main(x,y)
     if yy < 0:
