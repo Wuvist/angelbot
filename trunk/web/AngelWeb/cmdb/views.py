@@ -310,7 +310,7 @@ def cmdbDeployment(request):
                     xxservice = xserver
                     for ss in serviceServers[:n]:
                         yservice = yserver - h
-                        drawRect(c,ss.name+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']','white',xxservice,yservice,w,h)
+                        drawRect(c,ss.name.capitalize()+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']','white',xxservice,yservice,w,h)
                         for sss in services.filter(ip = ss.ip).exclude(service_type__contains="IDC"):
                             wservices = w
                             yservice -= h
@@ -328,14 +328,14 @@ def cmdbDeployment(request):
                     wserver = w*(wx-n-1)
                     if wx -1 > n:
                         drawRect(c,'',"white",xserver,yserver,wserver,h)
-                        c.drawCentredString(xserver+wserver/2,yserver+h*4/7,s.name+'('+s.ip[8:]+')')
+                        c.drawCentredString(xserver+wserver/2,yserver+h*4/7,s.name.capitalize()+'('+s.ip[8:]+')')
                         c.drawCentredString(xserver+wserver/2,yserver+h*1/7,'['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+']')
                     xxservice = x
                     for ss in serviceServers[n:]:
                         yservice = yserver - h
                         if s.power_on == 'N':serverColor = 'lightgrey'
                         else:serverColor = 'white'
-                        drawRect(c,ss.name+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']',serverColor,xxservice,yservice,w,h)
+                        drawRect(c,ss.name.capitalize()+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']',serverColor,xxservice,yservice,w,h)
                         for sss in services.filter(ip = ss.ip).exclude(service_type__contains="IDC"):
                             wservices = w
                             yservice -= h
@@ -350,7 +350,7 @@ def cmdbDeployment(request):
                         yservice = yserver - h
                         if s.power_on == 'N':serverColor = 'lightgrey'
                         else:serverColor = 'white'
-                        drawRect(c,ss.name+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']',serverColor,xxservice,yservice,w,h)
+                        drawRect(c,ss.name.capitalize()+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']',serverColor,xxservice,yservice,w,h)
                         for sss in services.filter(ip = ss.ip).exclude(service_type__contains="IDC"):
                             wservices = w
                             yservice -= h
