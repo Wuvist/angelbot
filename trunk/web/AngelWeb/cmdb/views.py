@@ -203,7 +203,7 @@ def show_services(request):
         "services_type":Service.objects.values_list("service_type",flat=True).annotate().order_by("service_type"),
         "project":project,
         "projects":Service.objects.values("project").annotate().order_by("project"),
-        "projects_d":Server.objects.filter(available="Y").values_list("project",flat = True).annotate(),
+        "projects_d":Server.objects.filter(available="Y",physical_server="Y").values_list("project",flat = True).annotate(),
         "system":system,
         "created_on":created_on,
         })
@@ -258,7 +258,8 @@ def cmdbDeployment(request):
             c.rect(maxX-250,maxY-35,160,15,stroke=1,fill=1)
             c.setFillColor("black")
             c.drawString(maxX-247,maxY-30,"Server(ip)[cores-RAM-HD]")
-            c.drawString(x+20,maxY-50,"IDC: " + pservers[0].idc)
+            try:c.drawString(x+20,maxY-50,"IDC: " + pservers[0].idc)
+            except:pass
             for s in pservers:
                 flag = False;serverColor = 'white'
                 wx = len(servers.filter(physical_server_ip = s.physical_server_ip))
@@ -294,7 +295,7 @@ def cmdbDeployment(request):
                         yls = []
                 if s.power_on == 'N':serverColor = 'lightgrey'
                 drawRect(c,'',serverColor,xserver,yserver,wserver,h)
-                c.drawCentredString(xserver+wserver/2,yserver+h*4/7,s.name+'('+s.ip[8:]+')')
+                c.drawCentredString(xserver+wserver/2,yserver+h*4/7,s.name.capitalize()+'('+s.ip[8:]+')')
                 c.drawCentredString(xserver+wserver/2,yserver+h*1/7,'['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+']')
                 serviceServers = servers.filter(physical_server_ip = s.physical_server_ip).exclude(ip = s.physical_server_ip)
                 if len(serviceServers) == 0:
@@ -385,7 +386,7 @@ def cmdbDeployment(request):
     servers_p = servers.filter(physical_server = "Y")
     projects =  request.GET.getlist("ps")    
     if len(projects) == 0:
-        projects = servers.values_list("project",flat = True).annotate()
+        projects = servers_p.values_list("project",flat = True).annotate()
     temp = StringIO()
     temp,yy = main(x,y)
     if yy < 0:
