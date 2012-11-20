@@ -1,0 +1,25 @@
+{% extends "base_site.html" %}
+{% load rrd_extras %}
+
+{% block content %}
+
+<form action="">
+<table>
+<tr><td>title</td><td><input type="text" name="t" value=""></td></tr>
+<tr><td>server</td><td>
+<select name="s">
+{% for s in servers %}
+<option value="{{s.id}}">{{s.name}}({{s.ip}})</option>
+{%endfor%}
+</td></tr>
+<tr><td>project</td><td>
+<select name="p">
+{% for p in projects%}
+<option value="{{p.id}}">{{p.name}}</option>
+{%endfor%}
+</td></tr>
+<tr><td></td><td><input type="submit"></td></tr>
+</table>
+</form>
+
+{% endblock %}

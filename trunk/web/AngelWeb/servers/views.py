@@ -1563,3 +1563,31 @@ def backuplogemail(request):
         except:
             pass
     return HttpResponse("done")
+
+@login_required()
+def add_widget(request):
+    import urllib2
+    try:
+        title = request.GET["t"]
+        serverId = request.GET["s"]
+        project = request.GET["p"]
+        w = Widget()
+        w.title = title
+        w.rrd = Rrd.objects.get(id=1026)
+        w.server = Server.objects.get(id=serverId)
+        w.category=WidgetCategory.objects.get(id=35)
+        w.grade=WidgetGrade.objects.get(id=3)
+        w.widget_type="1"
+        w.graph_def='DEF:online={rrd}:online:LAST\nLINE:online#ff8882:Online'
+        w.save()
+        w.dashboard.add(27)
+        w.project.add(project)
+        urllib2.urlopen("http://angel.morange.com/cmdb/updateservices")
+        
+        return HttpResponseRedirect("/cmdb/add")
+    except:
+        pass
+    servers = Server.objects.all().values("id","name","ip").order_by("id")
+    projects = Project.objects.all().values("id","name").order_by("name")
+    
+    return render_to_response("servers/add_widget.html",{"request":request,"servers":servers,"projects":projects})
