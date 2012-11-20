@@ -1567,8 +1567,15 @@ def backuplogemail(request):
 @login_required()
 def add_widget(request):
     import urllib2
+    if request.GET.has_key("sync"):
+        try:
+            urllib2.urlopen("http://angel.morange.com/cmdb/updateservices")
+            return HttpResponseRedirect("/cmdb/add")
+        except:
+            pass
     try:
         title = request.GET["t"]
+        if title == "":raise
         serverId = request.GET["s"]
         project = request.GET["p"]
         w = Widget()
@@ -1582,7 +1589,6 @@ def add_widget(request):
         w.save()
         w.dashboard.add(27)
         w.project.add(project)
-        urllib2.urlopen("http://angel.morange.com/cmdb/updateservices")
         
         return HttpResponseRedirect("/cmdb/add")
     except:
