@@ -2,24 +2,32 @@
 {% load rrd_extras %}
 
 {% block content %}
-
+<div style="width:25%; height:50px;float:left;">
 <form action="">
 <table>
-<tr><td>title</td><td><input type="text" name="t" value=""></td></tr>
-<tr><td>server</td><td>
+<tr><td>title:</td><td><input type="text" name="t" value=""></td></tr>
+<tr><td>server:</td><td>
 <select name="s">
 {% for s in servers %}
 <option value="{{s.id}}">{{s.name}}({{s.ip}})</option>
 {%endfor%}
 </td></tr>
-<tr><td>project</td><td>
+<tr><td>project:</td><td>
 <select name="p">
 {% for p in projects%}
 <option value="{{p.id}}">{{p.name}}</option>
 {%endfor%}
 </td></tr>
-<tr><td><input type="submit"></td><td><input type="submit" name="sync" value="update cmdb"></td></tr>
+<tr><td></td><td><input type="submit" value="            submit            ">&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="sync" value="update cmdb"></td></tr>
 </table>
 </form>
-
+</div>
+<div style="position:static;width:70%;height:50px;float:right;">
+<table>
+<tr><th>id</th><th>service</th><th>ip</th><th>created on</th></tr>
+{% for w in widgets%}
+<tr><td>{{forloop.counter}}<td>{{w.title}}</td><td>{{w.server.ip}}</td><td>{{ w.created_on|date:"Y-m-d H:i:s" }}</td></tr>
+{%endfor%}
+</table>
+</div>
 {% endblock %}

@@ -1595,5 +1595,6 @@ def add_widget(request):
         pass
     servers = Server.objects.all().values("id","name","ip").order_by("id")
     projects = Project.objects.all().values("id","name").order_by("name")
+    widgets = Widget.objects.all().order_by("-id")[:30]
     
-    return render_to_response("servers/add_widget.html",{"request":request,"servers":servers,"projects":projects})
+    return render_to_response("servers/add_widget.html",{"request":request,"servers":servers,"projects":projects,"widgets":widgets})
