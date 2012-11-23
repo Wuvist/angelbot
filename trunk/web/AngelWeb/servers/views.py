@@ -1593,8 +1593,8 @@ def add_widget(request):
         return HttpResponseRedirect("/cmdb/add")
     except:
         pass
-    servers = Server.objects.all().values("id","name","ip").order_by("id")
+    servers = Server.objects.all().values("id","name","ip").order_by("ip")
     projects = Project.objects.all().values("id","name").order_by("name")
-    widgets = Widget.objects.all().order_by("-id")[:30]
+    widgets = Widget.objects.filter(created_on__gte="2012-11-23 00:00:00").order_by("-id")[:30]
     
     return render_to_response("servers/add_widget.html",{"request":request,"servers":servers,"projects":projects,"widgets":widgets})
