@@ -359,7 +359,7 @@ def cmdbDeployment(request):
                             if sss.service_type not in colorDict:
                                 colorDict[sss.service_type] = str(sss.color)
                         xxservice += w
-                xserver += wserver
+                xserver += wserver + 5
                 if wx > 1:xserver += w
                 ylist += yls
 
