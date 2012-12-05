@@ -1585,6 +1585,7 @@ def add_widget(request):
         w.category=WidgetCategory.objects.get(id=35)
         w.grade=WidgetGrade.objects.get(id=3)
         w.widget_type="1"
+        w.service_type=WidgetServiceType.objects.get(id=request.GET["st"])
         w.graph_def='DEF:online={rrd}:online:LAST\nLINE:online#ff8882:Online'
         w.save()
         w.dashboard.add(27)
@@ -1596,5 +1597,6 @@ def add_widget(request):
     servers = Server.objects.all().values("id","name","ip").order_by("ip")
     projects = Project.objects.all().values("id","name").order_by("name")
     widgets = Widget.objects.filter(created_on__gte="2012-11-23 00:00:00").order_by("-id")[:30]
+    serviceType = WidgetServiceType.objects.all().order_by("name")
     
-    return render_to_response("servers/add_widget.html",{"request":request,"servers":servers,"projects":projects,"widgets":widgets})
+    return render_to_response("servers/add_widget.html",{"request":request,"servers":servers,"projects":projects,"widgets":widgets,"serviceType":serviceType})

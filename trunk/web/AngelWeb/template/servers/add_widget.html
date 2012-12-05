@@ -12,6 +12,12 @@
 <option value="{{s.id}}">{{s.name}}({{s.ip}})</option>
 {%endfor%}
 </td></tr>
+<tr><td>service type:</td><td>
+<select name="st">
+{% for s in serviceType %}
+<option value="{{s.id}}">{{s.name}}</option>
+{%endfor%}
+</td></tr>
 <tr><td>project:</td><td>
 <select name="p">
 {% for p in projects%}
