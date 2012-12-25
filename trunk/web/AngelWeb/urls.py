@@ -14,10 +14,16 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     (r'^admin/', include(admin.site.urls)),
+    (r'^overview/', include('servers.urls')),
     
     (r'^accounts/login/$', 'django.contrib.auth.views.login'),
-    (r'^$', 'views.home'),
     (r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login'),
+    (r'^$', 'servers.overviews.myhome'),
+    (r'^home/$', 'views.home'),
+    (r'^home/top$', 'servers.overviews.home_top'),
+    (r'^home/center$', 'servers.overviews.home_center'),
+    (r'^home/down$', 'servers.overviews.home_down'),
+    (r'^home/left$', 'servers.overviews.home_left'),
     (r'^servers/(\d+)/$', 'servers.views.show'),
     (r'^servers/(\d+)/(\d+)/$', 'servers.views.show_cmd'),
     (r'^servers/(\d+)/exe/(\d+)$', 'servers.views.execute_cmd'),

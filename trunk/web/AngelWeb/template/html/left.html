@@ -1,0 +1,126 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+	<title>Mozat Angel</title>
+	
+	<link rel="stylesheet" href="/media/static/css/jquery.treeview.css" />
+	<link rel="stylesheet" href="/media/static/css/screen.css" />
+	<script src="/media/static/js/jquery.js" type="text/javascript"></script>
+	<script src="/media/static/js/jquery.treeview.js" type="text/javascript"></script>
+	<script type="text/javascript" src="/media/static/js/demo.js"></script>
+<style type="text/css">
+<!--  -->
+#navigation span.head {
+	cursor:pointer;
+	background:url(/media/static/images/main_34.gif) no-repeat scroll;
+	display:block;
+	font-weight:bold;
+	margin:0px;
+	padding:5px 0 5px;
+	text-align:center;
+	font-size:12px;
+	text-decoration:none;
+}
+</style>
+</head>
+<body>
+	<ul id="navigation">
+		{%if request.user.is_staff%}
+		<li style="list-style:none; display:inline;"><span class="head" >OverView</span>
+			<ul>
+				<li>*<span><a href="/overview/projects/" target="rightFrame">Projects</a></span>
+					<ul>
+						{%for p in projects%}
+						<li><a href="{{p.id}}" target="rightFrame">{{p.name}}</a></li>
+						{%endfor%}
+					</ul>
+				</li>
+				<li>*<span>Services</span>
+					<ul>
+						{%for s in services%}
+						<li><a href="{{s.id}}" target="rightFrame">{{s.name}}</a></li>
+						{%endfor%}
+					</ul>
+				</li>
+				<li>*<span>Problems</span>
+					<ul>
+						<li><a href="server" target="rightFrame">Servers</a></li>
+						<li><a href="server" target="rightFrame">Services</a></li>
+					</ul>
+				</li>
+			</ul>
+		</li>
+		{%endif%}
+		<li style="list-style:none; display:inline;"><span class="head">Dashboards</span>
+			<ul>
+				{%if request.user.is_staff%}
+				<li class="open">*<span>Error Dashboards</span>
+					<ul>
+						{%for d in error_dashboards%}
+						<li><a href="/dashboard/error/{{d.id}}" target="rightFrame">{{d.title}}</a></li>
+						{%endfor%}
+					</ul>
+				</li>
+				{%endif%}
+				{% for dashboard in dashboards %}
+				<li><a href="/dashboard/{{ dashboard.id }}/" target="rightFrame">{{ dashboard.title }}</a></li>
+				{% endfor %}
+			</ul>
+		</li>
+		{%if request.user.is_staff%}
+		<li style="list-style:none; display:inline;"><span class="head">Graph</span>
+			<ul>
+				<li>*<span>QuickView</span>
+					<ul>
+						{% for graph_aider in graph_aiders%}
+						<li><a href="/graphaider/{{ graph_aider.id }}/" target="rightFrame">{{ graph_aider.title }}</a></li>
+						{% endfor %}
+					</ul>
+				</li>
+			</ul>
+		</li>
+		<li style="list-style:none; display:inline;"><span class="head">CMDB</span>
+			<ul>
+				<li><a href="/cmdb/deployment" target="rightFrame">deployment</a></li>
+				<li><a href="/cmdb/servers/" target="rightFrame">Servers</a></li>
+				<li><a href="/cmdb/services/" target="rightFrame">Services</a></li>
+				<li><a href="/cmdb/add/" target="rightFrame">Add services</a></li>
+			</ul>
+		</li>
+		<li style="list-style:none; display:inline;"><span class="head">Reports</span>
+			<ul>
+				<li><a href="/statistics/show/" target="rightFrame">Statistics</a></li>
+				<li><a href="/backuplog/showinfo/" target="rightFrame">Backup</a></li>
+				<li>*<span>Availability</span>
+					<ul>
+						<li><a href="?5.0.0">Server</a></li>
+						<li><a href="?5.0.1">Service</a></li>
+					</ul>
+				</li>
+				<li>*<span>Trends</span>
+					<ul>
+						<li><a href="?5.1.0">Performance</a></li>
+						<li><a href="?5.1.1">Alert</a></li>
+					</ul>
+				</li>
+			</ul>
+		</li>
+		<li style="list-style:none; display:inline;"><span class="head">Ticket</span>
+			<ul>
+				<li><a href="/ticket/" target="rightFrame">All</a></li>
+				<li><a href="javascripts:void(0);" target="rightFrame">New</a></li>
+				<li><a href="javascripts:void(0);" target="rightFrame">Processing</a></li>
+				<li><a href="javascripts:void(0);" target="rightFrame">Closed</a></li>
+				<li><a href="javascripts:void(0);" target="rightFrame">Done</a></li>
+			</ul>
+		</li>
+		{%endif%}
+		<li style="list-style:none; display:inline;"><span class="head">About</span>
+			<ul>
+				<li class="open"><a>Version1.0.0 (beta)</a></li>
+			</ul>
+		</li>
+	</ul>
+	</body>
+	</html>

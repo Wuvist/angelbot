@@ -17,6 +17,7 @@ def ticket_action(ticket):
     "return last ticket action"
     try:
         result = ticket.action.filter(actiontype="action").order_by("-id")[0].action
+        if len(result) > 20:result = result[:20] + "..."
     except:
         result = ""
     return result
