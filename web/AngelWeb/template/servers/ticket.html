@@ -5,11 +5,11 @@
 		{% if user.is_staff %}
 
 	<style>
-	th {width:100px;}
+	th {width:80px;}
 	</style>
 	<h1>Ticket list</h1>
 	<table>
-		<tr><th>ticket id</th><th>grade</th><th>status</th><th>operator</th><th>keyword</th><th>start time</th><th>last update</th><th>Action taken</th></tr>
+		<tr><th>ticket id</th><th>grade</th><th>status</th><th>operator</th><th>keyword</th><th style="width:120px;">start time</th><th style="width:120px;">last update</th><th>Action taken</th></tr>
 		{% for ticket in tickets %}
 		<tr><td><a href="/ticket/show/{{ ticket.id }}">{{  ticket.id }}</a></td><td>{{ ticket.incidentgrade }}</td><td>{{ ticket.status }}</td>
 			<td>{% for p in ticket.project.all %}{{ p.name }}&nbsp;{% endfor %}</td><td>{{ ticket.title }}</td>

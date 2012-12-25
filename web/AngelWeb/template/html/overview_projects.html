@@ -1,0 +1,43 @@
+{% extends "html/html_home.html" %}
+
+{% block content %}
+<style>
+body{font-family: Verdana, helvetica, arial, sans-serif;}
+td{text-align:center;font-size:13px;}
+td.rights {border-bottom:1px solid #000;border-right:1px solid #000;}
+</style>
+<div id="data" style="width:40%;float:left;">
+<table border="1" cellspacing="0" cellpadding="1">
+<tr><th>Projects</th><th>Server Status Summary</th><th>Services Status Summary</th><th style="width:100px;">Action</th></tr>
+{%for p in projects%}
+<tr><td>{%if p.projectName == "stc" or p.projectName == "shabik360"%}<h3>{{p.projectName}}</h3>{%else%}{{p.projectName}}{%endif%}</td><td></td><td style="align:center;">
+	<table align="center" border="0" frame="void" cellpadding="0" cellspacing="0">
+		<tr><td >Ok</td><td >&nbsp;Warning&nbsp;</td><td >Critical</td></tr>
+		<tr><td >{{p.ok}}</td><td >{{p.warning}}</td><td>{{p.error}}</td></tr>
+	</table>
+	</td><td style="font-size:10px;"><a href="#/showdetail/server/{{p.projectId}}">Servers Details</a><br><a href="./showdetail/service/{{p.projectId}}">Services Details</a></td></tr>
+{% endfor %}
+</table>
+</div>
+<div id="imgall" style="width:60%;float:right;">
+{% for img in imgs %}
+<img src="/grahaiderimg/{{ img.id }}/w/{{ dashboard_error.width }}/h/{{ dashboard_error.height }}/start/{{ startTime }}/end/{{ endTime }}" height={{ dashboard_error.height }} width={{ dashboard_error.width }} />
+{% endfor %}
+</div>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+<script language="javascript"> 
+    function reload()
+    {
+        location.reload(true);
+    }
+    $(function() {
+        if ($(".errornote")[0]) {
+            alert($(".errornote").length + "  Error happens");
+        }
+        else {
+            setTimeout(reload, 60000);
+        }
+    })
+</script>
+
+{% endblock %}
