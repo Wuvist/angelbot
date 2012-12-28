@@ -4,6 +4,7 @@ from django.views.generic.simple import direct_to_template
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import Context, loader, RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
+from django.views.decorators.cache import cache_page
 from django.db.models import Count
 from servers.models import *
 from django.conf import settings
@@ -31,8 +32,9 @@ def show_cmd(request, server_id, cmd_id):
         "cmd":cmd
         })
     return render_to_response('servers/show_cmd.html',c)
-    
+
 @login_required()
+@cache_page(55) 
 def dashboard_show(request, dashboard_id):
     import time
     dashboard = get_object_or_404(Dashboard, id=dashboard_id)
