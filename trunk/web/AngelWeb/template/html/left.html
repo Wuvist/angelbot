@@ -32,7 +32,7 @@
 				<li>*<span><a href="/overview/projects/" target="rightFrame">Projects</a></span>
 					<ul>
 						{%for p in projects%}
-						<li><a href="{{p.id}}" target="rightFrame">{{p.name}}</a></li>
+						<li><a href="/overview/project/{{p.id}}" target="rightFrame">{{p.name}}</a></li>
 						{%endfor%}
 					</ul>
 				</li>
@@ -54,6 +54,9 @@
 		{%endif%}
 		<li style="list-style:none; display:inline;"><span class="head">Dashboards</span>
 			<ul>
+				{% for dashboard in dashboards %}
+				<li><a href="/dashboard/{{ dashboard.id }}/" target="rightFrame">{{ dashboard.title }}</a></li>
+				{% endfor %}
 				{%if request.user.is_staff%}
 				<li class="open">*<span>Error Dashboards</span>
 					<ul>
@@ -63,9 +66,6 @@
 					</ul>
 				</li>
 				{%endif%}
-				{% for dashboard in dashboards %}
-				<li><a href="/dashboard/{{ dashboard.id }}/" target="rightFrame">{{ dashboard.title }}</a></li>
-				{% endfor %}
 			</ul>
 		</li>
 		{%if request.user.is_staff%}

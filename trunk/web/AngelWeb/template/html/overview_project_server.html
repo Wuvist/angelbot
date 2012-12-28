@@ -1,0 +1,65 @@
+{% extends "home.html" %}
+{% load rrd_extras %}
+{% block content %}
+
+{% regroup widgets|dictsort:"category.title" by category as widgets %}
+	
+{% for category in widgets %}
+	<h2>{{ category.grouper }}</h2>
+	<table>
+	{% if category.list.0.widget_type == "1" %}
+	<tr>
+		<th></th>
+		{{ category.list.0|show_widget_header|safe|title }}
+		<th>Graph</th>
+		<th>Action</th>
+	</tr>
+	{% endif %}
+	{% if category.list.0.widget_type == "2" %}
+	<tr>
+		<th></th>
+		<th>Latest</th>
+		<th>Yesterday</th>
+		<th>Last Week</th>
+		<th>Graph</th>
+		<th>Action</th>
+	</tr>
+	{% endif %}
+	{% for widget in category.list|dictsort:"title" %}
+	<tr>
+		<th>{{ widget|show_widget_title|safe }}</th>
+		{% if widget.widget_type == "1" %}
+			{{ widget|show_widget_with_current_value|safe }}
+		{% endif %}
+		{% if widget.widget_type == "2" %}
+			{{ widget|show_widget_with_current_and_past_value|safe }}
+		{% endif %}
+		<td><a href="/dashboard/{{ dashboard.id }}/widget/{{ widget.id }}/graph" target="_blank">View</a></td>
+		<td>
+			{% if widget.server and dashboard.id == 1 %}
+				<a href="/servers/{{ widget.server.id}}/" target="_blank">Execute</a>
+			{% endif %}
+		</td>
+	</tr>
+	{% endfor %}
+</table>
+{% endfor %}
+
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+<script language="javascript"> 
+    function reload()
+    {
+        location.reload(true);
+    }
+    $(function() {
+        if ($(".errornote")[0]) {
+            alert($(".errornote").length + "  Error happens");
+        }
+        else {
+            setTimeout(reload, 60000);
+        }
+    })
+</script>
+
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "html/html_home.html" %}
+
+{% block content %}
+<style>
+body{font-family: Verdana, helvetica, arial, sans-serif;}
+td{text-align:center;font-size:13px;}
+td.rights {border-bottom:1px solid #000;border-right:1px solid #000;}
+</style>
+<div id="data" style="width:40%;float:left;">
+<table border="1" cellspacing="0" cellpadding="1">
+<tr><th>Server</th><th>Services Status</th><th style="width:100px;">Action</th></tr>
+{%for s in servers1%}
+<tr><td>{{s.ip}}</td><td style="align:center;">
+	<table align="center" border="0" frame="void" cellpadding="0" cellspacing="0">
+		<tr><td >Ok</td><td >&nbsp;Warning&nbsp;</td><td >Critical&nbsp;</td><td>Unknown</td></tr>
+		<tr><td >{{s.data.ok}}</td><td >{{s.data.warning}}</td><td>{{s.data.error}}</td><td>{{s.data.unknown}}</td></tr>
+	</table>
+	</td><td style="font-size:10px;"><a href="/servers/{{s.id}}">Execute</a><br><a href="/overview/project/{{s.project.id}}/server/{{s.id}}">Services Details</a></td></tr>
+{% endfor %}
+</table>
+</div>
+{%if servers2%}
+<div id="imgall" style="float:left;">
+<table border="1" cellspacing="0" cellpadding="1">
+<tr><th>Server</th><th>Services Status</th><th style="width:100px;">Action</th></tr>
+{%for s in servers2%}
+<tr><td>{{s.ip}}</td><td style="align:center;">
+	<table align="center" border="0" frame="void" cellpadding="0" cellspacing="0">
+		<tr><td >Ok</td><td >&nbsp;Warning&nbsp;</td><td >Critical&nbsp;</td><td>Unknown</td></tr>
+		<tr><td >{{s.data.ok}}</td><td >{{s.data.warning}}</td><td>{{s.data.error}}</td><td>{{s.data.unknown}}</td></tr>
+	</table>
+	</td><td style="font-size:10px;"><a href="/servers/{{s.id}}">Execute</a><br><a href="/overview/project/{{s.project.id}}/server/{{s.id}}">Services Details</a></td></tr>
+{% endfor %}
+</table>
+</div>
+{%endif%}
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+<script language="javascript"> 
+    function reload()
+    {
+        location.reload(true);
+    }
+    $(function() {
+        if ($(".errornote")[0]) {
+            alert($(".errornote").length + "  Error happens");
+        }
+        else {
+            setTimeout(reload, 60000);
+        }
+    })
+</script>
+
+{% endblock %}

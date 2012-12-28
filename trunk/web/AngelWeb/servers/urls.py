@@ -16,4 +16,6 @@ urlpatterns = patterns('',
     # url(r'^admin/', include(admin.site.urls)),
     (r'projects/$','servers.overviews.projects'),
     (r'projects/showdetail/service/(\d+)$','servers.overviews.showdetail_services'),
+    (r'project/(\d+)$','servers.overviews.project_servers'),
+    (r'project/(\d+)/server/(\d+)/$','servers.overviews.project_server'),
 )

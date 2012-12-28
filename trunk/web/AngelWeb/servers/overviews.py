@@ -80,6 +80,8 @@ def paser_widget(widget):
     if widget.data_def:# == False:
         try:
             data_def = eval(widget.data_def.replace("\n", "").replace("\r", ""))
+            if int(data_def["interval"]) * 60 < time.time() - info["last_update"]:
+                result["widgetStatus"] = "noUpdate"
             data = list(current[2][0])
             ds = current[1]
             for i in range(0, len(ds)):
@@ -91,9 +93,9 @@ def paser_widget(widget):
                         result[ds[i]] = format_value_def(field_def,data_rrd)
                     except:
                         result[ds[i]] = format_value(field_def, data[i])
-                    if result[ds[i]]["status"] == "error":
+                    if result[ds[i]]["status"] == "error" and  result["widgetStatus"] != "noUpdate":
                         result["widgetStatus"] = "error"
-                    elif result[ds[i]]["status"] == "warning" and result["widgetStatus"] != "error":
+                    elif result[ds[i]]["status"] == "warning" and result["widgetStatus"] != "error" and result["widgetStatus"] != "noUpdate":
                         result["widgetStatus"] = "warning"
                 else:
                     result[ds[i]] = {"status":"unknown","value":str(data[i])}
@@ -122,7 +124,7 @@ def getdata(projectId="all"):
                 result = paser_widget(w)
             except:
                 continue
-            if result['widgetStatus'] == "error":
+            if result['widgetStatus'] == "error" or result['widgetStatus'] == "noUpdate":
                 servicesDict['error'] += 1
                 widgetStatusProjects[p.id]['error'] += 1
             elif result['widgetStatus'] == "warning":
@@ -168,6 +170,7 @@ def showdetail_services(request,pid):
                 if data[w.id]['widgetStatus'] == "ok" or data[w.id]['widgetStatus']=="unknown":
                     raise
                 dt = {"showTitle":"","category":w.category.title,"value":"<td>"+w.title+"</td>","widget":w}
+                if data[w.id]['widgetStatus'] == "noUpdate":dt["value"] = "<td><div class='errornote'>No update</div>"+w.title+"</td>"
                 for k in data[w.id]["valueList"]:
                     if data[w.id][k]["status"] == "warning":
                         dt["value"] += "<td><div class='errors'>"+data[w.id][k]["value"]+"</div></td>"
@@ -220,3 +223,57 @@ def home_left(request):
         "graph_aiders":GraphAider.objects.filter(user=request.user.id).all(),
     })
     return render_to_response('html/left.html',c)
+
+def project_servers(reqeust,pid):
+    widgetStatusProjects = cache.get("getdata_"+str(pid))
+    if widgetStatusProjects == None:
+        myResult,servicesDict,widgetStatusProjects = getdata(pid)
+    data = widgetStatusProjects[int(pid)]["servicesValues"]
+    servers = Server.objects.filter(project__id=pid).order_by("ip")
+    for s in servers:
+        result = {"ok":0,"warning":0,"unknown":0,"error":0}
+        widgets = Widget.objects.filter(server=s,project__id=pid).order_by("title")
+        for w in widgets:
+            try:
+                if data[w.id]['widgetStatus'] == "ok":
+                    result["ok"] += 1
+                elif data[w.id]['widgetStatus']=="unknown":
+                    result["unknown"] += 1
+                elif data[w.id]['widgetStatus']=="warning":
+                    result["warning"] += 1
+                else:result["error"] += 1
+            except:
+                pass
+        s.data=result
+    if servers.count() > 16:
+        t = servers.count()/2
+        servers1 = servers[:t]
+        servers2 = servers[t:]
+    else:
+        servers1 = servers
+        servers2 = []
+    return render_to_response('html/overview_project.html',{"servers1":servers1,"servers2":servers2})
+
+def project_server(request,pid,sid):
+    widgetStatusProjects = cache.get("getdata_"+str(pid))
+    if widgetStatusProjects == None:
+        myResult,servicesDict,widgetStatusProjects = getdata(pid)
+    data = widgetStatusProjects[int(pid)]["servicesValues"]
+    widgets = Widget.objects.filter(project__id=pid,server__id=sid).order_by("title")
+    '''
+    for w in widgets:
+        print w.id
+        try:
+            w.dt = {"showTitle":"","value":"<td>"+w.title+"</td>"}
+            for k in data[w.id]["valueList"]:
+                if data[w.id][k]["status"] == "warning":
+                    w.dt["value"] += "<td><div class='errors'>"+data[w.id][k]["value"]+"</div></td>"
+                elif data[w.id][k]["status"] == "error":    
+                    w.dt["value"] += "<td><div class='errornote'>"+data[w.id][k]["value"]+"</div></td>"
+                else:
+                    w.dt["value"] += "<td>"+data[w.id][k]["value"]+"</td>"
+                w.dt["showTitle"] += "<th>"+k+"</th>"
+        except:
+             pass
+    '''
+    return render_to_response('html/overview_project_server.html',{"widgets":widgets})
