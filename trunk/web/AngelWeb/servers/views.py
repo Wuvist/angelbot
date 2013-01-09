@@ -1055,6 +1055,23 @@ def graph_aiders(request,aiderid):
         })
     return render_to_response('servers/graph_aider.html',c)
 
+    
+def doCall():
+    import telnetlib
+    tn = telnetlib.Telnet(settings.RING_IP,settings.RING_PORT)
+    tn.read_until("login: ")
+    tn.write(settings.RING_USERNAME + "\r\n")
+    tn.read_until("password:")
+    tn.write(settings.RING_PASSWORD + "\r\n")
+    tn.read_until(">")
+    tn.write(settings.RING_PATH + "\r\n")
+    result = tn.read_until(">")
+    tn.write("exit\r\n")
+    if "doneok" in result:
+        return True
+    else:
+        return False
+
 def alarm(request):
     import time
     from django.contrib.auth.models import User
@@ -1228,6 +1245,12 @@ def alarm(request):
                 if "sms" in alarmMode:
                    contactReault = sendSMS(contactUsers,widget.title,"ticketID: "+str(ticketId))
                    resultAlarm = ""
+                if "call" in alarmMode:
+                   try:
+                       contactReault = doCall()
+                   except:
+                       contactReault = "error"
+                   resultAlarm = ""
                 logs = AlarmLog()
                 logs.title = alarm
                 logs.widget = widget
@@ -1301,6 +1324,12 @@ def alarm(request):
             if "sms" in str(alarmMode):
                 contactReault = sendSMS(contactUsers,widget.title,"total error times: "+str(error_num_now))
                 frequentAlarmLog = saveFrequentLog(frequentAlarmLog,alarmLevel,alarmMode,str(frequentAlarmLog.ticketid),contactReault,result,contactUsers)
+            if "call" in alarmMode:
+                try:
+                    contactReault = doCall()
+                except:
+                    contactReault = "error"
+                frequentAlarmLog = saveFrequentLog(frequentAlarmLog,alarmLevel,alarmMode,str(frequentAlarmLog.ticketid),contactReault,result,contactUsers)
         
         if frequentrrdAlarm(widget):
             if frequentAlarmLog != "":
@@ -1373,6 +1402,27 @@ def alarm(request):
         "frequentAlarmLogs":frequentAlarmLogs,
         })
     return render_to_response('servers/auto_alarm.html',c)
+
+@login_required()
+def alarm_test(request):
+    data = '''<br><br>
+        <form action="">
+        <input type="submit" name="test" value="Test Alarm">
+        </form><br>
+        Test result:<hr>%s
+    '''
+    if request.GET.has_key("test"):
+        try:
+            if doCall():
+                result = "ok"
+            else:
+                result = "error"
+        except Exception, e:
+            result = str(e)
+    else:
+         result = ""
+    
+    return HttpResponse(data % result)
 
 def backuplog(request):
     import os
