@@ -1380,19 +1380,25 @@ def alarm(request):
         if eval(alarm.enable):
             for widget in alarm.widget.filter(project__in = Project.objects.filter(alarm = "True")):
                 try:
-                    alarmlog = AlarmLog.objects.filter(widget = widget.id).order_by("-created_on")[0]
+                    alarmlog = AlarmLog.objects.filter(widget = widget.id, title = alarm).order_by("-created_on")[0]
                 except:
                     alarmlog = ""
-                contrastLog(alarm,widget,alarmlog)
+                try:
+                    contrastLog(alarm,widget,alarmlog)
+                except:
+                    pass
     
     for alarm in FrequentAlarm.objects.all():
         if eval(alarm.enable):
             for widget in alarm.widget.filter(project__in = Project.objects.filter(alarm = "True")):
                 try:
-                    frequentAlarmLog = FrequentAlarmLog.objects.filter(widget = widget.id).filter(created_on__gte = time.strftime("%Y-%m-%d",time.localtime())).order_by("-created_on")[0]
+                    frequentAlarmLog = FrequentAlarmLog.objects.filter(widget = widget.id,title = alarm).filter(created_on__gte = time.strftime("%Y-%m-%d",time.localtime())).order_by("-created_on")[0]
                 except:
                     frequentAlarmLog = ""
-                alarmFrequent(alarm,widget,frequentAlarmLog)
+                try:
+                    alarmFrequent(alarm,widget,frequentAlarmLog)
+                except:
+                    pass
 
     alarmlogs = AlarmLog.objects.filter(created_on__gte = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(time.time())-24*3600))).order_by("widget","-created_on")
     frequentAlarmLogs = FrequentAlarmLog.objects.filter(lasterror_time__gte = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(time.time())-24*3600))).order_by("widget","-lasterror_time")
