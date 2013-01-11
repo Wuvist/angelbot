@@ -1420,13 +1420,13 @@ def alarm_test(request):
                 result = "error"
         except Exception, e:
             result = str(e)
+        log = AlarmTest()
+        log.user = request.user
+        log.result = result
+        log.created_on = datetime.datetime.now()
+        log.save()
     else:
          result = ""
-    log = AlarmTest()
-    log.user = request.user
-    log.result = result
-    log.created_on = datetime.datetime.now()
-    log.save()
     
     return HttpResponse(data % result)
 
