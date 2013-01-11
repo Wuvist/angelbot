@@ -1405,6 +1405,7 @@ def alarm(request):
 
 @login_required()
 def alarm_test(request):
+    import datetime
     data = '''<br><br>
         <form action="">
         <input type="submit" name="test" value="Test Alarm">
@@ -1421,6 +1422,11 @@ def alarm_test(request):
             result = str(e)
     else:
          result = ""
+    log = AlarmTest()
+    log.user = request.user
+    log.result = result
+    log.created_on = datetime.datetime.now()
+    log.save()
     
     return HttpResponse(data % result)
 
