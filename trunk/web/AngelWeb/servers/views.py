@@ -1664,3 +1664,14 @@ def add_widget(request):
     serviceType = WidgetServiceType.objects.all().order_by("name")
     
     return render_to_response("servers/add_widget.html",{"request":request,"servers":servers,"projects":projects,"widgets":widgets,"serviceType":serviceType})
+
+def api_idc(request):
+    import json
+    ls = [];sf = {1:'Monet',2:'APP',3:'DB',4:'VMware'}
+    servers = Server.objects.all()
+    for s in servers:
+        dt = {"ip":s.ip,"name":s.name,"function":sf[s.server_function],"project":s.project.name}
+        ls.append(dt)
+    
+    return HttpResponse(json.dumps(ls, ensure_ascii=False))
+    
