@@ -241,7 +241,7 @@ class Alarm(models.Model):
     fourthcontact = models.ManyToManyField(AlarmUser, null = True, blank = True, related_name = 'fourthcontact_set')
     fifthcontact = models.ManyToManyField(AlarmUser, null = True, blank = True, related_name = 'fifthcontact_set')
     sixthcontact = models.ManyToManyField(AlarmUser, null = True, blank = True, related_name = 'sixthcontact_set')
-    widget = models.ManyToManyField(Widget)
+    widget = models.ManyToManyField(Widget,limit_choices_to={'dashboard__id':1})
     
     def __unicode__(self):
         return self.title + " " + self.enable

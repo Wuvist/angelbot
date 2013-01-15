@@ -70,7 +70,7 @@
 	<h2>services:</h2>
 	<table id="tb">
 	<tr style="background:#f7f89a" role="head">
-		<th sort="true" style="width:25px" >id</th><th sort="true" >project</th><th sort="true" >title</th><th sort="true">ip</th><th sort="true"  style="width:160px" >[Name: Cores-RAM-HD]</th><th sort="true" >system</th><th sort="true" >service name</th><th sort="true" >service type</th><th sort="true" >load</th><th sort="true" >remark</th><th sort="true" style="width:100px" >created on</th><th sort="true" style="width:150px" >latest udpate</th></tr>
+		<th sort="true" style="width:25px" >id</th><th sort="true" >project</th><th sort="true" >title</th><th sort="true">ip</th><th sort="true"  style="width:160px" >[Name: Cores-RAM-HD]</th><th sort="true" >system</th><th sort="true" >service name</th><th sort="true" >service type</th><th sort="true" >remark</th><th sort="true" style="width:100px" >created on</th><th sort="true" style="width:150px" >latest udpate</th></tr>
 		{% for s in services %}
 		{% if forloop.counter0|tr_color %}
 		<tr class="row1">
@@ -93,7 +93,6 @@
 			{{ s.service_name }}
 			</td>
 			<td>{{ s.service_type }}</td>
-			<td>{{ s.server_id|getLoad }}</td>
 			<td>{{ s.remark }}</td>
 			<td>{{ s.created_on|date:"Y-m-d H:i:s" }}</td>
 			<td>{{ s.update_time|date:"Y-m-d H:i:s" }}</td>
