@@ -1,4 +1,4 @@
-# Create your views here.
+# -*- coding: utf-8 -*-
 from django.contrib.auth.decorators import login_required
 from django.views.generic.simple import direct_to_template
 from django.shortcuts import render_to_response, get_object_or_404
@@ -1433,15 +1433,14 @@ def alarm_test(request):
         log.result = result
         log.created_on = datetime.datetime.now()
         log.save()
-    
     elif request.GET.has_key("stop"):
         try:
             result = "stop ok"
-            smsUrl = settings.SMS_API % (settings.RING_PHONE_NUMBER, "%E6%92%A4%E9%98%B2")
+            smsUrl = settings.SMS_API % (settings.RING_PHONE_NUMBER, "撤防")
             smsResult = urllib2.urlopen(smsUrl.replace(" ","%20")).read()
             if smsResult != "{ret:0}":result = "stop fail"
-        except:
-            result = "stop fail"
+        except Exception, e:
+            result = str(e.reason)
     else:
          result = ""
     return HttpResponse(data % result)
