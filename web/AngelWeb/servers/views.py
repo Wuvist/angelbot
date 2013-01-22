@@ -1411,10 +1411,12 @@ def alarm(request):
 
 @login_required()
 def alarm_test(request):
+    import urllib2
     import datetime
     data = '''<br><br>
         <form action="">
         <input type="submit" name="test" value="Test Alarm">
+        <input type="submit" name="stop" value="Stop Alarm">
         </form><br>
         Test result:<hr>%s
     '''
@@ -1431,9 +1433,17 @@ def alarm_test(request):
         log.result = result
         log.created_on = datetime.datetime.now()
         log.save()
+    
+    elif request.GET.has_key("stop"):
+        try:
+            result = "stop ok"
+            smsUrl = settings.SMS_API % (settings.RING_PHONE_NUMBER, "%E6%92%A4%E9%98%B2")
+            smsResult = urllib2.urlopen(smsUrl.replace(" ","%20")).read()
+            if smsResult != "{ret:0}":result = "stop fail"
+        except:
+            result = "stop fail"
     else:
          result = ""
-    
     return HttpResponse(data % result)
 
 def backuplog(request):
