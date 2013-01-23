@@ -1436,7 +1436,7 @@ def alarm_test(request):
     elif request.GET.has_key("stop"):
         try:
             result = "stop ok"
-            smsUrl = settings.SMS_API % (settings.RING_PHONE_NUMBER, "撤防")
+            smsUrl = settings.SMS_API % (settings.RING_PHONE_NUMBER, "%E6%92%A4%E9%98%B2")
             smsResult = urllib2.urlopen(smsUrl.replace(" ","%20")).read()
             if smsResult != "{ret:0}":result = "stop fail"
         except Exception, e:
