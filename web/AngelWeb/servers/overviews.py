@@ -216,11 +216,11 @@ def home_left(request):
 
     c = RequestContext(request,{
         "request":request,
-        "dashboards":request.user.dashboard_set.all(),
+        "dashboards":request.user.dashboard_set.all().order_by("-sequence"),
         "error_dashboards":request.user.dashboarderror_set.all(),
-        "projects":Project.objects.all(),
+        "projects":Project.objects.all().order_by("-sequence"),
         "services":ServiceType.objects.all(),
-        "graph_aiders":GraphAider.objects.filter(user=request.user.id).all(),
+        "graph_aiders":GraphAider.objects.filter(user=request.user.id).all().order_by("-sequence"),
     })
     return render_to_response('html/left.html',c)
 

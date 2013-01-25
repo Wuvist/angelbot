@@ -38,6 +38,7 @@ SERVICETYPE_COLOR_CHOICES = (
 class Project(models.Model):
     name = models.CharField(max_length=50)
     alarm = models.CharField(max_length=8, choices=ALARM_TYPE_CHOICES)
+    sequence = models.IntegerField(max_length=10, null = True, blank = True)
     remark = models.CharField(max_length=1000, null = True, blank = True)
     def __unicode__(self):
         return self.name
@@ -124,6 +125,7 @@ class SeverCmd(models.Model):
 class Dashboard(models.Model):
     title = models.CharField(max_length=50)
     user = models.ManyToManyField(User, null = True, blank=True)
+    sequence = models.IntegerField(max_length=10,null = True, blank=True)
     des = models.TextField(max_length =512, null = True, blank=True)
     
     def __unicode__(self):
@@ -283,6 +285,7 @@ class GraphAiderDef(models.Model):
         
 class GraphAider(models.Model):
     title = models.CharField(max_length=50)
+    sequence = models.IntegerField(max_length=10, null = True, blank = True)
     graphs = models.ManyToManyField(GraphAiderDef, null = True, blank = True)
     width = models.IntegerField(max_length=50)
     height = models.IntegerField(max_length=50)

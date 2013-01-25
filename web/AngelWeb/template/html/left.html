@@ -29,21 +29,21 @@
 		{%if request.user.is_staff%}
 		<li style="list-style:none; display:inline;"><span class="head" >OverView</span>
 			<ul>
-				<li>*<span><a href="/overview/projects/" target="rightFrame">Projects</a></span>
+				<li>+<span><a href="/overview/projects/" target="rightFrame">Projects</a></span>
 					<ul>
 						{%for p in projects%}
 						<li><a href="/overview/project/{{p.id}}" target="rightFrame">{{p.name}}</a></li>
 						{%endfor%}
 					</ul>
 				</li>
-				<li>*<span>Services</span>
+				<li>+<span>Services</span>
 					<ul>
 						{%for s in services%}
 						<li><a href="{{s.id}}" target="rightFrame">{{s.name}}</a></li>
 						{%endfor%}
 					</ul>
 				</li>
-				<li>*<span>Problems</span>
+				<li>+<span>Problems</span>
 					<ul>
 						<li><a href="server" target="rightFrame">Servers</a></li>
 						<li><a href="server" target="rightFrame">Services</a></li>
@@ -58,7 +58,7 @@
 				<li><a href="/dashboard/{{ dashboard.id }}/" target="rightFrame">{{ dashboard.title }}</a></li>
 				{% endfor %}
 				{%if request.user.is_staff%}
-				<li class="open">*<span>Error Dashboards</span>
+				<li class="open">+<span>Error Dashboards</span>
 					<ul>
 						{%for d in error_dashboards%}
 						<li><a href="/dashboard/error/{{d.id}}" target="rightFrame">{{d.title}}</a></li>
@@ -71,13 +71,11 @@
 		{%if request.user.is_staff%}
 		<li style="list-style:none; display:inline;"><span class="head">Graph</span>
 			<ul>
-				<li>*<span>QuickView</span>
-					<ul>
+
 						{% for graph_aider in graph_aiders%}
 						<li><a href="/graphaider/{{ graph_aider.id }}/" target="rightFrame">{{ graph_aider.title }}</a></li>
 						{% endfor %}
-					</ul>
-				</li>
+						<li><a href="/parse_aider/" target="rightFrame">online hour</a></li>
 			</ul>
 		</li>
 		<li style="list-style:none; display:inline;"><span class="head">CMDB</span>
@@ -93,13 +91,13 @@
 				<li><a href="/alarm/test" target="rightFrame">Alarm test</a></li>
 				<li><a href="/statistics/show/" target="rightFrame">Statistics</a></li>
 				<li><a href="/backuplog/showinfo/" target="rightFrame">Backup</a></li>
-				<li>*<span>Availability</span>
+				<li>+<span>Availability</span>
 					<ul>
 						<li><a href="?5.0.0">Server</a></li>
 						<li><a href="?5.0.1">Service</a></li>
 					</ul>
 				</li>
-				<li>*<span>Trends</span>
+				<li>+<span>Trends</span>
 					<ul>
 						<li><a href="?5.1.0">Performance</a></li>
 						<li><a href="?5.1.1">Alert</a></li>
