@@ -11,6 +11,10 @@ from django.contrib import admin
 from AngelWeb.servers.models import *
 from django.forms import ModelForm, PasswordInput
 
+class DashboardAdmin(admin.ModelAdmin):
+    list_display = ('title', 'sequence')
+    ordering = ('title',)
+
 class WidgetAdmin(admin.ModelAdmin):
     list_display = ('title', 'rrd', 'category')
     search_fields = ('title','server__ip' )
@@ -34,7 +38,7 @@ class FrequentAlarmAdmin(admin.ModelAdmin):
     ordering = ('title',)
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('name', 'alarm')
+    list_display = ('name', 'alarm', 'sequence')
     ordering = ('name',)
 
 class ServicesTypeAdmin(admin.ModelAdmin):
@@ -61,7 +65,7 @@ admin.site.register(Server,ServerServerAdmin)
 admin.site.register(CmdLog)
 admin.site.register(Cmd)
 admin.site.register(Rrd, RrdAdmin)
-admin.site.register(Dashboard)
+admin.site.register(Dashboard,DashboardAdmin)
 admin.site.register(WidgetCategory)
 admin.site.register(Widget, WidgetAdmin)
 admin.site.register(SeverCmd)
