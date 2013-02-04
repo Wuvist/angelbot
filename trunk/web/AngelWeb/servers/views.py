@@ -1442,7 +1442,9 @@ def alarm_test(request):
         except Exception, e:
             result = str(e.reason)
     else:
-         result = ""
+        result = """Alarm Page<hr>
+        <iframe src="/alarm" width="100%" height="100%" frameborder="0"></iframe>
+        """
     return HttpResponse(data % result)
 
 def backuplog(request):
