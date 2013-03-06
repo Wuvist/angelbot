@@ -1685,4 +1685,53 @@ def api_idc(request):
         ls.append(dt)
     
     return HttpResponse(json.dumps(ls, ensure_ascii=False))
+     
+def sync_server(request):
+    import urllib2
+    import json
+    try:
+        data = urllib2.urlopen(settings.IDC_API).read()
+    except:
+        return HttpResponse("api return error!")
+        data = []
     
+    servers = Server.objects.filter(idc__name="M1")
+    data = json.loads(data)
+    for d in data:
+        if d['os_name'] == None:server_type="L"
+        elif "Windows" in d['os_name']:server_type="W"
+        elif "VMware" in d['os_name']:server_type="V"
+        else:server_type="L"
+        hard_disk = d['disk_gb']
+        if hard_disk > 1024:hard_disk = "%dT" % (hard_disk/1024)
+        else:hard_disk = "%dG" % hard_disk
+        if d['ram_gb'] == None:ram = "None"
+        else:ram = str(int(d['ram_gb']))+"gb"
+        state = "Y"
+        if d['state'] == "Off":state = "N"
+        core = int(d['cpu_threads'])*int(d['cpu_cores'])
+        physical_server = "Y"
+        if d['type'] == "virtual":physical_server = "N"
+        if d['hostname'] == None:d['hostname'] = ""
+        if d['ip'] == None:d['ip'] = ""
+        if d['host_ip'] == None:d['host_ip'] = ""
+        try:
+            s = servers.get(ip=d["ip"])
+            s.ip=d['ip']
+            s.name=d['hostname']
+            s.physical_server_ip=d['host_ip']
+            s.uid=d['uid']
+            s.rack=d['rack']
+            s.core=core
+            s.ram=ram
+            s.hard_disk=hard_disk
+            s.server_type=server_type
+            s.physical_server=physical_server
+            s.power_on=state
+            s.label=d['label']
+            s.save()
+        except:
+            s = Server(ip=d['ip'],name=d['hostname'],physical_server_ip=d['host_ip'],uid=d['uid'],rack=d['rack'],\
+            core=core,ram=ram,hard_disk=hard_disk,physical_server=physical_server,server_type=server_type,power_on=state,label=label,project_id=10,idc_id=1)
+            s.save()
+    return HttpResponse("done")

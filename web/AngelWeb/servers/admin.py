@@ -54,8 +54,8 @@ class ServerServerForm(ModelForm):
 
 class ServerServerAdmin(admin.ModelAdmin):
     form = ServerServerForm
-    list_display = ('name', 'ip', 'idc')
-    search_fields = ('ip','name' )
+    list_display = ('uid', 'name', 'ip', 'physical_server_ip', 'idc')
+    search_fields = ('ip','name','uid','physical_server_ip' )
     ordering = ('name',)
 
 class StatisticsDayAdmin(admin.ModelAdmin):

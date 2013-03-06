@@ -56,7 +56,7 @@ class IDC(models.Model):
         ordering = ["name"]
 
 class Server(models.Model):
-    ip = models.IPAddressField(max_length=200, unique = True)
+    ip = models.IPAddressField(max_length=200)
     name = models.CharField(max_length=50, unique = True)
     username = models.CharField(max_length=50)
     password = models.CharField(max_length=50)
@@ -66,6 +66,9 @@ class Server(models.Model):
     core = models.IntegerField(max_length=2)
     ram = models.CharField(max_length=10)
     hard_disk = models.CharField(max_length=100)
+    uid = models.CharField(max_length=1000, unique = True)
+    rack = models.CharField(max_length=1000, null = True, blank = True)
+    label = models.CharField(max_length=1000, null = True, blank = True)
     server_function = models.IntegerField(max_length=2, default=2, choices=SERVER_FUNCTION_CHOICES)
     server_type = models.CharField(max_length=1, choices=SERVER_TYPE_CHOICES)
     idc = models.ForeignKey(IDC)
