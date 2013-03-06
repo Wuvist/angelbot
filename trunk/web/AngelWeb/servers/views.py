@@ -1705,7 +1705,7 @@ def sync_server(request):
         hard_disk = d['disk_gb']
         if hard_disk > 1024:hard_disk = "%dT" % (hard_disk/1024)
         else:hard_disk = "%dG" % hard_disk
-        if d['ram_gb'] == None:ram = "None"
+        if d['ram_gb'] == None:ram = ""
         else:ram = str(int(d['ram_gb']))+"gb"
         state = "Y"
         if d['state'] == "Off":state = "N"
@@ -1716,7 +1716,7 @@ def sync_server(request):
         if d['ip'] == None:d['ip'] = ""
         if d['host_ip'] == None:d['host_ip'] = ""
         try:
-            s = servers.get(ip=d["ip"])
+            s = servers.get(uid=d["uid"])
             s.ip=d['ip']
             s.name=d['hostname']
             s.physical_server_ip=d['host_ip']
@@ -1732,6 +1732,6 @@ def sync_server(request):
             s.save()
         except:
             s = Server(ip=d['ip'],name=d['hostname'],physical_server_ip=d['host_ip'],uid=d['uid'],rack=d['rack'],\
-            core=core,ram=ram,hard_disk=hard_disk,physical_server=physical_server,server_type=server_type,power_on=state,label=label,project_id=10,idc_id=1)
+            core=core,ram=ram,hard_disk=hard_disk,physical_server=physical_server,server_type=server_type,power_on=state,label=d['label'],project_id=10,idc_id=1)
             s.save()
     return HttpResponse("done")

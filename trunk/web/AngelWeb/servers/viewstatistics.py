@@ -4,16 +4,43 @@ from django.views.generic.simple import direct_to_template
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import Context, loader, RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.cache import cache
 from servers.models import *
 from django.conf import settings
 from django.db.models import Count
+import time
 
+@login_required
 def ticket(request):
+    after_range_num = 5
+    bevor_range_num = 4
+    page = 1
+    try:
+        st = request.GET["st"]
+        et = request.GET["et"]
+        tickets = Ticket.objects.filter(starttime__gte=st,starttime__lte=et+" 23:59:59").order_by("-id")
+    except:
+        st = time.strftime("%Y-%m-%d")
+        et = time.strftime("%Y-%m-%d")
+        tickets = Ticket.objects.filter(starttime__gte=st,starttime__lte=et+" 23:59:59").order_by("-id")
+    paginator = Paginator(tickets, 20)
+    try:
+        page = int(request.GET.get('page'))
+        tickets = paginator.page(page)
+    except:
+        tickets = paginator.page(1)
+    if page >= after_range_num:
+        page_range = paginator.page_range[page-after_range_num:page+bevor_range_num]
+    else:
+        page_range = paginator.page_range[0:int(page)+bevor_range_num]
     c = RequestContext(request,{
-        "tickets":Ticket.objects.all().order_by("-id"),
-        
+        "st":st,
+        "et":et,
+        "tickets":tickets,
+        "page_range":page_range,
     })
+
     return render_to_response("servers/ticket.html",c)
     
 def ticket_show(request,ticketID):
