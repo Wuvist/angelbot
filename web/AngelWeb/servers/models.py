@@ -66,7 +66,7 @@ class Server(models.Model):
     core = models.IntegerField(max_length=2)
     ram = models.CharField(max_length=10)
     hard_disk = models.CharField(max_length=100)
-    uid = models.CharField(max_length=1000, unique = True)
+    uid = models.CharField(max_length=250, unique = True)
     rack = models.CharField(max_length=1000, null = True, blank = True)
     label = models.CharField(max_length=1000, null = True, blank = True)
     server_function = models.IntegerField(max_length=2, default=2, choices=SERVER_FUNCTION_CHOICES)

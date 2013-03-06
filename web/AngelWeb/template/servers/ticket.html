@@ -2,20 +2,55 @@
 {% load rrd_extras %}
 
 {% block content %}
-		{% if user.is_staff %}
-
-	<style>
-	th {width:80px;}
-	</style>
-	<h1>Ticket list</h1>
+    {% if user.is_staff %}
+    <style>
+    th {width:80px;}
+    </style>
+    <h1>Ticket list</h1>
+    <fieldset class="module aligned ">
+        <form action="">
+            Start Time: <input name="st" value="{{st}}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>&nbsp;&nbsp;&nbsp;
+            End Time: <input name="et" value="{{et}}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
+            <input type="submit" value="show data">
+        </form>
+    </fieldset>
 	<table>
 		<tr><th>ticket id</th><th>grade</th><th>status</th><th>operator</th><th>keyword</th><th style="width:120px;">start time</th><th style="width:120px;">last update</th><th>Action taken</th></tr>
-		{% for ticket in tickets %}
+		{% for ticket in tickets.object_list %}
 		<tr><td><a href="/ticket/show/{{ ticket.id }}">{{  ticket.id }}</a></td><td>{{ ticket.incidentgrade }}</td><td>{{ ticket.status }}</td>
 			<td>{% for p in ticket.project.all %}{{ p.name }}&nbsp;{% endfor %}</td><td>{{ ticket.title }}</td>
 			<td>{{ ticket.starttime|date:"Y-m-d H:i:s" }}</td><td>{{ ticket.lastupdate|date:"Y-m-d H:i:s" }}</td><td>{{ ticket|ticket_action}}</td></tr>
 		{% endfor %}
 	</table>
+<center>
+<a href="?page=1&st={{st}}&et={{et}}" >首页</a>&nbsp;
+{% if tickets.has_previous %}
+<a href="?page={{ tickets.previous_page_number }}&st={{st}}&et={{et}}" >上一页</a>&nbsp;
+{% endif %}
+{% for p in page_range %}
+{% ifequal p tickets.number %}
+<span>[{{p}}]</span>
+{% else %}
+<a href="?page={{p}}&st={{st}}&et={{et}}" title="第{{p}}页">{{p}}</a>
+{% endifequal %}
+{% endfor %}
+&nbsp;
+{% if tickets.has_next %}
+<a href="?page={{ tickets.next_page_number }}&st={{st}}&et={{et}}">下一页</a>&nbsp;
+{% endif %}
+<a href="?page={{ tickets.paginator.num_pages }}&st={{st}}&et={{et}}" >尾页</a>&nbsp;
+共{{tickets.paginator.count}}条记录,{{tickets.paginator.num_pages}}页
+</center>
+
+
+
+    <link rel="stylesheet" type="text/css" href="/media/css/forms.css" /> 
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+    <script type="text/javascript" src="/media/js/core.js"></script>
+    <script type="text/javascript" src="/media/js/calendar.js"></script>
+    <script type="text/javascript" src="/media/js/admin/DateTimeShortcuts.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+    <script type="text/javascript" src="/media/js/jquery.min.js"></script>
 	{% endif %}
 
 {% endblock %}
