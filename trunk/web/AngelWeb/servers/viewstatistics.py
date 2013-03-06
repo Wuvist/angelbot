@@ -59,8 +59,9 @@ def ticket_show(request,ticketID):
     elif request.POST.has_key("addaction"):
         his="";status=request.POST["status"];incgrade=request.POST["incgrade"];sendEmail=False
         inctype=request.POST["inctype"];addaction=request.POST["addaction"];oldassignto="";oldassigntoname=""
-        if status == "Closed" and inctype == "---" or status == "Done" and inctype == "---":
-            return HttpResponse('<script type="text/javascript">alert("incident type 必须选择 !");window.history.back();</script>')
+        if status == "Closed" or status == "Done":
+            if inctype == "---" or addaction == "":
+                return HttpResponse('<script type="text/javascript">alert("incident type 必须选择, Action Taken 不能为空");window.history.back();</script>')
         if ticket.assignto != None:
             oldassignto = ticket.assignto.id
             oldassigntoname = ticket.assignto.username
@@ -71,7 +72,7 @@ def ticket_show(request,ticketID):
         if incgrade != ticket.incidentgrade:
             his += "Incident grade: " + " ---> "+incgrade
             if ticket.incidentgrade != None:
-                his += "Incident grade: " + ticket.incidentgrade+" ---> "+incgrade
+                his += "Incident grade: " + ticket.incidentgrade+" ---> "+incgrade+"<br>\n"
             ticket.incidentgrade = incgrade
             ticket.save()
         try:
