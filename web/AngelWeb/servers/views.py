@@ -1243,14 +1243,14 @@ def alarm(request):
                 if "email" in alarmMode:
                     resultAlarm,contactReault = sendMail(contactUsers,widget.title,result,ticketId)
                 if "sms" in alarmMode:
-                   contactReault = sendSMS(contactUsers,widget.title,"ticketID: "+str(ticketId))
-                   resultAlarm = ""
+                    contactReault = sendSMS(contactUsers,widget.title,"ticketID: "+str(ticketId))
+                    resultAlarm = ""
                 if "call" in alarmMode:
-                   try:
-                       contactReault = doCall()
-                   except:
-                       contactReault = "error"
-                   resultAlarm = ""
+                    try:
+                        contactReault = doCall()
+                    except:
+                        contactReault = "error"
+                    resultAlarm = ""
                 logs = AlarmLog()
                 logs.title = alarm
                 logs.widget = widget
@@ -1735,3 +1735,18 @@ def sync_server(request):
             core=core,ram=ram,hard_disk=hard_disk,physical_server=physical_server,server_type=server_type,power_on=state,label=d['label'],project_id=10,idc_id=1)
             s.save()
     return HttpResponse("done")
+
+def widget_value(request):
+    import rrdtool 
+    import json
+    widget = get_object_or_404(Widget,title=request.GET["widget"])
+    result = {}
+    d = int(time.time())
+    t = d % 60
+    d = d - t
+    data = rrdtool.fetch(widget.rrd.path(), "-s", str(d-1), "-e", "s+0", "LAST")
+    
+    for x,y in zip(data[1],data[2][0]):
+        result[x] = y
+    
+    return HttpResponse(json.dumps(result, ensure_ascii=False))
