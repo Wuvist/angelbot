@@ -1709,7 +1709,6 @@ def sync_server(request):
         else:ram = str(int(d['ram_gb']))+"gb"
         state = "Y"
         if d['state'] == "Off":state = "N"
-        core = int(d['cpu_threads'])*int(d['cpu_cores'])
         physical_server = "Y"
         if d['type'] == "virtual":physical_server = "N"
         if d['hostname'] == None:d['hostname'] = ""
@@ -1722,7 +1721,7 @@ def sync_server(request):
             s.physical_server_ip=d['host_ip']
             s.uid=d['uid']
             s.rack=d['rack']
-            s.core=core
+            s.core=int(d['cpu_threads'])
             s.ram=ram
             s.hard_disk=hard_disk
             s.server_type=server_type
@@ -1731,8 +1730,8 @@ def sync_server(request):
             s.label=d['label']
             s.save()
         except:
-            s = Server(ip=d['ip'],name=d['hostname'],physical_server_ip=d['host_ip'],uid=d['uid'],rack=d['rack'],\
-            core=core,ram=ram,hard_disk=hard_disk,physical_server=physical_server,server_type=server_type,power_on=state,label=d['label'],project_id=10,idc_id=1)
+            s = Server(ip=d['ip'],name=d['hostname'],physical_server_ip=d['host_ip'],uid=d['uid'],rack=d['rack'],core=int(d['cpu_threads']),ram=ram,\
+            hard_disk=hard_disk,physical_server=physical_server,server_type=server_type,power_on=state,label=d['label'],project_id=10,idc_id=1)
             s.save()
     return HttpResponse("done")
 
