@@ -1712,8 +1712,9 @@ def sync_server(request):
         physical_server = "Y"
         if d['type'] == "virtual":physical_server = "N"
         if d['hostname'] == None:d['hostname'] = ""
-        if d['ip'] == None:d['ip'] = ""
+        if d['ip'] == None:continue
         if d['host_ip'] == None:d['host_ip'] = ""
+        d['hostname'] = d['hostname'].split(".")[0]
         try:
             s = servers.get(uid=d["uid"])
             s.ip=d['ip']
