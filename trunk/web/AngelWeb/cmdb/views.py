@@ -223,7 +223,7 @@ def cmdbDeployment(request):
             w.dep_type_color = "white"
         else:
 	    w.dep_type = w.service_type.type.name
-	    w.dep_type_color = w.service_type.type.color
+	    w.dep_type_color = str(w.service_type.type.color)
         return w
             
     
@@ -394,7 +394,7 @@ def cmdbDeployment(request):
         return temp,min(ylist)
     
     x = 1000;y = 500;
-    services = s_service.objects.all().order_by("ip")
+    services = s_service.objects.all()
     servers = s_server.objects.all()
     servers_p = servers.filter(physical_server = "Y")
     projects =  request.GET.getlist("ps")    
