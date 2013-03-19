@@ -1703,12 +1703,12 @@ def sync_server(request):
         elif "VMware" in d['os_name']:server_type="V"
         else:server_type="L"
         hard_disk = d['disk_gb']
-        if hard_disk > 1024:hard_disk = "%dT" % (hard_disk/1024)
+        if hard_disk > 1024:hard_disk = "%.1fT" % (hard_disk/1024.0)
         else:hard_disk = "%dG" % hard_disk
         if d['ram_gb'] == None:ram = ""
-        else:ram = str(int(d['ram_gb']))+"G"
-        state = "Y"
-        if d['state'] == "Off":state = "N"
+        else:ram = "%dG" % d['ram_gb']
+        state = "N"
+        if d['state'] == "On":state = "Y"
         physical_server = "Y"
         if d['type'] == "virtual":physical_server = "N"
         if d['hostname'] == None:d['hostname'] = ""
