@@ -217,6 +217,16 @@ def cmdbDeployment(request):
     import time
     import re
     
+    def filterWidget(w):
+        if w.service_type == None:
+            w.dep_type = "---"
+            w.dep_type_color = "white"
+        else:
+	    w.dep_type = w.service_type.type.name
+	    w.dep_type_color = w.service_type.type.color
+        return w
+            
+    
     def drawRect(c,rectStr,color,x,y,w,h):
         c.setStrokeColor("black")
         c.setFillColor(color)
@@ -243,14 +253,13 @@ def cmdbDeployment(request):
                 t.textLines(rectStr.split("-"))
                 c.drawText(t)
     
-
     def main(maxX,maxY):
         c = canvas.Canvas(temp,(maxX+30,maxY))
         ylist = [];logo = 0
         for pro in projects:
             logo += 1;vm = True
             x=10;y=maxY-100;w=100;h=20;yserver = y - 20;xserver = x;xservice = x;maxXX = x;yls = [];colorDict = {}
-            pservers = servers_p.filter(project = pro).order_by("server_function")
+            pservers = servers_p.filter(project__name = pro).order_by("server_function")
             c.setFont("Helvetica", 12)
             c.drawCentredString(maxX/2,maxY-20,pro +" deployment")
             c.setStrokeColor("black")
@@ -258,7 +267,7 @@ def cmdbDeployment(request):
             c.rect(maxX-250,maxY-35,160,15,stroke=1,fill=1)
             c.setFillColor("black")
             c.drawString(maxX-247,maxY-30,"Server(ip)[cores-RAM-HD]")
-            try:c.drawString(x+20,maxY-50,"IDC: " + pservers[0].idc)
+            try:c.drawString(x+20,maxY-50,"IDC: " + pservers[0].idc.name)
             except:pass
             for s in pservers:
                 flag = False;serverColor = 'white'
@@ -300,24 +309,26 @@ def cmdbDeployment(request):
                 serviceServers = servers.filter(physical_server_ip = s.physical_server_ip).exclude(ip = s.physical_server_ip)
                 if len(serviceServers) == 0:
                     yservicea = yserver
-                    for ssss in services.filter(ip = s.ip).exclude(service_type__contains="IDC"):
+                    for ssss in services.filter(server = s).exclude(service_type__type__name__contains="IDC"):
+                        ssss = filterWidget(ssss)
                         yservicea -= h
                         yls.append(yservicea)
-                        drawRect(c,re.sub('\(\d+\.\d+\)','',ssss.title),str(ssss.color),xserver,yservicea,w,h)
+                        drawRect(c,re.sub('\(\d+\.\d+\)','',ssss.title),ssss.dep_type_color,xserver,yservicea,w,h)
                         if ssss.service_type not in colorDict:
-                            colorDict[ssss.service_type] = str(ssss.color)
+                            colorDict[ssss.dep_type] = ssss.dep_type_color
                 elif flag:
                     xxservice = xserver
                     for ss in serviceServers[:n]:
                         yservice = yserver - h
                         drawRect(c,ss.name.capitalize()+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']','white',xxservice,yservice,w,h)
-                        for sss in services.filter(ip = ss.ip).exclude(service_type__contains="IDC"):
+                        for sss in services.filter(server = ss).exclude(service_type__type__name__contains="IDC"):
+                            sss = filterWidget(sss)
                             wservices = w
                             yservice -= h
                             yls.append(yservice)
-                            drawRect(c,re.sub('\(\d+\.\d+\)','',sss.title),str(sss.color),xxservice,yservice,wservices,h)
+                            drawRect(c,re.sub('\(\d+\.\d+\)','',sss.title),sss.dep_type_color,xxservice,yservice,wservices,h)
                             if sss.service_type not in colorDict:
-                                colorDict[sss.service_type] = str(sss.color)
+                                colorDict[sss.dep_type] = sss.dep_type_color
                         xxservice += w
                     xserver = x
                     if yls == []:
@@ -336,13 +347,14 @@ def cmdbDeployment(request):
                         if s.power_on == 'N':serverColor = 'lightgrey'
                         else:serverColor = 'white'
                         drawRect(c,ss.name.capitalize()+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']',serverColor,xxservice,yservice,w,h)
-                        for sss in services.filter(ip = ss.ip).exclude(service_type__contains="IDC"):
+                        for sss in services.filter(server = ss).exclude(service_type__type__name__contains="IDC"):
+                            sss = filterWidget(sss)
                             wservices = w
                             yservice -= h
                             yls.append(yservice)
-                            drawRect(c,re.sub('\(\d+\.\d+\)','',sss.title),str(sss.color),xxservice,yservice,wservices,h)
+                            drawRect(c,re.sub('\(\d+\.\d+\)','',sss.title),sss.dep_type_color,xxservice,yservice,wservices,h)
                             if sss.service_type not in colorDict:
-                                colorDict[sss.service_type] = str(sss.color)
+                                colorDict[sss.dep_type] = sss.dep_type_color
                         xxservice += w
                 else:
                     xxservice = xserver
@@ -351,13 +363,14 @@ def cmdbDeployment(request):
                         if s.power_on == 'N':serverColor = 'lightgrey'
                         else:serverColor = 'white'
                         drawRect(c,ss.name.capitalize()+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']',serverColor,xxservice,yservice,w,h)
-                        for sss in services.filter(ip = ss.ip).exclude(service_type__contains="IDC"):
+                        for sss in services.filter(server = ss).exclude(service_type__type__name__contains="IDC"):
+                            sss = filterWidget(sss)
                             wservices = w
                             yservice -= h
                             yls.append(yservice)
-                            drawRect(c,re.sub('\(\d+\.\d+\)','',sss.title),str(sss.color),xxservice,yservice,wservices,h)
+                            drawRect(c,re.sub('\(\d+\.\d+\)','',sss.title),sss.dep_type_color,xxservice,yservice,wservices,h)
                             if sss.service_type not in colorDict:
-                                colorDict[sss.service_type] = str(sss.color)
+                                colorDict[sss.dep_type] = sss.dep_type_color
                         xxservice += w
                 xserver += wserver + 5
                 if wx > 1:xserver += w
@@ -381,12 +394,12 @@ def cmdbDeployment(request):
         return temp,min(ylist)
     
     x = 1000;y = 500;
-    services = Service.objects.filter(available = "Y").order_by("ip")
-    servers = Server.objects.filter(available = "Y")
+    services = s_service.objects.all().order_by("ip")
+    servers = s_server.objects.all()
     servers_p = servers.filter(physical_server = "Y")
     projects =  request.GET.getlist("ps")    
     if len(projects) == 0:
-        projects = ["shabik360"]+list(servers_p.exclude(project="shabik360").values_list("project",flat = True).annotate())
+        projects = ["shabik360"]+list(servers_p.exclude(project__name="shabik360").values_list("project__name",flat = True).annotate())
     temp = StringIO()
     temp,yy = main(x,y)
     if yy < 0:
