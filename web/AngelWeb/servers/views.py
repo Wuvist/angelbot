@@ -1707,8 +1707,8 @@ def sync_server(request):
         else:hard_disk = "%dG" % hard_disk
         if d['ram_gb'] == None:ram = ""
         else:ram = "%dG" % d['ram_gb']
-        state = "N"
-        if d['state'] == "On":state = "Y"
+        state = "Y"
+        if d['state'] == "Off":state = "N"
         physical_server = "Y"
         if d['type'] == "virtual":physical_server = "N"
         if d['hostname'] == None:d['hostname'] = ""
