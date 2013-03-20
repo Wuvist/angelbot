@@ -368,7 +368,7 @@ def cmdbDeployment(request):
                             wservices = w
                             yservice -= h
                             yls.append(yservice)
-                            drawRect(c,re.sub('\(\d+\.\d+\)','',sss.title),sss.dep_type_color,xxservice,yservice,wservices,h)
+                            drawRect(c,re.sub('\(.*\)','',sss.title),sss.dep_type_color,xxservice,yservice,wservices,h)
                             if sss.service_type not in colorDict:
                                 colorDict[sss.dep_type] = sss.dep_type_color
                         xxservice += w
