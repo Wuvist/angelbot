@@ -284,17 +284,15 @@ def cmdbDeployment(request):
                 for n in range(wx):
                     n += 1
                     if w*n + xserver > maxX - 10:
-                        if n == 1:
-                            break
+                        if n == 1 and wx == 1:break
+                        elif n == 1:n = 0
                         flag = True
                         break
-                if n > 1:
-                    n -= 1
+                if n > 1:n -= 1
                 wserver = w*n
-                if n == 1 and wx != 1:
-                    wserver = w*(wx-1)
-                maxXX += wserver
-                if maxXX > maxX -10:
+                if n == 1 and wx != 1:wserver = w*(wx-1)
+                maxXX += wserver #will start new line when last vm step across two lines
+                if maxXX > maxX - 10 and flag != True and wx < 2:
                     xserver = x
                     maxXX = wserver
                     if yls == []:
@@ -302,10 +300,12 @@ def cmdbDeployment(request):
                     else:
                         yserver = min(yls) - 1.5*h
                         yls = []
+                if flag == True:wserver = w*n
                 if s.power_on == 'N':serverColor = 'lightgrey'
-                drawRect(c,'',serverColor,xserver,yserver,wserver,h)
-                c.drawCentredString(xserver+wserver/2,yserver+h*4/7,s.name.capitalize()+'('+s.ip[8:]+')')
-                c.drawCentredString(xserver+wserver/2,yserver+h*1/7,'['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+']')
+                if n != 0:
+                    drawRect(c,'',serverColor,xserver,yserver,wserver,h)
+                    c.drawCentredString(xserver+wserver/2,yserver+h*4/7,s.name.capitalize()+'('+s.ip[8:]+')')
+                    c.drawCentredString(xserver+wserver/2,yserver+h*1/7,str(s.rack).replace('None','')+' ['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+']')
                 serviceServers = servers.filter(physical_server_ip = s.physical_server_ip).exclude(ip = s.physical_server_ip)
                 if len(serviceServers) == 0:
                     yservicea = yserver
@@ -373,7 +373,7 @@ def cmdbDeployment(request):
                                 colorDict[sss.dep_type] = sss.dep_type_color
                         xxservice += w
                 xserver += wserver + 5
-                if wx > 1:xserver += w
+                if wx > 1 and xserver > 100:xserver += w
                 ylist += yls
 
             xp = maxX-250;yp=maxY-50;wp=80;hp=15;z=4;i=0
