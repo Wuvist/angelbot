@@ -1705,8 +1705,7 @@ def sync_server(request):
         hard_disk = d['disk_gb']
         if hard_disk > 1024:hard_disk = "%.1fT" % (hard_disk/1024.0)
         else:hard_disk = "%dG" % hard_disk
-        if d['ram_gb'] == None:ram = ""
-        else:ram = "%dG" % d['ram_gb']
+        if d['ram_gb'] != None:d['ram_gb'] = "%dG" % d['ram_gb']
         state = "Y"
         if d['state'] == "Off":state = "N"
         physical_server = "Y"
@@ -1723,15 +1722,17 @@ def sync_server(request):
             s.uid=d['uid']
             s.rack=d['rack']
             s.core=int(d['cpu_threads'])
-            s.ram=ram
-            s.hard_disk=hard_disk
+            if d['ram_gb'] != None:
+                s.ram=d['ram_gb']
+            if hard_disk != 0:
+                s.hard_disk=hard_disk
             s.server_type=server_type
             s.physical_server=physical_server
             s.power_on=state
             s.label=d['label']
             s.save()
         except:
-            s = Server(ip=d['ip'],name=d['hostname'],physical_server_ip=d['host_ip'],uid=d['uid'],rack=d['rack'],core=int(d['cpu_threads']),ram=ram,\
+            s = Server(ip=d['ip'],name=d['hostname'],physical_server_ip=d['host_ip'],uid=d['uid'],rack=d['rack'],core=int(d['cpu_threads']),ram=d['ram_gb'],\
             hard_disk=hard_disk,physical_server=physical_server,server_type=server_type,power_on=state,label=d['label'],project_id=10,idc_id=1)
             s.save()
     return HttpResponse("done")
