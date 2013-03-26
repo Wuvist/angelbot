@@ -7,6 +7,7 @@ from servers.models import Server as s_server
 from servers.models import Widget as s_service
 from servers.models import IDC as s_idc
 from servers.models import Project as s_project
+from servers.models import RemarkLog
 from cmdb.models import *
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -214,9 +215,18 @@ def cmdbDeployment(request):
     from cStringIO import StringIO
     from reportlab.pdfgen import canvas
     from reportlab.lib import colors
+    import json
     import time
     import re
     
+    try:
+        start_s = settings.DEPLOYMENT_CONSUMPTION_START
+        end_s = settings.DEPLOYMENT_CONSUMPTION_END
+    except:
+        start_s = 3
+        end_s = 6
+    
+    myTime = time.strftime("%Y-%m-%d")
     def filterWidget(w):
         if w.service_type == None:
             w.dep_type = "---"
@@ -225,6 +235,23 @@ def cmdbDeployment(request):
 	    w.dep_type = w.service_type.type.name
 	    w.dep_type_color = str(w.service_type.type.color)
         return w
+    def filterServer(s):
+        try:
+            dt = {"cpu":"x","mem":"x","io":[]}
+            data = RemarkLog.objects.get(mark=s.id,type=1,label=str(start_s)+"_"+str(end_s),created_on=myTime)
+            data = json.loads(data.value)
+            for k in data.keys():
+                if k == "load":dt["cpu"]="%.1f%%" % data["load"]
+                elif k == "cpu":dt["cpu"]="%.1f%%" % data["cpu"]
+                elif 'diskqueue' in k:dt["io"].append(data[k])
+                elif k == 'free_pages':dt["mem"]="%.1fG" % (data['free_pages']/1024)
+                elif k == 'mem':dt["mem"]="%.1f%%" % data['mem']
+            if dt["io"] == []:dt["io"] = "x"
+            else:dt["io"] = "%.1f" % max(dt["io"])
+            s.cpu_mem_io = dt
+        except:
+            s.cpu_mem_io = {"cpu":"x","mem":"x","io":"x"}
+        return s
             
     
     def drawRect(c,rectStr,color,x,y,w,h):
@@ -258,18 +285,19 @@ def cmdbDeployment(request):
         ylist = [];logo = 0
         for pro in projects:
             logo += 1;vm = True
-            x=10;y=maxY-100;w=100;h=20;yserver = y - 20;xserver = x;xservice = x;maxXX = x;yls = [];colorDict = {}
+            x=10;y=maxY-100;w=100;h=20;yserver = y - 1.5*h;xserver = x;xservice = x;maxXX = x;yls = [];colorDict = {}
             pservers = servers_p.filter(project__name = pro).order_by("server_function")
-            c.setFont("Helvetica", 12)
+            c.setFont("Helvetica", 10)
             c.drawCentredString(maxX/2,maxY-20,pro +" deployment")
             c.setStrokeColor("black")
             c.setFillColor("white")
             c.rect(maxX-250,maxY-35,160,15,stroke=1,fill=1)
             c.setFillColor("black")
-            c.drawString(maxX-247,maxY-30,"Server(ip)[cores-RAM-HD]")
+            c.drawString(maxX-247,maxY-30,"Server(ip) Rock [cores-RAM-HD]")
             try:c.drawString(x+20,maxY-50,"IDC: " + pservers[0].idc.name)
             except:pass
             for s in pservers:
+                s = filterServer(s)
                 flag = False;serverColor = 'white'
                 wx = len(servers.filter(physical_server_ip = s.physical_server_ip))
                 if vm and s.server_function == 4:
@@ -279,7 +307,7 @@ def cmdbDeployment(request):
                     if yls == []:
                         yserver -= 60
                     else:
-                        yserver = min(yls) - 1.5*h
+                        yserver = min(yls) - 2*h
                         yls = []
                 for n in range(wx):
                     n += 1
@@ -298,14 +326,16 @@ def cmdbDeployment(request):
                     if yls == []:
                         yserver -= 60
                     else:
-                        yserver = min(yls) - 1.5*h
+                        yserver = min(yls) - 2*h
                         yls = []
                 if flag == True:wserver = w*n
-                if s.power_on == 'N':serverColor = 'lightgrey'
+                if s.idle == 'Y':serverColor = 'lightgreen'
+                elif s.power_on == 'N':serverColor = 'lightgrey'
                 if n != 0:
-                    drawRect(c,'',serverColor,xserver,yserver,wserver,h)
-                    c.drawCentredString(xserver+wserver/2,yserver+h*4/7,s.name.capitalize()+'('+s.ip[8:]+')')
-                    c.drawCentredString(xserver+wserver/2,yserver+h*1/7,str(s.rack).replace('None','')+' ['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+']')
+                    drawRect(c,'',serverColor,xserver,yserver,wserver,1.5*h)
+                    c.drawCentredString(xserver+wserver/2,yserver+h,s.name.capitalize()+'('+s.ip[8:]+')')
+                    c.drawCentredString(xserver+wserver/2,yserver+h*3/6,str(s.rack).replace('None','')+' ['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+']')
+                    c.drawCentredString(xserver+wserver/2,yserver+h*1/10,'Usage ['+s.cpu_mem_io['cpu']+'-'+s.cpu_mem_io['mem']+'-'+s.cpu_mem_io['io']+']')
                 serviceServers = servers.filter(physical_server_ip = s.physical_server_ip).exclude(ip = s.physical_server_ip)
                 if len(serviceServers) == 0:
                     yservicea = yserver
@@ -319,8 +349,9 @@ def cmdbDeployment(request):
                 elif flag:
                     xxservice = xserver
                     for ss in serviceServers[:n]:
-                        yservice = yserver - h
-                        drawRect(c,ss.name.capitalize()+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']','white',xxservice,yservice,w,h)
+                        ss = filterServer(ss)
+                        yservice = yserver - 1.5*h
+                        drawRect(c,ss.name.capitalize()+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+'];Usage ['+ss.cpu_mem_io['cpu']+'-'+ss.cpu_mem_io['mem']+'-'+ss.cpu_mem_io['io']+']','white',xxservice,yservice,w,1.5*h)
                         for sss in services.filter(server = ss).exclude(service_type__type__name__contains="IDC"):
                             sss = filterWidget(sss)
                             wservices = w
@@ -334,19 +365,21 @@ def cmdbDeployment(request):
                     if yls == []:
                         yserver -= 60
                     else:
-                        yserver = min(yls) - 1.5*h
+                        yserver = min(yls) - 2*h
                         yls = []
                     wserver = w*(wx-n-1)
                     if wx -1 > n:
-                        drawRect(c,'',"white",xserver,yserver,wserver,h)
+                        drawRect(c,'',"white",xserver,yserver,wserver,1.5*h)
                         c.drawCentredString(xserver+wserver/2,yserver+h*4/7,s.name.capitalize()+'('+s.ip[8:]+')')
                         c.drawCentredString(xserver+wserver/2,yserver+h*1/7,'['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+']')
                     xxservice = x
                     for ss in serviceServers[n:]:
-                        yservice = yserver - h
-                        if s.power_on == 'N':serverColor = 'lightgrey'
+                        ss = filterServer(ss)
+                        yservice = yserver - 1.5*h
+                        if ss.idle == 'Y':serverColor = 'lightgreen'
+                        elif ss.power_on == 'N':serverColor = 'lightgrey'
                         else:serverColor = 'white'
-                        drawRect(c,ss.name.capitalize()+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']',serverColor,xxservice,yservice,w,h)
+                        drawRect(c,ss.name.capitalize()+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+'];Usage ['+ss.cpu_mem_io['cpu']+'-'+ss.cpu_mem_io['mem']+'-'+ss.cpu_mem_io['io']+']',serverColor,xxservice,yservice,w,1.5*h)
                         for sss in services.filter(server = ss).exclude(service_type__type__name__contains="IDC"):
                             sss = filterWidget(sss)
                             wservices = w
@@ -359,10 +392,12 @@ def cmdbDeployment(request):
                 else:
                     xxservice = xserver
                     for ss in serviceServers:
-                        yservice = yserver - h
-                        if s.power_on == 'N':serverColor = 'lightgrey'
+                        ss = filterServer(ss)
+                        yservice = yserver - 1.5*h
+                        if ss.idle == 'Y':serverColor = 'lightgreen'
+                        elif ss.power_on == 'N':serverColor = 'lightgrey'
                         else:serverColor = 'white'
-                        drawRect(c,ss.name.capitalize()+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+']',serverColor,xxservice,yservice,w,h)
+                        drawRect(c,ss.name.capitalize()+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+'];Usage ['+ss.cpu_mem_io['cpu']+'-'+ss.cpu_mem_io['mem']+'-'+ss.cpu_mem_io['io']+']',serverColor,xxservice,yservice,w,1.5*h)
                         for sss in services.filter(server = ss).exclude(service_type__type__name__contains="IDC"):
                             sss = filterWidget(sss)
                             wservices = w
@@ -408,7 +443,7 @@ def cmdbDeployment(request):
     
     response = HttpResponse(temp.getvalue())
     response["conten-type"] = "application/pdf"
-    response["Content-Disposition"] = ("attachment;filename=mozat_deployment_%s.pdf" % time.strftime("%Y-%m-%d"))
+    response["Content-Disposition"] = ("attachment;filename=mozat_deployment_%s.pdf" % myTime)
     
     return response
 

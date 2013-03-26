@@ -34,6 +34,9 @@ SERVICETYPE_COLOR_CHOICES = (
     ('orange','orange'),('orchid','orchid'),('red','red'),('teal','teal'),('yellow','yellow'),
 )
 
+REMARK_LOG_CHOICES = (
+    (1, 'cpu_ram_io'),
+)
 # Create your models here.
 class Project(models.Model):
     name = models.CharField(max_length=50)
@@ -72,6 +75,7 @@ class Server(models.Model):
     server_function = models.IntegerField(max_length=2, default=2, choices=SERVER_FUNCTION_CHOICES)
     server_type = models.CharField(max_length=1, choices=SERVER_TYPE_CHOICES)
     idc = models.ForeignKey(IDC)
+    idle = models.CharField(max_length=1, default='N',choices=PHYSICAL_SERVER_CHOICES)
     power_on = models.CharField(max_length=1, default='Y',choices=PHYSICAL_SERVER_CHOICES)
     remark = models.CharField(max_length=256, null = True, blank = True)
     created_on = models.DateTimeField(auto_now_add = True)
@@ -81,6 +85,16 @@ class Server(models.Model):
     
     class Meta:
         ordering = ["ip"]
+
+class RemarkLog(models.Model):
+    mark = models.IntegerField(max_length=10,null = True, blank = True)
+    type = models.IntegerField(max_length=8,choices=REMARK_LOG_CHOICES)
+    label = models.CharField(max_length=12,null = True, blank = True)
+    value = models.TextField(null = True, blank = True)
+    created_on = models.DateField(auto_now_add= True)
+    
+    def __unicode__(self):
+        return self.type + " " + str(self.mark)
 
 class CmdLog(models.Model):
     user = models.ForeignKey(User)

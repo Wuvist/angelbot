@@ -1751,3 +1751,39 @@ def widget_value(request):
         result[x] = y
     
     return HttpResponse(json.dumps(result, ensure_ascii=False))
+
+def server_rrd(request):
+    import rrdtool
+    import json
+    servers = Server.objects.all()
+    t = time.strftime("%Y-%m-%d")
+    tt = int(time.mktime(time.strptime(t,"%Y-%m-%d")))
+    
+    tt = 1338258100
+    try:
+        start_s = settings.DEPLOYMENT_CONSUMPTION_START
+        end_s = settings.DEPLOYMENT_CONSUMPTION_END
+    except:
+        start_s = 3
+        end_s = 6
+    start = tt + start_s * 3600;end = tt + end_s * 3600
+    for s in servers:
+        if RemarkLog.objects.filter(mark=s.id,label=str(start_s)+"_"+str(end_s),created_on=t).count() > 0:
+            continue
+        try:
+            dt = {}
+            widget = s.widget_set.filter(title__icontains="Perfmon")[0]
+            data = rrdtool.fetch(widget.rrd.path(), "-s", str(start), "-e",str(end), "LAST")
+            for x in range(len(data[1])):
+                tls = [i[x] for i in data[2] if i[x] != None ]
+                if len(tls) != 0:dt[data[1][x]] = sum(tls) / len(tls)
+        except:
+            dt = {}
+        log = RemarkLog()
+        log.mark = s.id
+        log.type = 1
+        log.label = str(start_s)+"_"+str(end_s)
+        log.value = json.dumps(dt, ensure_ascii=False)
+        log.save()
+
+    return HttpResponse("Done")
