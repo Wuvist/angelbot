@@ -1759,7 +1759,6 @@ def server_rrd(request):
     t = time.strftime("%Y-%m-%d")
     tt = int(time.mktime(time.strptime(t,"%Y-%m-%d")))
     
-    tt = 1338258100
     try:
         start_s = settings.DEPLOYMENT_CONSUMPTION_START
         end_s = settings.DEPLOYMENT_CONSUMPTION_END
