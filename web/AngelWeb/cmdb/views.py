@@ -241,12 +241,12 @@ def cmdbDeployment(request):
             data = RemarkLog.objects.get(mark=s.id,type=1,label=str(start_s)+"_"+str(end_s),created_on=myTime)
             data = json.loads(data.value)
             for k in data.keys():
-                if k == "load":dt["cpu"]="%f%%" % data["load"]
-                elif k == "cpu":dt["cpu"]="%f%%" % data["cpu"]
+                if k == "load":dt["cpu"]="%.0f%%" % data["load"]
+                elif k == "cpu":dt["cpu"]="%.0f%%" % data["cpu"]
                 elif 'diskqueue' in k:dt["io"].append(data[k])
-                elif k == 'mem':dt["mem"]="%f%%" % data['mem']
+                elif k == 'mem':dt["mem"]="%.0f%%" % data['mem']
             if dt["io"] == []:dt["io"] = "x"
-            else:dt["io"] = "%f" % max(dt["io"])
+            else:dt["io"] = "%.0f" % max(dt["io"])
             s.cpu_mem_io = dt
         except:
             s.cpu_mem_io = {"cpu":"x","mem":"x","io":"x"}
@@ -331,7 +331,7 @@ def cmdbDeployment(request):
                 if s.idle == 'Y':serverColor = 'lightgreen'
                 elif s.power_on == 'N':serverColor = 'lightgrey'
                 if n != 0:
-                    drawRect(c,s.name.capitalize()+'('+s.ip[8:]+');['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+'];Usage ['+s.cpu_mem_io['cpu']+'-'+s.cpu_mem_io['mem']+'-'+s.cpu_mem_io['io']+']',serverColor,xserver,yserver,wserver,1.5*h)
+                    drawRect(c,s.name.capitalize()+'('+s.ip[8:]+');'+str(s.rack).replace('None','')+' ['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+'];Usage ['+s.cpu_mem_io['cpu']+'-'+s.cpu_mem_io['mem']+'-'+s.cpu_mem_io['io']+']',serverColor,xserver,yserver,wserver,1.5*h)
                     #c.drawCentredString(xserver+wserver/2,yserver+h,s.name.capitalize()+'('+s.ip[8:]+')')
                     #c.drawCentredString(xserver+wserver/2,yserver+h*3/6,str(s.rack).replace('None','')+' ['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+']')
                     #c.drawCentredString(xserver+wserver/2,yserver+h*1/10,'Usage ['+s.cpu_mem_io['cpu']+'-'+s.cpu_mem_io['mem']+'-'+s.cpu_mem_io['io']+']')
