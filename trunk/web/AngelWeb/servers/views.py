@@ -1724,7 +1724,7 @@ def sync_server(request):
             s.core=int(d['cpu_threads'])
             if d['ram_gb'] != None:
                 s.ram=d['ram_gb']
-            if hard_disk != 0:
+            if hard_disk != "0G":
                 s.hard_disk=hard_disk
             s.server_type=server_type
             s.physical_server=physical_server
