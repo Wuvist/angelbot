@@ -1,0 +1,39 @@
+{% extends "base_site.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="/media/css/forms.css" /> 
+<!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="/media/css/ie.css" /><![endif]-->
+
+<h1>SSH login log</h1>
+<form action="" method="GET" id = "check">
+<fieldset class="module aligned ">
+	<div class="form-row title"> 
+	    <div> 
+                Date:<select name="d">
+                        <option value="" >All</option>
+                        {%for d in date%}
+                        <option value="{{d}}" {%if ds == d %}selected="selected"{%endif%}>{{d}}</option>
+                        {%endfor%}
+                     </select>
+                Name:<select name="n">
+                        <option value="">All</option>
+                        {%for n in names%}
+                        <option value="{{n}}" {%if ns == n %}selected="selected"{%endif%}>{{n}}</option>
+                         {%endfor%}
+                     </select>
+			<input type="submit" value="Submit" />
+			</h>
+	    </div> 
+	</div>
+</fieldset>
+</form>
+<hr>
+<table>
+{%for d in data%}
+<tr><td>{{forloop.counter}}</td><td>{{d.0}}</td><td>{{d.1}}</td></tr>
+{%endfor%}
+</table>
+
+{% endblock %}
+
