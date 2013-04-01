@@ -1786,3 +1786,35 @@ def server_rrd(request):
         log.save()
 
     return HttpResponse("Done")
+
+@login_required
+def ssh_log(request):
+    import os
+    
+    path = settings.SSHLOGPATH
+    date = os.popen("cat %s |awk '{print $1,$2}'|sort|uniq -d" % path).read().strip().split("\n")
+    names = os.popen("cat %s |awk '{print $NF}'|sort|uniq -d" % path).read().strip().split("\n")
+    for i in range(len(names)):
+        names[i] = names[i].split("-")[-1]
+    names.sort()
+    result = []
+    data = open("%s" % path).readlines()
+    d = request.GET.get("d","")
+    n = request.GET.get("n","")
+    if d != "" and n != "":
+        data = os.popen('cat %s |grep "%s" |grep "%s"' % (path,d,n)).read().strip().split("\n")
+    elif d != "":
+        data = os.popen('cat %s |grep "%s"' % (path,d)).read().strip().split("\n")
+    elif n != "":
+        data = os.popen('cat %s |grep "%s"' % (path,n)).read().strip().split("\n")
+    try:
+        for l in data:
+            l = l.split()
+            tmp = []
+            tmp.append(" ".join(l[:3]))
+            tmp.append(l[-1].split("-")[-1])
+            result.append(tmp)
+    except:
+        result = []
+    
+    return render_to_response("servers/sshlog.html",{"ds":d,"ns":n,"date":date,"names":names,"data":result})

@@ -244,7 +244,8 @@ def cmdbDeployment(request):
                 if k == "load":dt["cpu"]="%.0f%%" % data["load"]
                 elif k == "cpu":dt["cpu"]="%.0f%%" % data["cpu"]
                 elif 'diskqueue' in k:dt["io"].append(data[k])
-                elif k == 'mem':dt["mem"]="%.0f%%" % data['mem']
+                elif k == "util":dt["io"].append(data[k])
+                elif k == 'mem':dt["mem"]="%.0f%%" % (data['mem']*100)
             if dt["io"] == []:dt["io"] = "x"
             else:dt["io"] = "%.0f" % max(dt["io"])
             s.cpu_mem_io = dt
@@ -269,7 +270,7 @@ def cmdbDeployment(request):
             if '[' in rectStr and ']' in rectStr:
                 c.setFillColor("black")
                 c.setFont("Helvetica", 7)
-                t = c.beginText(x+w/2-20,y+2*h/3)
+                t = c.beginText(x+w/2-40,y+2*h/3)
                 t.textLines(rectStr.split(";"))
                 c.drawText(t)
             else:
@@ -308,6 +309,7 @@ def cmdbDeployment(request):
                     else:
                         yserver = min(yls) - 2*h
                         yls = []
+                '''
                 for n in range(wx):
                     n += 1
                     if w*n + xserver > maxX - 10:
@@ -326,15 +328,26 @@ def cmdbDeployment(request):
                         yserver -= 60
                     else:
                         yserver = min(yls) - 2*h
+                        yls = []'''
+                wserver = w
+                if wx > 1:wserver = w*(wx - 1)
+                if wx*w + xserver > maxX - 10:
+                    xserver = x
+                    maxXX = wserver
+                    if yls == []:
+                        yserver -= 60
+                    else:
+                        yserver = min(yls) - 2 * h
                         yls = []
+                    if wx*w > maxX - 10:
+                        n = (maxX - 10) / w + 1
+                        flag = True
+                
                 if flag == True:wserver = w*n
                 if s.idle == 'Y':serverColor = 'lightgreen'
                 elif s.power_on == 'N':serverColor = 'lightgrey'
-                if n != 0:
-                    drawRect(c,s.name.capitalize()+'('+s.ip[8:]+');'+str(s.rack).replace('None','')+' ['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+'];Usage ['+s.cpu_mem_io['cpu']+'-'+s.cpu_mem_io['mem']+'-'+s.cpu_mem_io['io']+']',serverColor,xserver,yserver,wserver,1.5*h)
-                    #c.drawCentredString(xserver+wserver/2,yserver+h,s.name.capitalize()+'('+s.ip[8:]+')')
-                    #c.drawCentredString(xserver+wserver/2,yserver+h*3/6,str(s.rack).replace('None','')+' ['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+']')
-                    #c.drawCentredString(xserver+wserver/2,yserver+h*1/10,'Usage ['+s.cpu_mem_io['cpu']+'-'+s.cpu_mem_io['mem']+'-'+s.cpu_mem_io['io']+']')
+                #if n != 0:
+                drawRect(c,s.name.capitalize()+'('+s.ip[8:]+');'+str(s.rack).replace('None','')+' ['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+'];Usage ['+s.cpu_mem_io['cpu']+'-'+s.cpu_mem_io['mem']+'-'+s.cpu_mem_io['io']+']',serverColor,xserver,yserver,wserver,1.5*h)
                 serviceServers = servers.filter(physical_server_ip = s.physical_server_ip).exclude(ip = s.physical_server_ip)
                 if len(serviceServers) == 0:
                     yservicea = yserver
