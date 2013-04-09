@@ -472,3 +472,25 @@ class AlarmTest(models.Model):
     
     def __unicode__(self):
         return self.user.username + " " + str(self.created_on) + " " + str(self.result)
+
+class SshName(models.Model):
+    name = models.CharField(max_length=256)
+    fingerprint = models.CharField(max_length=256)
+    key = models.TextField(null = True, blank = True)
+    created_on = models.DateTimeField(auto_now_add = False)
+    
+    def __unicode__(self):
+        return self.name
+
+class SshLog(models.Model):
+    name = models.CharField(max_length=256)
+    logname = models.CharField(max_length=256)
+    flag = models.CharField(max_length=256)
+    fingerprint = models.CharField(max_length=256)
+    ip = models.CharField(max_length=256)
+    ips = models.TextField(null = True, blank = True)
+    date = models.DateTimeField()
+    created_on = models.DateTimeField(auto_now_add = False)
+    
+    def __unicode__(self):
+        return self.name + " " + str(self.created_on)
