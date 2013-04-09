@@ -4,36 +4,49 @@
 
 <link rel="stylesheet" type="text/css" href="/media/css/forms.css" /> 
 <!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="/media/css/ie.css" /><![endif]-->
-
-<h1>SSH login log</h1>
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="/media/js/core.js"></script>
+<script type="text/javascript" src="/media/js/calendar.js"></script>
+<script type="text/javascript" src="/media/js/admin/DateTimeShortcuts.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+<script type="text/javascript" src="/media/js/jquery.min.js"></script>
+<script type="text/javascript" src="/media/js/jquery.init.js"></script> 
+<script type="text/javascript" src="/media/js/actions.min.js"></script>
+<h1>SSH Login Log</h1>
 <form action="" method="GET" id = "check">
 <fieldset class="module aligned ">
 	<div class="form-row title"> 
-	    <div> 
-                Date:<select name="d">
-                        <option value="" >All</option>
-                        {%for d in date%}
-                        <option value="{{d}}" {%if ds == d %}selected="selected"{%endif%}>{{d}}</option>
-                        {%endfor%}
-                     </select>
+                Start:<input name="s" value="{{ s }}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
+                End:<input name="e" value="{{ e }}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
                 Name:<select name="n">
                         <option value="">All</option>
                         {%for n in names%}
-                        <option value="{{n}}" {%if ns == n %}selected="selected"{%endif%}>{{n}}</option>
+                        <option value="{{n.name}}" {%if ns == n.name %}selected="selected"{%endif%}>{{n.name}}</option>
                          {%endfor%}
                      </select>
 			<input type="submit" value="Submit" />
-			</h>
-	    </div> 
 	</div>
 </fieldset>
 </form>
 <hr>
-<table>
-{%for d in data%}
-<tr><td>{{forloop.counter}}</td><td>{{d.0}}</td><td>{{d.1}}</td></tr>
+<div>
+    <div style="width:30%;float:right;">
+        <table>
+            <th>id</th><th>name</th><th>count</th>
+            {%for r in result%}
+            <tr><td>{{forloop.counter}}</td><td>{{r.name}}</td><td>{{r.count}}</td></tr>
+            {%endfor%}
+        </table>
+    </div>
+    
+    <div style="width:60%;">
+        <table>
+            <th>SN</th><th>Date</th><th>Name</th><th>Login username</th><th>Source IP</th><th>Local Address/Foreign Address</th><th></th><th></th><th></th><th></th>
+                {%for l in logs%}
+            <tr><td>{{forloop.counter}}</td><td>{{l.date|date:"Y-m-d H:i:s"}}</td><td>{{l.name}}</td><td>{{l.logname}}</td><td>{{l.ip}}</td><td>{%for i in l.ips%}{{i.local}}/{{i.foreign}}<br>{%endfor%}</td></tr>
 {%endfor%}
-</table>
-
+        </table>
+    </div>
+</div>
 {% endblock %}
 

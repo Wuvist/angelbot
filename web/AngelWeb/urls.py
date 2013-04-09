@@ -62,6 +62,6 @@ urlpatterns = patterns('',
     (r'^backuplog/showinfo/$', 'servers.views.backuplog'),
     (r'^backuplog/showinfo/showdetail/$', 'servers.views.showdetail'),
     (r'^backuplog/email$', 'servers.views.backuplogemail'),
-    (r'^sshlog/$', 'servers.views.ssh_log'),
+    (r'^sshlog/$', 'servers.viewstatistics.ssh_log'),
     
 )

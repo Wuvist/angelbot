@@ -714,3 +714,25 @@ def addComment(request):
             return HttpResponse(u'<meta http-equiv="Refresh" content="0;URL=../?start=%s" /><script type="text/javascript">alert("更新失败 !");</script>' % commentTime.replace("_","&end="))
     
     return HttpResponse(u'<meta http-equiv="Refresh" content="0;URL=../?start=%s" />' % commentTime.replace("_","&end="))
+
+@login_required
+def ssh_log(request):
+    import os
+    import json
+    names = SshName.objects.all().values("name").annotate()
+    start = time.strftime("%Y-%m-%d",time.localtime(time.time()-1296000))
+    end = time.strftime("%Y-%m-%d")
+    n = ""
+    result = []
+    if request.GET.has_key("s"):start = request.GET["s"]
+    if request.GET.has_key("e"):end = request.GET["e"]
+    if request.GET.has_key("n"):n = request.GET["n"]
+    logs = SshLog.objects.filter(date__gte=start+" 00:00:00",date__lte=end + " 23:59:59").order_by("date")
+    for n in names:
+        result.append({"name":n["name"],"count":logs.filter(name=n["name"]).count()})
+    result = sorted(result,key=lambda x:x["count"],reverse=True)
+    if n != "":logs = logs.filter(name=n)
+    for l in logs:
+        l.ips = json.loads(l.ips)
+
+    return render_to_response("servers/sshlog.html",{"logs":logs,"s":start,"e":end,"names":names,"ns":n,"result":result})
