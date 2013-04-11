@@ -381,8 +381,8 @@ def cmdbDeployment(request):
                     else:
                         yserver = min(yls) - 2*h
                         yls = []
-                    wserver = w*(wx-n-1)
-                    if wx -1 > n:
+                    wserver = w*(wx-n)
+                    if wx > n:
                         drawRect(c,'',"white",xserver,yserver,wserver,1.5*h)
                         c.drawCentredString(xserver+wserver/2,yserver+h*4/7,s.name.capitalize()+'('+s.ip[8:]+')')
                         c.drawCentredString(xserver+wserver/2,yserver+h*1/7,'['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+']')
