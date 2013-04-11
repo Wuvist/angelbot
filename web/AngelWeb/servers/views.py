@@ -1705,7 +1705,7 @@ def sync_server(request):
         hard_disk = d['disk_gb']
         if hard_disk > 1024:hard_disk = "%.1fT" % (hard_disk/1024.0)
         else:hard_disk = "%dG" % hard_disk
-        if d['ram_gb'] != None:d['ram_gb'] = "%dG" % d['ram_gb']
+        if d['ram_gb'] != None:d['ram_gb'] = "%.0fG" % d['ram_gb']
         state = "Y"
         if d['state'] == "Off":state = "N"
         physical_server = "Y"

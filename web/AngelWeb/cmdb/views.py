@@ -330,7 +330,9 @@ def cmdbDeployment(request):
                         yserver = min(yls) - 2*h
                         yls = []'''
                 wserver = w
-                if wx > 1:wserver = w*(wx - 1)
+                if wx > 1:
+                    wx -= 1
+                    wserver = w*wx
                 if wx*w + xserver > maxX - 10:
                     xserver = x
                     maxXX = wserver
