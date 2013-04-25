@@ -139,6 +139,17 @@ class SeverCmd(models.Model):
     class Meta:
         ordering = ["title"]
 
+class AlarmServerCmd(models.Model):
+    title = models.CharField(max_length = 250, unique = True)
+    default_cmd = models.ForeignKey(Cmd)
+    server_cmd = models.ManyToManyField(SeverCmd)
+    
+    def __unicode__(self):
+        return self.title
+    
+    class Meta:
+        ordering = ["title"]
+
 class Dashboard(models.Model):
     title = models.CharField(max_length=50)
     user = models.ManyToManyField(User, null = True, blank=True)
@@ -280,8 +291,8 @@ class AlarmLog(models.Model):
     alarmmode = models.CharField(max_length=16)
     ticketid = models.CharField(max_length=16, null = True, blank = True)
     alarmuser = models.ManyToManyField(AlarmUser, null = True, blank = True)
-    contact_result = models.CharField(max_length=8,null = True, blank = True)
     result = models.TextField(null = True, blank = True)
+    contact_result = models.TextField(null = True, blank = True)
     overdue = models.CharField(max_length=1, choices=ALARMLOG_OVERDUE_CHOICES)
     created_on = models.DateTimeField(auto_now_add = True)
     
