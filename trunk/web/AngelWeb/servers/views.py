@@ -131,7 +131,7 @@ def execute_cmd(request, server_id, cmd_id):
     log.result = result
     log.save()
 
-    return HttpResponse(fetch_page(url))
+    return HttpResponse(result)
 
 def rrd_img(request, widget_id):
     import time
@@ -1147,6 +1147,19 @@ def alarm(request):
         
         return result
     
+    def executeCmd(widget,title):
+        import urllib2
+        from django.utils.http import urlencode
+        if widget.server == None:
+            raise Http404
+        c = AlarmServerCmd.objects.get(title=title)
+        if c.server_cmd.filter(server=widget.server).count() > 0:
+            cmd = c.server_cmd.get(server=widget.server).cmd
+        else:cmd = c.default_cmd
+        url = settings.BOT_URL + urlencode({"host": widget.server.ip, "cmd":cmd.text})
+        
+        return urllib2.urlopen(url).read()
+    
     def rrdAlarm(widget,rrdTime):
         import rrdtool
         rrd_path = widget.rrd.path()
@@ -1250,6 +1263,13 @@ def alarm(request):
                         contactReault = doCall()
                     except:
                         contactReault = "error"
+                    resultAlarm = ""
+                if "cmd" in alarmMode:
+                    cmd = alarmMode.split(":")[1]
+                    try:
+                        contactReault = executeCmd(widget,cmd)
+                    except Exception,e:
+                        contactReault = "execute cmd fail"
                     resultAlarm = ""
                 logs = AlarmLog()
                 logs.title = alarm
@@ -1378,7 +1398,7 @@ def alarm(request):
     
     for alarm in Alarm.objects.all():
         if eval(alarm.enable):
-            for widget in alarm.widget.filter(project__in = Project.objects.filter(alarm = "True")):
+            for widget in alarm.widget.filter(project__in = Project.objects.filter(alarm = "True")).annotate():
                 try:
                     alarmlog = AlarmLog.objects.filter(widget = widget.id, title = alarm).order_by("-created_on")[0]
                 except:
@@ -1390,7 +1410,7 @@ def alarm(request):
     
     for alarm in FrequentAlarm.objects.all():
         if eval(alarm.enable):
-            for widget in alarm.widget.filter(project__in = Project.objects.filter(alarm = "True")):
+            for widget in alarm.widget.filter(project__in = Project.objects.filter(alarm = "True")).annotate():
                 try:
                     frequentAlarmLog = FrequentAlarmLog.objects.filter(widget = widget.id,title = alarm).filter(created_on__gte = time.strftime("%Y-%m-%d",time.localtime())).order_by("-created_on")[0]
                 except:
