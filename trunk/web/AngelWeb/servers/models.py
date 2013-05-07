@@ -36,6 +36,7 @@ SERVICETYPE_COLOR_CHOICES = (
 
 REMARK_LOG_CHOICES = (
     (1, 'cpu_ram_io'),
+    (2, 'server ping'),
 )
 # Create your models here.
 class Project(models.Model):
@@ -63,7 +64,7 @@ class Server(models.Model):
     name = models.CharField(max_length=50, unique = True)
     username = models.CharField(max_length=50)
     password = models.CharField(max_length=50)
-    project = models.ForeignKey(Project)
+    project = models.ManyToManyField(Project, null = True, blank = True)
     physical_server = models.CharField(max_length=1, choices=PHYSICAL_SERVER_CHOICES)
     physical_server_ip = models.IPAddressField(max_length=200)
     core = models.IntegerField(max_length=2)
@@ -88,10 +89,12 @@ class Server(models.Model):
 
 class RemarkLog(models.Model):
     mark = models.IntegerField(max_length=10,null = True, blank = True)
-    type = models.IntegerField(max_length=8,choices=REMARK_LOG_CHOICES)
-    label = models.CharField(max_length=12,null = True, blank = True)
+    type = models.IntegerField(max_length=8,choices=REMARK_LOG_CHOICES,null = True, blank = True)
+    label = models.CharField(max_length=64,null = True, blank = True)
+    sign = models.CharField(max_length=64,null = True, blank = True)
     value = models.TextField(null = True, blank = True)
     created_on = models.DateField(auto_now_add= True)
+    created_time = models.DateTimeField(auto_now_add = True)
     
     def __unicode__(self):
         return self.type + " " + str(self.mark)
@@ -142,7 +145,7 @@ class SeverCmd(models.Model):
 class AlarmServerCmd(models.Model):
     title = models.CharField(max_length = 250, unique = True)
     default_cmd = models.ForeignKey(Cmd)
-    server_cmd = models.ManyToManyField(SeverCmd)
+    server_cmd = models.ManyToManyField(SeverCmd,null = True, blank = True)
     
     def __unicode__(self):
         return self.title

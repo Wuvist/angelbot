@@ -270,11 +270,12 @@ def cmdbDeployment(request):
             if v != "x":
                 c.setFillColor("black")
                 c.setFont("Helvetica", 7)
-                if io:c.drawCentredString(x+w/2-10+l,y+yy+2,"%.1f" % v)
+                if io:c.drawCentredString(x+w/2-10+l,y+yy+2,"%.2f" % v)
                 else:c.drawCentredString(x+w/2-10+l,y+yy+2,"%.0f%%" % v)
                 if io and s.server_type == "W":
                     if v >= 1:v = 100
-                    else:v = v*1000
+                    else:v = v*100
+                if v > 100:v = 100
                 if v < 50:
                     c.setFillColor("lightgreen")
                     c.rect(x+w/2-20,y+yy,v/100.0*l,h,stroke=0,fill=1)
@@ -458,7 +459,7 @@ def cmdbDeployment(request):
     servers_p = servers.filter(physical_server = "Y")
     projects =  request.GET.getlist("ps")    
     if len(projects) == 0:
-        projects = ["shabik360"]+list(servers_p.exclude(project__name="shabik360").values_list("project__name",flat = True).annotate())
+        projects = servers_p.exclude(project=None).order_by("-project__sequence").values_list("project__name",flat = True).annotate()
     temp = StringIO()
     temp,yy = main(x,y)
     if yy < 0:
