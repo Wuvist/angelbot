@@ -39,14 +39,14 @@
 				<li>+<span>Services</span>
 					<ul>
 						{%for s in services%}
-						<li><a href="{{s.id}}" target="rightFrame">{{s.name}}</a></li>
+						<li><a href="/overview/servicestype/{{s.id}}" target="rightFrame">{{s.name}}</a></li>
 						{%endfor%}
 					</ul>
 				</li>
 				<li>+<span>Problems</span>
 					<ul>
-						<li><a href="server" target="rightFrame">Servers</a></li>
-						<li><a href="server" target="rightFrame">Services</a></li>
+						<li><a href="/overview/problem/server" target="rightFrame">Servers</a></li>
+						<li><a href="/overview/problem/service" target="rightFrame">Services</a></li>
 					</ul>
 				</li>
 			</ul>

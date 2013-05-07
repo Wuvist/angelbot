@@ -21,6 +21,7 @@ DATABASES = {
 }
 
 CACHE_BACKEND = 'memcached://192.168.0.186:11211'
+CACHE_TIME = 65
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -104,3 +105,9 @@ IDC_API = ''
 #please use 1~24
 DEPLOYMENT_CONSUMPTION_START = 3
 DEPLOYMENT_CONSUMPTION_END = 6
+
+#ping server
+ERROR_MIN=100
+ERROR_AVG=100
+ERROR_MAX=100
+ERROR_LOSS=1

@@ -1787,7 +1787,7 @@ def server_rrd(request):
         end_s = 6
     start = tt + start_s * 3600;end = tt + end_s * 3600
     for s in servers:
-        if RemarkLog.objects.filter(mark=s.id,label=str(start_s)+"_"+str(end_s),created_on=t).count() > 0:
+        if RemarkLog.objects.filter(mark=s.id,type=1,label=str(start_s)+"_"+str(end_s),created_on=t).count() > 0:
             continue
         try:
             dt = {}
@@ -1805,4 +1805,47 @@ def server_rrd(request):
         log.value = json.dumps(dt, ensure_ascii=False)
         log.save()
 
+    return HttpResponse("Done")
+
+def server_ping(request):
+    import os
+    import re
+    import threading
+    label = time.strftime("%Y%m%d%H%M")
+    class mythreads(threading.Thread):
+        def __init__(self,s):
+            self.s = s
+            threading.Thread.__init__(self)
+        def run(self):
+            sign = "Normal"
+            result = os.popen("ping -c 2 %s" % self.s.ip).read().strip()
+            loss = re.search("(\d+)\%",result).group()
+            if int(loss[:-1]) > settings.ERROR_LOSS:
+                sign = "Loss"
+            try:
+                data = result.split()[-2].split("/")
+                if float(data[0]) > settings.ERROR_MIN:
+                    sign = "Delay"
+                if float(data[1]) > settings.ERROR_AVG:
+                    sign = "Delay"
+                if float(data[2]) > settings.ERROR_MAX:
+                    sign = "Delay"
+            except:
+                pass
+            if loss == "100%":sign = "Down"
+            value = "\n".join(result.split("\n")[-2:])
+            if "100%" in result:
+                value = "Destination Host Unreachable. "+result.split("\n")[-1]
+            l = RemarkLog()
+            l.mark = self.s.id
+            l.type = 2
+            l.label = label
+            l.sign = sign
+            l.value = value
+            l.save()
+    servers = Server.objects.all().annotate()
+    for s in servers:
+        if RemarkLog.objects.filter(mark=s.id,type=2,label=label).count() < 1:
+            a = mythreads(s)
+            a.start()
     return HttpResponse("Done")

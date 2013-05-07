@@ -114,7 +114,7 @@ def getdata(projectId="all"):
     servicesDict = {"ok":0,"warning":0,"error":0,"allProblem":0,"allType":0}
     widgetStatusProjects = {}
     if projectId == "all":
-        projects = Project.objects.all()
+        projects = Project.objects.all().order_by("-sequence")
     else:
         projects = Project.objects.filter(id=projectId)
     for p in projects:
@@ -252,15 +252,14 @@ def project_servers(reqeust,pid):
     else:
         servers1 = servers
         servers2 = []
-    return render_to_response('html/overview_project.html',{"servers1":servers1,"servers2":servers2})
+    return render_to_response('html/overview_project.html',{"pid":pid,"servers1":servers1,"servers2":servers2})
 
 def project_server(request,pid,sid):
+    '''
     widgetStatusProjects = cache.get("getdata_"+str(pid))
     if widgetStatusProjects == None:
         myResult,servicesDict,widgetStatusProjects = getdata(pid)
     data = widgetStatusProjects[int(pid)]["servicesValues"]
-    widgets = Widget.objects.filter(project__id=pid,server__id=sid).order_by("title")
-    '''
     for w in widgets:
         print w.id
         try:
@@ -276,4 +275,15 @@ def project_server(request,pid,sid):
         except:
              pass
     '''
+    widgets = Widget.objects.filter(project__id=pid,server__id=sid).order_by("title")
     return render_to_response('html/overview_project_server.html',{"widgets":widgets})
+
+def problem_server(request):
+    d = time.strftime("%Y%m%d%H%M",time.localtime(time.time()-60))
+    servers = Server.objects.all().order_by("ip")
+    for s in servers:
+        try:
+            s.log = RemarkLog.objects.filter(mark=s.id,type=2).order_by("-id")[0]
+        except:pass
+    
+    return render_to_response('html/overview_problem_server.html',{"servers":servers})
