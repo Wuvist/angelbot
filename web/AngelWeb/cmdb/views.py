@@ -459,7 +459,7 @@ def cmdbDeployment(request):
     servers_p = servers.filter(physical_server = "Y")
     projects =  request.GET.getlist("ps")    
     if len(projects) == 0:
-        projects = servers_p.exclude(project=None).order_by("-project__sequence").values_list("project__name",flat = True).annotate()
+        projects = s_project.objects.filter(server__in=servers_p).annotate().order_by("-sequence").values_list("name",flat=True)
     temp = StringIO()
     temp,yy = main(x,y)
     if yy < 0:
