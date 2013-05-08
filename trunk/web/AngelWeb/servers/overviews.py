@@ -135,10 +135,10 @@ def getdata(projectId="all"):
                 widgetStatusProjects[p.id]['ok'] += 1
             widgetStatusProjects[p.id]['servicesValues'][w.id]=result
         myResult.append(widgetStatusProjects[p.id])
-        cache.set("getdata_"+str(p.id),widgetStatusProjects,50)
+        cache.set("getdata_"+str(p.id),widgetStatusProjects,settings.CACHE_TIME)
     if projectId == "all":
-        cache.set("getdata_all",myResult,50)
-        cache.set("getdata_servicesDict",servicesDict,50)
+        cache.set("getdata_all",myResult,settings.CACHE_TIME)
+        cache.set("getdata_servicesDict",servicesDict,settings.CACHE_TIME)
     return myResult,servicesDict,widgetStatusProjects
 
 @login_required()

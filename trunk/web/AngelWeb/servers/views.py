@@ -34,7 +34,7 @@ def show_cmd(request, server_id, cmd_id):
     return render_to_response('servers/show_cmd.html',c)
 
 @login_required()
-@cache_page(55) 
+@cache_page(settings.CACHE_TIME) 
 def dashboard_show(request, dashboard_id):
     import time
     dashboard = get_object_or_404(Dashboard, id=dashboard_id)
