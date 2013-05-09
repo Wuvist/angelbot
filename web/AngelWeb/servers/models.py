@@ -97,7 +97,7 @@ class RemarkLog(models.Model):
     created_time = models.DateTimeField(auto_now_add = True)
     
     def __unicode__(self):
-        return self.type + " " + str(self.mark)
+        return str(self.type) + " " + str(self.mark)
 
 class CmdLog(models.Model):
     user = models.ForeignKey(User)

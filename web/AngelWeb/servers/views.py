@@ -1821,15 +1821,15 @@ def server_ping(request):
             result = os.popen("ping -c 2 %s" % self.s.ip).read().strip()
             loss = re.search("(\d+)\%",result).group()
             if int(loss[:-1]) > settings.ERROR_LOSS:
-                sign = "Loss"
+                sign = "Unstable"
             try:
                 data = result.split()[-2].split("/")
                 if float(data[0]) > settings.ERROR_MIN:
-                    sign = "Delay"
+                    sign = "Unstable"
                 if float(data[1]) > settings.ERROR_AVG:
-                    sign = "Delay"
+                    sign = "Unstable"
                 if float(data[2]) > settings.ERROR_MAX:
-                    sign = "Delay"
+                    sign = "Unstable"
             except:
                 pass
             if loss == "100%":sign = "Down"

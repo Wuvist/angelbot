@@ -5,12 +5,16 @@
 body{font-family: Verdana, helvetica, arial, sans-serif;}
 td{text-align:center;font-size:13px;}
 td.rights {border-bottom:1px solid #000;border-right:1px solid #000;}
+td.Normal {background:#00DB00}
+td.Down {background:#FF2D2D}
+td.Unstable{background:#FFFF6F}
+td.Off {background:#ADADAD}
 </style>
 <div id="imgall" style="float:left;">
 <table border="1" cellspacing="0" cellpadding="1">
 <tr><th>SN</th><th>Server</th><th>Status</th><th>Last Update</th><th>Status Information</th></tr>
-{%for s in servers%}
-<tr><td>{{forloop.counter}}</td><td>{{s.ip}}</td><td style="align:center;background:{%if s.log.sign == "Normal"%}#7FFFD4{%else%}#FA8072{%endif%};">{{s.log.sign}}
+{% for s in servers%}
+<tr><td>{{forloop.counter}}</td><td>{{s.ip}}</td><td class="{{s.log.sign}}">{{s.log.sign}}
 	</td><td style="font-size:10px;">{{s.log.created_time|date:"Y-m-d H:i"}}</td><td>{{s.log.value}}</td></tr>
 {% endfor %}
 </table>

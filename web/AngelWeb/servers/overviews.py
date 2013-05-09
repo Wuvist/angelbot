@@ -279,11 +279,19 @@ def project_server(request,pid,sid):
     return render_to_response('html/overview_project_server.html',{"widgets":widgets})
 
 def problem_server(request):
-    d = time.strftime("%Y%m%d%H%M",time.localtime(time.time()-60))
+    n = [];d = [];u = [];o = [];unknown = []
     servers = Server.objects.all().order_by("ip")
     for s in servers:
         try:
-            s.log = RemarkLog.objects.filter(mark=s.id,type=2).order_by("-id")[0]
-        except:pass
-    
-    return render_to_response('html/overview_problem_server.html',{"servers":servers})
+            if s.power_on == "N":
+                s.log = {"sign":"Off"}
+                o.append(s)
+            else:
+                s.log = RemarkLog.objects.filter(mark=s.id,type=2).order_by("-id")[0]
+                if s.log.sign == "Normal":n.append(s)
+                elif s.log.sign == "Unstable":u.append(s)
+                else:d.append(s)
+        except:
+            s.log = {"sign":"unknown"}
+            unknown.append(s)
+    return render_to_response('html/overview_problem_server.html',{"servers":d+u+unknown+n+o})
