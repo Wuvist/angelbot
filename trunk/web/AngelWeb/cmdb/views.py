@@ -271,7 +271,7 @@ def cmdbDeployment(request):
                 c.setFillColor("black")
                 c.setFont("Helvetica", 7)
                 if io:c.drawCentredString(x+w/2-10+l,y+yy+2,"%.2f" % v)
-                else:c.drawCentredString(x+w/2-10+l,y+yy+2,"%.0f%%" % v)
+                else:c.drawCentredString(x+w/2-10+l,y+yy+2,"%.2f" % v)
                 if io and s.server_type == "W":
                     if v >= 1:v = 100
                     else:v = v*100
@@ -293,6 +293,7 @@ def cmdbDeployment(request):
                     c.rect(x+w/2-20,y+yy,0.499*l,h,stroke=0,fill=1)
                 c.grid([x+w/2-20+i for i in range(0,l+10,10)],[y+yy,y+yy+h])
             return c
+        '''
         try:
             dt = {"cpu":"x","mem":"x","io":[]}
             data = RemarkLog.objects.get(mark=s.id,type=1,label=str(start_s)+"_"+str(end_s),created_on=myTime)
@@ -307,6 +308,15 @@ def cmdbDeployment(request):
             else:dt["io"] = max(dt["io"])
         except:
             dt = {"cpu":"x","mem":"x","io":"x"}
+        '''
+        dt = {"cpu":"x","mem":"x","io":"x"}
+        try:
+            perf = json.loads(s.perf)
+            if perf["mem_pct_mean"] != None:dt["mem"]=perf["mem_pct_mean"]
+            if perf["cpu_pct_mean"] != None:dt["cpu"]=perf["cpu_pct_mean"]
+            if perf["disk_pct_mean"] != None:dt["io"]=perf["disk_pct_mean"]
+        except:
+            pass
         drawcpu_mem(s,c,dt["cpu"],x,y,w,h,22)
         drawcpu_mem(s,c,dt["mem"],x,y,w,h,12)
         drawcpu_mem(s,c,dt["io"],x,y,w,h,2,io=True)

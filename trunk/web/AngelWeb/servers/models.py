@@ -37,6 +37,7 @@ SERVICETYPE_COLOR_CHOICES = (
 REMARK_LOG_CHOICES = (
     (1, 'cpu_ram_io'),
     (2, 'server ping'),
+    (3, 'db show backup'),
 )
 # Create your models here.
 class Project(models.Model):
@@ -79,6 +80,7 @@ class Server(models.Model):
     idle = models.CharField(max_length=1, default='N',choices=PHYSICAL_SERVER_CHOICES)
     power_on = models.CharField(max_length=1, default='Y',choices=PHYSICAL_SERVER_CHOICES)
     remark = models.CharField(max_length=256, null = True, blank = True)
+    perf = models.TextField(null = True, blank = True)
     created_on = models.DateTimeField(auto_now_add = True)
     
     def __unicode__(self):
