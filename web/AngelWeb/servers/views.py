@@ -1734,6 +1734,7 @@ def sync_server(request):
         if d['ip'] == None:continue
         if d['host_ip'] == None:d['host_ip'] = ""
         d['hostname'] = d['hostname'].split(".")[0]
+        perf = json.dumps(d["perf"], ensure_ascii=False)
         try:
             s = servers.get(uid=d["uid"])
             s.ip=d['ip']
@@ -1750,10 +1751,11 @@ def sync_server(request):
             s.physical_server=physical_server
             s.power_on=state
             s.label=d['label']
+            s.perf=perf
             s.save()
         except:
             s = Server(ip=d['ip'],name=d['hostname'],physical_server_ip=d['host_ip'],uid=d['uid'],rack=d['rack'],core=int(d['cpu_threads']),ram=d['ram_gb'],\
-            hard_disk=hard_disk,physical_server=physical_server,server_type=server_type,power_on=state,label=d['label'],project_id=10,idc_id=1)
+            hard_disk=hard_disk,physical_server=physical_server,server_type=server_type,power_on=state,label=d['label'],perf=perf,idc_id=1)
             s.save()
     return HttpResponse("done")
 
@@ -1849,3 +1851,22 @@ def server_ping(request):
             a = mythreads(s)
             a.start()
     return HttpResponse("Done")
+
+@login_required()
+def dba_show_backup(request):
+    if request.GET.has_key("v"):
+        data = request.GET["v"]
+        l = RemarkLog()
+        l.type = 3
+        l.label = "db_backup"
+        l.value = data
+        l.save()
+        return HttpResponse("Done")
+    try:
+        data = RemarkLog.objects.filter(type=3,label="db_backup").order_by("-id")[0]
+        data = eval(data.value)
+        for i in range(len(data)):
+            data[i] = data[i].split(",")
+    except:
+        return HttpResponse("submit error, please connect DBA.")
+    return render_to_response("servers/dba_show_backuplog.html",{"data":data})

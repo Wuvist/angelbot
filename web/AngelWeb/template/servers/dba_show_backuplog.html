@@ -1,0 +1,23 @@
+{% extends "html/html_home.html" %}
+
+{% block content %}
+<style>
+body{font-family: Verdana, helvetica, arial, sans-serif;}
+td{text-align:center;font-size:13px;}
+td.rights {border-bottom:1px solid #000;border-right:1px solid #000;}
+td.Normal {background:#00DB00}
+td.Down {background:#FF2D2D}
+td.Unstable{background:#FFFF6F}
+td.Off {background:#ADADAD}
+</style>
+<div id="imgall" style="float:left;">
+<table border="1" cellspacing="0" cellpadding="1">
+<tr><th>SN</th><th>Project</th><th>master IP</th><th>port</th><th>domain </th><th>data size</th><th>slave IP</th><th>port</th><th>domain</th><th>remark</th></tr>
+{% for d in data%}
+<tr><td>{{forloop.counter}}</td><td>{{d.0}}</td><td>{{d.1}}</td><td>{{d.2}}</td><td>{{d.3}}</td><td>{{d.4}}</td><td>{{d.5}}</td>
+	<td>{{d.6}}</td><td>{{d.7}}</td><td>{{d.8}}</td></tr>
+{% endfor %}
+</table>
+</div>
+
+{% endblock %}
