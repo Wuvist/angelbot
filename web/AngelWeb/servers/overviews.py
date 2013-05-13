@@ -281,6 +281,8 @@ def project_server(request,pid,sid):
 def problem_server(request):
     n = [];d = [];u = [];o = [];unknown = []
     servers = Server.objects.all().order_by("ip")
+    for i in settings.EXCLUDE_IPS:
+        servers = servers.exclude(ip__contains=i.replace("*",""))
     for s in servers:
         try:
             if s.power_on == "N":

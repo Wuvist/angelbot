@@ -1,16 +1,14 @@
 from django import template
 from django.conf import settings
-from cmdb.models import *
 from servers.models import Widget as s_service
 import datetime
 register = template.Library()
 
 @register.filter(name='showServerInfo')
-def showServerInfo(id):
+def showServerInfo(s):
     '''Show server info'''
     try:
-        s = Server.objects.get(server_id=id)
-        result = "[%s: %s-%s-%s]" % (s.name,s.core,s.ram,s.hard_disk)
+        result = "[%s-%s-%s]" % (s.core,s.ram,s.hard_disk)
     except:
         result = ""
         
@@ -78,3 +76,13 @@ def getLoadWeek(server_id):
     if ls != []:
         loadAvg = str(sum(ls)/len(ls))[:5]
     return str(load)+"</td><td>"+loadAvg
+
+@register.filter(name='showFunction')
+def showFunction(n):
+    from servers.models import SERVER_FUNCTION_CHOICES as tp
+    dt = dict(tp)
+    return dt[n]
+
+@register.filter(name='showProjects')
+def showProjects(s):
+    return ",".join(s.project.all().values_list("name",flat=True))

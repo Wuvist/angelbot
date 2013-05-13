@@ -33,10 +33,6 @@ $(function(){
 <fieldset class="module aligned ">
 	<div class="form-row title"> 
 	    <div>
-			<form action="/cmdb/updateservers" method="GET" >
-				<h>Latest Update: {{ lastUpdate.created_on|date:"Y-m-d H:i:s" }}&nbsp;
-				<input type="submit" value = "Update Now"  name="syncdb"/></h>
-			</form>
 		<form action="" method="GET" >
 			<h>ip: <input type="text" name="ip" value="{{ ip }}" >
 			server name: <input type="text" name="name" value="{{ name }}" >
@@ -46,6 +42,7 @@ $(function(){
 				<option value="" {% if system == "" %}selected="selected"{% endif %} >All</option>
 				<option value="W" {% if system == "W" %}selected="selected"{% endif %} >Windows</option>
 				<option value="L" {% if system == "L" %}selected="selected"{% endif %} >Linux</option>
+				<option value="V" {% if system == "V" %}selected="selected"{% endif %} >VMware</option>
 			</select>
 
 			IDC: 
@@ -74,8 +71,10 @@ $(function(){
 			funtion:
 			<select name="funtion" >
 				<option value="" {% if funtion == "" %}selected="selected"{% endif %} >All</option>
-				<option value="A" {% if funtion == "A" %}selected="selected"{% endif %} >APP</option>
-				<option value="D" {% if funtion == "D" %}selected="selected"{% endif %} >DB</option>
+				<option value="1" {% if funtion == "1" %}selected="selected"{% endif %} >Monet</option>
+				<option value="2" {% if funtion == "2" %}selected="selected"{% endif %} >APP</option>
+				<option value="3" {% if funtion == "3" %}selected="selected"{% endif %} >DB</option>
+				<option value="4" {% if funtion == "4" %}selected="selected"{% endif %} >VMware</option>
 			</select>
 			created on:
 			<input name="created_on" value="{{ created_on }}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
@@ -90,7 +89,7 @@ $(function(){
 	</style>
 	<h2>servers:</h2>
 	<table id="tb">
-		<tr style="background:#f7f89a" role="head" ><th sort="true" style="width:30px" >id</th><th sort="true">ip</th><th sort="true" style="width:150px" >server name</th><th sort="true" >IDC</th><th sort="true" >project</th><th sort="true" style="width:120px" >physical_server</th><th sort="true" >physical ip</th><th sort="true"  style="width:50px" >core</th><th sort="true"  style="width:50px" >ram</th><th sort="true" >hard disk</th><th sort="true" >system</th><th sort="true" >function</th><th sort="true" style="width:150px" >created on</th></tr>
+		<tr style="background:#f7f89a" role="head" ><th sort="true" style="width:30px" >sn</th><th sort="true">ip</th><th sort="true" style="width:150px" >server name</th><th sort="true" >IDC</th><th sort="true" >project</th><th sort="true" style="width:120px" >physical_server</th><th sort="true" >physical ip</th><th sort="true"  style="width:50px" >core</th><th sort="true"  style="width:50px" >ram</th><th sort="true" >hard disk</th><th sort="true" >system</th><th sort="true" >function</th><th sort="true" style="width:150px" >created on</th></tr>
 		{% for s in servers %}
 		{% if forloop.counter0|tr_color %}
 		<tr class="row1">
@@ -98,7 +97,7 @@ $(function(){
 		<tr>
 		{% endif %}
 			<td>{{ forloop.counter }}</td>
-			<td><a href="/cmdb/services/?ip={{ s.ip }}">{{s.ip}}</a></td><td>{{ s.name }}</td><td>{{ s.idc }}</td><td>{{ s.project }}</td>
+			<td><a href="/cmdb/services/?ip={{ s.ip }}">{{s.ip}}</a></td><td>{{ s.name }}</td><td>{{ s.idc }}</td><td>{{ s|showProjects }}</td>
 			<td>
 			{% if s.physical_server == "Y" %}
 			Yes
@@ -111,16 +110,17 @@ $(function(){
 			{% if s.server_type == "W" %}
 			Windows
 			{% else %}
+			{%if s.server_type == "L" %}
 			Linux
+                        {%else%}
+			VMware
+			{% endif %}
 			{% endif %}
 			</td>
 			<td>
-			{% if s.server_function == "D" %}
-			DB
-			{% else %}
-			APP
-			{% endif %}</td>
-			<td>{{ s.created_on|date:"Y-m-d H:i:s" }}</td>
+			{{s.server_function|showFunction}}
+			</td>
+			<td>{{ s.created_on|date:"Y-m-d H:i" }}</td>
 		</tr>
 		{% endfor %}
 	</table>

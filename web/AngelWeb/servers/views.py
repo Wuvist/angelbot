@@ -1701,9 +1701,8 @@ def api_idc(request):
     ls = [];sf = {1:'Monet',2:'APP',3:'DB',4:'VMware'}
     servers = Server.objects.all()
     for s in servers:
-        dt = {"ip":s.ip,"name":s.name,"function":sf[s.server_function],"project":s.project.name}
+        dt = {"ip":s.ip,"name":s.name,"function":sf[s.server_function],"project":list(s.project.all().values_list("name",flat=True))}
         ls.append(dt)
-    
     return HttpResponse(json.dumps(ls, ensure_ascii=False))
      
 def sync_server(request):
@@ -1845,12 +1844,14 @@ def server_ping(request):
             l.sign = sign
             l.value = value
             l.save()
-    servers = Server.objects.all().annotate()
+    servers = Server.objects.filter(power_on="Y")
+    for i in settings.EXCLUDE_IPS:
+        servers = servers.exclude(ip__contains=i.replace("*",""))
     for s in servers:
         if RemarkLog.objects.filter(mark=s.id,type=2,label=label).count() < 1:
             a = mythreads(s)
             a.start()
-    return HttpResponse("Done")
+    return HttpResponse("Ok")
 
 @login_required()
 def dba_show_backup(request):

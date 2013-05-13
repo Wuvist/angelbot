@@ -3,60 +3,18 @@ from django.views.generic.simple import direct_to_template
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import Context, loader, RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
-from servers.models import Server as s_server
-from servers.models import Widget as s_service
+from servers.models import Server
+from servers.models import Widget
 from servers.models import IDC as s_idc
 from servers.models import Project as s_project
 from servers.models import RemarkLog
-from cmdb.models import *
+#from cmdb.models import *
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from datetime import datetime
 import time
 
-
-def syncdbservers(request):
-    
-    cmdbServers = Server.objects.all()
-    serversLs = cmdbServers.values_list("server_id", flat=True)
-    serversServers = s_server.objects.all()
-    server_s = serversServers.values_list("id", flat=True)
-    serversDel = list(set(serversLs)-set(server_s))
-    cmdbServers.filter(server_id__in = serversDel).update(available="N",del_time = datetime.now())
-    for s in serversServers:
-        if s.id in serversLs:
-            Server.objects.filter(server_id=s.id).update(ip = s.ip,server_id = s.id,name = s.name,password = s.password,\
-            project = s.project.name,physical_server = s.physical_server,physical_server_ip = s.physical_server_ip,core = s.core,\
-            ram = s.ram,hard_disk = s.hard_disk,server_function = s.server_function,server_type = s.server_type,\
-            idc = s.idc.name,power_on=s.power_on,remark = s.remark,available = "Y",created_on = s.created_on)
-        else:
-            ser = Server()
-            ser.ip = s.ip
-            ser.server_id = s.id
-            ser.name = s.name
-            ser.password = s.password
-            ser.project = s.project.name
-            ser.physical_server = s.physical_server
-            ser.physical_server_ip = s.physical_server_ip
-            ser.core = s.core
-            ser.ram = s.ram
-            ser.hard_disk = s.hard_disk
-            ser.server_function = s.server_function
-            ser.server_type = s.server_type
-            ser.idc = s.idc.name
-            ser.power_on = s.power_on
-            ser.remark = s.remark
-            ser.available = "Y"
-            ser.created_on = s.created_on
-            ser.save()
-            
-    if LastUpdate.objects.filter(title = "cmdbServerLastUpdate").count() == 0:
-        LastUpdate(title = "cmdbServerLastUpdate", created_on = datetime.now()).save()
-    else:
-        LastUpdate.objects.filter(title = "cmdbServerLastUpdate").update(created_on = datetime.now())
-        
-    return HttpResponse('<script type="text/javascript">window.history.back();</script>')
 
 @login_required
 def show_servers(request):
@@ -72,24 +30,19 @@ def show_servers(request):
     system = request.GET.get("system","")
     funtion = request.GET.get("funtion","")
     created_on = request.GET.get("created_on","")
-    servers = Server.objects.filter(ip__contains=ip,name__icontains=name,idc__contains=idc,physical_server__contains=ispserver,\
-    physical_server_ip__contains=pip,server_type__contains=system, server_function__contains=funtion,available = "Y").order_by("ip")
+    servers = Server.objects.filter(ip__contains=ip,name__icontains=name,idc__name__icontains=idc,physical_server__icontains=ispserver,physical_server_ip__icontains=pip,\
+    server_type__icontains=system).order_by("ip")
+    if funtion !="":
+        servers = server.filter(server_function=funtion)
     if project != "":
         servers = servers.filter(project__contains=project)
     if created_on != "":
         servers = servers.filter(created_on__range=(time.strftime("%Y-%m-%d",time.strptime(created_on, "%Y-%m-%d")),\
         time.strftime("%Y-%m-%d %H:%M:%S",time.strptime(created_on+" 23:59:59", "%Y-%m-%d %H:%M:%S"))))
-        
-    try:
-        LastUpdateTime = LastUpdate.objects.get(title = "cmdbServerLastUpdate")
-    except:
-        LastUpdateTime = ""
-    
     c = RequestContext(request,
         {"servers":servers,
         "project":project,
         "projects":s_project.objects.all().order_by("name"),
-        "lastUpdate":LastUpdateTime,
         "ip":ip,
         "name":name,
         "idc":idc,
@@ -102,60 +55,6 @@ def show_servers(request):
         })
     
     return render_to_response('cmdb/show_servers.html',c)
-
-def syncdbservices(request):
-    cmdbServices = Service.objects.all()
-    servicesLs = cmdbServices.values_list("service_id", flat=True)
-    serversServices = s_service.objects.exclude(server = None)
-    services_s = serversServices.values_list("id", flat=True)
-    servicesDel = list(set(servicesLs)-set(services_s))
-    cmdbServices.filter(service_id__in = servicesDel).update(available="N",del_time = datetime.now())
-    for s in serversServices:
-        ip=s.server.ip
-        pip=s.server.physical_server_ip
-        server_id = s.server.id
-        system = s.server.server_type
-        if s.service_type != None:
-            service_name = s.service_type.name
-            service_typeName = s.service_type.type.name
-            color = s.service_type.type.color
-        else:
-            service_name = "---"
-            service_typeName = "---"
-            color = "white"
-        projects = ",".join([str(v) for v in s.project.all().values_list("name",flat=True)])
-        if projects == "":
-            projects = "---"
-        if s.id in servicesLs:
-            Service.objects.filter(service_id=s.id).update(title = s.title,service_id=s.id,\
-            project = projects,dashboard = ",".join([str(v) for v in s.dashboard.all().values_list("id",flat=True)]),\
-            physical_server_ip = pip, ip = ip,system = system,service_name = service_name,color = color,\
-            service_type = service_typeName,path = s.path,remark = s.remark,available = "Y",created_on = s.created_on)
-        else:
-            ser = Service()
-            ser.title = s.title
-            ser.service_id = s.id
-            ser.project = projects
-            ser.dashboard = ",".join([str(v) for v in s.dashboard.all().values_list("id",flat=True)])
-            ser.ip = ip
-            ser.physical_server_ip = pip
-            ser.server_id = server_id
-            ser.system = system
-            ser.service_name = service_name
-            ser.service_type = service_typeName
-            ser.color = color
-            ser.path = s.path
-            ser.remark = s.remark
-            ser.available = "Y"
-            ser.created_on = s.created_on
-            ser.save()
-    
-    if LastUpdate.objects.filter(title = "cmdbServiceLastUpdate").count() == 0:
-        LastUpdate(title = "cmdbServiceLastUpdate", created_on = datetime.now()).save()
-    else:
-        LastUpdate.objects.filter(title = "cmdbServiceLastUpdate").update(created_on = datetime.now())
-        
-    return HttpResponse('<script type="text/javascript">window.history.back();</script>')
 
 
 @login_required
@@ -175,36 +74,31 @@ def show_services(request):
     remark = request.GET.get("remark","")
     created_on = request.GET.get("created_on","")
     
-    services = Service.objects.filter(available = "Y", ip__contains=ip, title__icontains=title,\
-    system__contains=system, physical_server_ip__contains=pip,remark__contains=remark,).order_by("title")
+    services = Widget.objects.filter(server__ip__contains=ip, title__icontains=title,\
+    server__server_type__contains=system, server__physical_server_ip__contains=pip,remark__contains=remark,).order_by("title")
     if service_name != "":
-        services = services.filter(service_name=service_name)
+        services = services.filter(service_type__name=service_name)
     if service_type != "":
-        services = services.filter(service_type=service_type)
+        services = services.filter(service_type__type__name=service_type)
     if project != "":
-        services = services.filter(project=project)
+        services = services.filter(project__name=project)
     if created_on != "":
         services = services.filter(created_on__range=(time.strftime("%Y-%m-%d",time.strptime(created_on, "%Y-%m-%d")),\
         time.strftime("%Y-%m-%d %H:%M:%S",time.strptime(created_on+" 23:59:59", "%Y-%m-%d %H:%M:%S"))))
         
-    try:
-        LastUpdateTime = LastUpdate.objects.get(title = "cmdbServiceLastUpdate")
-    except:
-        LastUpdateTime = ""
         
     c = RequestContext(request,
         {"services":services,
-        "lastUpdate":LastUpdateTime,
         "ip":ip,
         "title":title,
         "pip":pip,
         "service_name":service_name,
-        "services_name":Service.objects.values_list("service_name",flat=True).annotate().order_by("service_name"),
+        "services_name":Widget.objects.values_list("service_type__name",flat=True).annotate().order_by("service_type__name"),
         "service_type":service_type,
-        "services_type":Service.objects.values_list("service_type",flat=True).annotate().order_by("service_type"),
+        "services_type":Widget.objects.values_list("service_type__type__name",flat=True).annotate().order_by("service_type__type__name"),
         "project":project,
-        "projects":Service.objects.values("project").annotate().order_by("project"),
-        "projects_d":Server.objects.filter(available="Y",physical_server="Y").values_list("project",flat = True).annotate(),
+        "projects":s_project.objects.values("name").annotate().order_by("name"),
+        "projects_d":Server.objects.filter(physical_server="Y").exclude(project=None).values_list("project__name",flat = True).annotate().order_by("-project__sequence"),
         "system":system,
         "created_on":created_on,
         })
@@ -464,8 +358,8 @@ def cmdbDeployment(request):
         return temp,min(ylist)
     
     x = 1000;y = 500;
-    services = s_service.objects.all()
-    servers = s_server.objects.all()
+    services = Widget.objects.all()
+    servers = Server.objects.all()
     servers_p = servers.filter(physical_server = "Y")
     projects =  request.GET.getlist("ps")    
     if len(projects) == 0:
