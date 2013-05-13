@@ -1722,7 +1722,8 @@ def sync_server(request):
         elif "VMware" in d['os_name']:server_type="V"
         else:server_type="L"
         hard_disk = d['disk_gb']
-        if hard_disk > 1024:hard_disk = "%.1fT" % (hard_disk/1024.0)
+        if hard_disk == None:hard_disk="0G"
+        elif hard_disk > 1024:hard_disk = "%.1fT" % (hard_disk/1024.0)
         else:hard_disk = "%dG" % hard_disk
         if d['ram_gb'] != None:d['ram_gb'] = "%.0fG" % d['ram_gb']
         state = "Y"

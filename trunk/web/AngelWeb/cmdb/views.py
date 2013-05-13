@@ -98,7 +98,7 @@ def show_services(request):
         "services_type":Widget.objects.values_list("service_type__type__name",flat=True).annotate().order_by("service_type__type__name"),
         "project":project,
         "projects":s_project.objects.values("name").annotate().order_by("name"),
-        "projects_d":Server.objects.filter(physical_server="Y").exclude(project=None).values_list("project__name",flat = True).annotate().order_by("-project__sequence"),
+        "projects_d":s_project.objects.all().exclude(server=None).values_list("name",flat=True).annotate().order_by("-sequence"),
         "system":system,
         "created_on":created_on,
         })
