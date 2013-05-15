@@ -301,27 +301,36 @@ def problem_server(request):
     return render_to_response('html/overview_problem_server.html',{"servers":d+u+unknown+n+o})
 
 def problem_service(request):
+    def get_server_info(w):
+        try:
+            w.serverInfo = RemarkLog.objects.filter(mark=w.server.id,type=2).order_by("-id")[0]
+        except:pass
+        return w
     result = []
     widgets = Widget.objects.filter(dashboard__id=1).order_by("category__title").annotate(categorys=Count("category"))
-    for w in widgets:
+    for w in widgets[:40]:
         ls = []
         data =  cache.get("widgetData_"+str(w.id))
         if data == None:
             try:data = paser_widget(w)
             except:
-                w.widgetStatus = "unKnown"
+                w.widgetStatus = "unknown"
                 w.widgetData = "this widget config error, please check."
                 result.append(w)
+                w = get_server_info(w)
                 continue
-        if data["widgetStatus"] != "ok":
+        if data["widgetStatus"] != "ok" and data["widgetStatus"] != "unknown":
             w.widgetStatus = data["widgetStatus"]
             for i in data["valueList"]:
-                if data[i]["status"] != "ok":
+                if data[i]["status"] != "ok" and data[i]["status"] != "unknown":
                     ls.append(i+":"+str(data[i]["value"]))
-        w.widgetData = ",".join(ls)
-        result.append(w)
+            w.widgetData = ",".join(ls)
+            w = get_server_info(w)
+            result.append(w)
     dashboard_error = get_object_or_404(DashboardError, id=1)
     imgs = dashboard_error.graphs.all()
     startTime = int(time.mktime(datetime.strptime(time.strftime("%Y-%m-%d",time.localtime()),"%Y-%m-%d").timetuple()))
     endTime = startTime + 86400
-    return render_to_response('html/overview_problem_service.html',{"dashboard_error":dashboard_error,"imgs":imgs,"startTime":startTime,"endTime":endTime,"service":result})
+    alarmlogs = AlarmLog.objects.filter(created_on__gte = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(time.time())-30*60))).order_by("widget","-created_on")
+    frequentAlarmLogs = FrequentAlarmLog.objects.filter(lasterror_time__gte = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(time.time())-30*60))).order_by("widget","-lasterror_time")
+    return render_to_response('html/overview_problem_service.html',{"dashboard_error":dashboard_error,"imgs":imgs,"startTime":startTime,"endTime":endTime,"service":result,"alarmlogs":alarmlogs,"frequentAlarmLogs":frequentAlarmLogs})

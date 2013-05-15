@@ -5,14 +5,150 @@
 body{font-family: Verdana, helvetica, arial, sans-serif;}
 td{text-align:center;font-size:11px;}
 </style>
+{%if alarmlogs%}
+<fieldset class="module aligned ">
+        <input type="button" value="Hide Already Alarms" id="showAlarms" name="ahowalerms" />&nbsp
+        <input type="button" value="Show Last 24 Hours Alarms" onclick="location.href='/alarm'" /> 
+        <div id="showAlarms_div" style="display:block;">
+                <table border="1" cellspacing="0" cellpadding="0">
+                        <tr>
+                             <td>Type</td><td>Time</td><td>Title</td><td>Widget</td><td>Alarm level</td><td>Alarm mode</td><td>Ticket ID</td><td>Overdue</td><td>Contact result</td><td>Alarm users</td>
+                        </tr>
+                                {% for alarmlog in alarmlogs %}
+                        <tr><td>auto</td>
+                                <td>{{ alarmlog.created_on|date:"Y-m-d H:i:s" }}</td>
+                                <td>{{ alarmlog.title.title }}</td>
+                                <td>{{ alarmlog.widget.title }}</td>
+                                <td>
+                                                {% if alarmlog.alarmlevel == 2 %}
+                                        <div style="background-color:#AAAAFF;" >{{ alarmlog.alarmlevel }} th</div>
+                                                {% else %}
+                                                {% if alarmlog.alarmlevel == 3 %}
+                                        <div style="background-color:red;" >{{ alarmlog.alarmlevel }} th</div>
+                                                {% else %}
+                                                {% if alarmlog.alarmlevel == 4 %}
+                                        <div style="background-color:yellow;" >{{ alarmlog.alarmlevel }} th</div>
+                                                {% else %}
+                                                {% if alarmlog.alarmlevel == 5 %}
+                                        <div style="background-color:#BE77FF;" >{{ alarmlog.alarmlevel }} th</div>
+                                                {% else %}
+                                                {% if alarmlog.alarmlevel == 6 %}
+                                        <div style="background-color:#FFD306;" >{{ alarmlog.alarmlevel }} th</div>
+                                                {% else %}
+                                        <div style="background-color:#9AFF02;" >{{ alarmlog.alarmlevel }} th</div>
+                                                {% endif %}{% endif %}{% endif %}{% endif %}{% endif %}
+                                </td>
+                                <td>
+                                                {% if alarmlog.alarmmode == "email" %}
+                                        <div style="background-color:#FFD306;" >{{ alarmlog.alarmmode }}</div>
+                                                {% else %}
+                                                {% if alarmlog.alarmmode == "sms" %}
+                                        <div style="background-color:red;" >{{ alarmlog.alarmmode }}</div>
+                                                {% else %}
+                                        <div style="background-color:#9AFF02;" >{{ alarmlog.alarmmode }}</div>
+                                                {% endif %}
+                                                {% endif %}
+                                </td>
+                                <td><a href="/ticket/show/{{ alarmlog.ticketid }}" >{{ alarmlog.ticketid }}</a></td>
+                                <td>{% if alarmlog.overdue == "1" %}Not{% else %}<div style="background-color:#9AFF02;" >Yes</div>{% endif %}</td>
+                                <td>
+                                                {% if alarmlog.contact_result == "fail" %}
+                                        <div style="background-color:red;" >{{ alarmlog.contact_result }}</div>
+                                                {% else %}
+                                                {{ alarmlog.contact_result }}
+                                                {% endif %}
+                                </th>
+                                <td>
+                                                {% for user in alarmlog.alarmuser.all %}
+                                                {{ user.name }}
+                                                {% endfor %}
+                                </td>
+                        </tr>
+                                {% endfor %}
+                                {% for falarmlog in frequentAlarmLogs %}
+                        </tr><td>frequent</td>
+                                <td>{{ falarmlog.lasterror_time|date:"m-d H:i:s" }}</td>
+                                <td>{{ falarmlog.title.title }}</td>
+                                <td>{{ falarmlog.widget.title }}</td>
+                                <td>
+                                                {% if falarmlog.alarmlevel == 2 %}
+                                        <div style="background-color:#AAAAFF;" >{{ falarmlog.alarmlevel }} th</div>
+                                                {% else %}
+                                                {% if falarmlog.alarmlevel == 3 %}
+                                        <div style="background-color:red;" >{{ falarmlog.alarmlevel }} th</div>
+                                                {% else %}
+                                                {% if falarmlog.alarmlevel == 4 %}
+                                        <div style="background-color:yellow;" >{{ falarmlog.alarmlevel }} th</div>
+                                                {% else %}
+                                                {% if falarmlog.alarmlevel == 5 %}
+                                        <div style="background-color:#BE77FF;" >{{ falarmlog.alarmlevel }} th</div>
+                                                {% else %}
+                                                {% if falarmlog.alarmlevel == 6 %}
+                                        <div style="background-color:#FFD306;" >{{ falarmlog.alarmlevel }} th</div>
+                                                {% else %}
+                                        <div style="background-color:#9AFF02;" >{{ falarmlog.alarmlevel }} th</div>
+                                                {% endif %}{% endif %}{% endif %}{% endif %}{% endif %}
+                                </td>
+                                <td>
+                                                {% if falarmlog.alarmmode == "email" %}
+                                        <div style="background-color:#FFD306;" >{{ falarmlog.alarmmode }}</div>
+                                                {% else %}
+                                                {% if falarmlog.alarmmode == "sms" %}
+                                        <div style="background-color:red;" >{{ falarmlog.alarmmode }}</div>
+                                                {% else %}
+                                        <div style="background-color:#9AFF02;" >{{ falarmlog.alarmmode }}</div>
+                                                {% endif %}
+                                                {% endif %}
+                                </td>
+                                <td><a href="http://ticket.mozat.com/ticket/mainIndex/?url=Ticket/MonView/{{ falarmlog.ticketid }}" >{{ falarmlog.ticketid }}</a></td>
+                                <td>
+                                                {% if falarmlog.contact_result == "fail" %}
+                                        <div style="background-color:red;" >{{ falarmlog.contact_result }}</div>
+                                                {% else %}
+                                                {{ falarmlog.contact_result }}
+                                                {% endif %}
+                                </th>
+                                <td>
+                                                {% for user in falarmlog.alarmuser.all %}
+                                                {{ user.name }}
+                                                {% endfor %}
+                                </td>
+                        </tr>
+                                {% endfor %}
+                </table>
+        </div>
+</fieldset>
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <div id="data" style="width:60%;float:left;">
 <table border="1" cellspacing="0" cellpadding="0" width="100%">
-<tr><th>Service</th><th>Status</th><th>Status Information</th><th style="width:100px;">Action</th></tr>
+<tr><th>Category</th><th>Server</th><th>Service</th><th>Status</th><th>Status Information</th><th style="width:100px;">Action</th></tr>
 {%for i in service%}
-	<tr><td>{{i.title}}</td>
+	<tr><td>{{i.category.title}}</td><td style="background:{%if i.serverInfo.sign == "Unstable"%}#F0E68C{%else%}{%if i.serverInfo.sign == "Down"%}#FA8072{%else%}{%endif%}{%endif%};">{{i.server.ip}}</td><td>{{i.title}}</td>
 	<td style="background:{%if i.widgetStatus == "warning"%}#F0E68C{%else%}#FA8072{%endif%};">{{i.widgetStatus}}</td>
 	<td style="word-break:break-all;">{{i.widgetData}}</td>
-	<td ><a href="/dashboard/1/widget/{{ i.id }}/graph" target="rightFrame">View</a>&nbsp;|&nbsp;
+	<td ><a href="/dashboard/1/widget/{{ i.id }}/graph" target="rightFrame">View</a>&nbsp;|
     	{%if i.server%}<a href="/servers/{{ i.server.id}}/" target="rightFrame">Execute</a>{%else%}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	{%endif%}
 	</td></tr>
@@ -24,5 +160,28 @@ td{text-align:center;font-size:11px;}
 <img src="/grahaiderimg/{{ img.id }}/w/{{ dashboard_error.width }}/h/{{ dashboard_error.height }}/start/{{ startTime }}/end/{{ endTime }}" height={{ dashboard_error.height }} width={{ dashboard_error.width }} />
 {% endfor %}
 </div>
-
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+<script language="javascript"> 
+    function reload()
+    {
+        location.reload(true);
+    }
+    $(function() {
+        setTimeout(reload, 60000);
+    })
+</script>
+<script type="text/javascript"> 
+$(function() {
+        $("#showAlarms").click(function(){
+                if ($("#showAlarms_div").is(":visible")==true){
+                        $("#showAlarms").val("Show Already Alarms");
+                        $("#showAlarms_div").toggle();
+                        
+                }else{
+                        $("#showAlarms").val("Hide Already Alarms");
+                        $("#showAlarms_div").toggle();
+                }
+        });
+});
+</script>
 {% endblock %}
