@@ -4,6 +4,7 @@ from django.views.generic.simple import direct_to_template
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import Context, loader, RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
+from django.db.models import Count 
 from servers.models import *
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -134,6 +135,7 @@ def getdata(projectId="all"):
                 servicesDict['ok'] += 1
                 widgetStatusProjects[p.id]['ok'] += 1
             widgetStatusProjects[p.id]['servicesValues'][w.id]=result
+            cache.set("widgetData_"+str(w.id),result,settings.CACHE_TIME)
         myResult.append(widgetStatusProjects[p.id])
         cache.set("getdata_"+str(p.id),widgetStatusProjects,settings.CACHE_TIME)
     if projectId == "all":
@@ -297,3 +299,29 @@ def problem_server(request):
             s.log = {"sign":"unknown"}
             unknown.append(s)
     return render_to_response('html/overview_problem_server.html',{"servers":d+u+unknown+n+o})
+
+def problem_service(request):
+    result = []
+    widgets = Widget.objects.filter(dashboard__id=1).order_by("category__title").annotate(categorys=Count("category"))
+    for w in widgets:
+        ls = []
+        data =  cache.get("widgetData_"+str(w.id))
+        if data == None:
+            try:data = paser_widget(w)
+            except:
+                w.widgetStatus = "unKnown"
+                w.widgetData = "this widget config error, please check."
+                result.append(w)
+                continue
+        if data["widgetStatus"] != "ok":
+            w.widgetStatus = data["widgetStatus"]
+            for i in data["valueList"]:
+                if data[i]["status"] != "ok":
+                    ls.append(i+":"+str(data[i]["value"]))
+        w.widgetData = ",".join(ls)
+        result.append(w)
+    dashboard_error = get_object_or_404(DashboardError, id=1)
+    imgs = dashboard_error.graphs.all()
+    startTime = int(time.mktime(datetime.strptime(time.strftime("%Y-%m-%d",time.localtime()),"%Y-%m-%d").timetuple()))
+    endTime = startTime + 86400
+    return render_to_response('html/overview_problem_service.html',{"dashboard_error":dashboard_error,"imgs":imgs,"startTime":startTime,"endTime":endTime,"service":result})

@@ -19,5 +19,5 @@ urlpatterns = patterns('',
     (r'project/(\d+)$','servers.overviews.project_servers'),
     (r'project/(\d+)/server/(\d+)/$','servers.overviews.project_server'),
     (r'problem/server$','servers.overviews.problem_server'),
-    #(r'problem/service$','servers.overviews.problem_service'),
+    (r'problem/service$','servers.overviews.problem_service'),
 )

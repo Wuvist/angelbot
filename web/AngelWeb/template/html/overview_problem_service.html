@@ -1,0 +1,28 @@
+{% extends "html/html_home.html" %}
+
+{% block content %}
+<style>
+body{font-family: Verdana, helvetica, arial, sans-serif;}
+td{text-align:center;font-size:11px;}
+</style>
+<div id="data" style="width:60%;float:left;">
+<table border="1" cellspacing="0" cellpadding="0" width="100%">
+<tr><th>Service</th><th>Status</th><th>Status Information</th><th style="width:100px;">Action</th></tr>
+{%for i in service%}
+	<tr><td>{{i.title}}</td>
+	<td style="background:{%if i.widgetStatus == "warning"%}#F0E68C{%else%}#FA8072{%endif%};">{{i.widgetStatus}}</td>
+	<td style="word-break:break-all;">{{i.widgetData}}</td>
+	<td ><a href="/dashboard/1/widget/{{ i.id }}/graph" target="rightFrame">View</a>&nbsp;|&nbsp;
+    	{%if i.server%}<a href="/servers/{{ i.server.id}}/" target="rightFrame">Execute</a>{%else%}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	{%endif%}
+	</td></tr>
+{% endfor %}
+</table>
+</div>
+<div id="imgall" style="width:40%;float:right;">
+{% for img in imgs %}
+<img src="/grahaiderimg/{{ img.id }}/w/{{ dashboard_error.width }}/h/{{ dashboard_error.height }}/start/{{ startTime }}/end/{{ endTime }}" height={{ dashboard_error.height }} width={{ dashboard_error.width }} />
+{% endfor %}
+</div>
+
+{% endblock %}
