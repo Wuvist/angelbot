@@ -301,14 +301,18 @@ def problem_server(request):
     return render_to_response('html/overview_problem_server.html',{"servers":d+u+unknown+n+o})
 
 def problem_service(request):
+    servers  = Server.objects.all()
+    for i in settings.EXCLUDE_IPS:
+        servers = servers.filter(ip__contains=i)
     def get_server_info(w):
         try:
-            w.serverInfo = RemarkLog.objects.filter(mark=w.server.id,type=2).order_by("-id")[0]
+            if w.server in servers:w.serverInfo = {"sign":"Unknown"}
+            else:w.serverInfo = RemarkLog.objects.filter(mark=w.server.id,type=2).order_by("-id")[0]
         except:pass
         return w
     result = []
     widgets = Widget.objects.filter(dashboard__id=1).order_by("category__title").annotate(categorys=Count("category"))
-    for w in widgets[:40]:
+    for w in widgets:
         ls = []
         data =  cache.get("widgetData_"+str(w.id))
         if data == None:
