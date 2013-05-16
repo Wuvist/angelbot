@@ -301,12 +301,12 @@ def problem_server(request):
     return render_to_response('html/overview_problem_server.html',{"servers":d+u+unknown+n+o})
 
 def problem_service(request):
-    servers  = Server.objects.all()
+    servers  = Server.objects.filter(power_on="Y")
     for i in settings.EXCLUDE_IPS:
-        servers = servers.filter(ip__contains=i)
+        servers = servers.exclude(ip__contains=i.replace("*",""))
     def get_server_info(w):
         try:
-            if w.server in servers:w.serverInfo = {"sign":"Unknown"}
+            if w.server not in servers:w.serverInfo = {"sign":"Unknown"}
             else:w.serverInfo = RemarkLog.objects.filter(mark=w.server.id,type=2).order_by("-id")[0]
         except:pass
         return w
