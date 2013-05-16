@@ -206,9 +206,9 @@ def cmdbDeployment(request):
         dt = {"cpu":"x","mem":"x","io":"x"}
         try:
             perf = json.loads(s.perf)
-            if perf["mem_pct_mean"] != None:dt["mem"]=perf["mem_pct_mean"]
-            if perf["cpu_pct_mean"] != None:dt["cpu"]=perf["cpu_pct_mean"]
-            if perf["disk_pct_mean"] != None:dt["io"]=perf["disk_pct_mean"]
+            if perf["mem_pct_max2"] != None:dt["mem"]=perf["mem_pct_max2"]
+            if perf["cpu_pct_max2"] != None:dt["cpu"]=perf["cpu_pct_max2"]
+            if perf["disk_ms_max2"] != None:dt["io"]=perf["disk_ms_max2"]
         except:
             pass
         drawcpu_mem(s,c,dt["cpu"],x,y,w,h,22)
