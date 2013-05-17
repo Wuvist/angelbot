@@ -173,7 +173,7 @@ def cmdbDeployment(request):
                 if v < 50:
                     c.setFillColor("lightgreen")
                     c.rect(x+w/2-20,y+yy,v/100.0*l,h,stroke=0,fill=1)
-                elif 50 <= dt["cpu"] < 70:
+                elif 50 <= v < 70:
                     c.setFillColor("orange")
                     c.rect(x+w/2-20,y+yy,v/100.0*l,h,stroke=0,fill=1)
                     c.setFillColor("lightgreen")
@@ -206,9 +206,9 @@ def cmdbDeployment(request):
         dt = {"cpu":"x","mem":"x","io":"x"}
         try:
             perf = json.loads(s.perf)
-            if perf["mem_pct_max2"] != None:dt["mem"]=perf["mem_pct_max2"]
-            if perf["cpu_pct_max2"] != None:dt["cpu"]=perf["cpu_pct_max2"]
-            if perf["disk_ms_max2"] != None:dt["io"]=perf["disk_ms_max2"]
+            if perf["mem_pct_max2"] != None:dt["mem"]=float(perf["mem_pct_max2"])
+            if perf["cpu_pct_max2"] != None:dt["cpu"]=float(perf["cpu_pct_max2"])
+            if perf["disk_ms_max2"] != None:dt["io"]=float(perf["disk_ms_max2"])
         except:
             pass
         drawcpu_mem(s,c,dt["cpu"],x,y,w,h,22)

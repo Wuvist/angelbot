@@ -77,7 +77,9 @@ def paser_widget(widget):
     last_update = str(info["last_update"])
 
     current = rrdtool.fetch(rrd_path, "-s", last_update + "-1", "-e", "s+0", "LAST")
-    result = {"widgetStatus":"ok","valueList":current[1]}
+    result = {"widgetStatus":"ok","valueList":current[1],"widgetConfigDiff":False}
+    if widget.data_def == None or widget.data_def != widget.data_default:
+        result["widgetConfigDiff"] = True
     if widget.data_def:# == False:
         try:
             data_def = eval(widget.data_def.replace("\n", "").replace("\r", ""))
@@ -143,6 +145,20 @@ def getdata(projectId="all"):
         cache.set("getdata_servicesDict",servicesDict,settings.CACHE_TIME)
     return myResult,servicesDict,widgetStatusProjects
 
+def get_widget_diff_conf():
+    widgetConfDifCount={"all":0,"same":0,"diff":0}
+    widgetConfDifListId=[]
+    widgets = Widget.objects.filter(dashboard__id=1).values("id","data_def","data_default")
+    for w in widgets:
+        if w['data_def'] == None or w['data_default'] != w['data_def']:
+            widgetConfDifCount['diff'] += 1 
+            widgetConfDifListId.append(w['id'])
+        else:widgetConfDifCount['same'] += 1
+    widgetConfDifCount['all'] = widgets.count()
+    cache.set("widgetConfDifCount",widgetConfDifCount,settings.CACHE_TIME)
+    cache.set("widgetConfDifListId",widgetConfDifListId,settings.CACHE_TIME)
+    return widgetConfDifCount,widgetConfDifListId
+
 @login_required()
 @permission_required('user.is_staff')
 def projects(request):
@@ -201,8 +217,11 @@ def home_top(request):
     servicesDict = cache.get("getdata_servicesDict")
     if servicesDict == None:
         myResult,servicesDict,widgetStatusProjects = getdata()
+    widgetConfDifCount = cache.get("widgetConfDifCount")
+    if widgetConfDifCount == None:
+        widgetConfDifCount,widgetConfDifListId = get_widget_diff_conf()
     
-    return render_to_response('html/top.html',{"request":request,"services":servicesDict})
+    return render_to_response('html/top.html',{"request":request,"services":servicesDict,"widgetStatus":widgetConfDifCount})
     
 def home_center(request):
 
@@ -338,3 +357,10 @@ def problem_service(request):
     alarmlogs = AlarmLog.objects.filter(created_on__gte = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(time.time())-30*60))).order_by("widget","-created_on")
     frequentAlarmLogs = FrequentAlarmLog.objects.filter(lasterror_time__gte = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(time.time())-30*60))).order_by("widget","-lasterror_time")
     return render_to_response('html/overview_problem_service.html',{"dashboard_error":dashboard_error,"imgs":imgs,"startTime":startTime,"endTime":endTime,"service":result,"alarmlogs":alarmlogs,"frequentAlarmLogs":frequentAlarmLogs})
+
+def widget_diff_conf(request):
+    widgetConfDifListId = cache.get("widgetConfDifListId")
+    if widgetConfDifListId == None:
+        widgetConfDifCount,widgetConfDifListId = get_widget_diff_conf()
+    widgets = Widget.objects.filter(id__in=widgetConfDifListId).values("id","title","data_def","data_default")
+    return render_to_response('html/show_widget_diff_conf.html',{"widgets":widgets})
