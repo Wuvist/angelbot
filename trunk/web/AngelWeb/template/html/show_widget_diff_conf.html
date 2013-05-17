@@ -1,0 +1,22 @@
+{% extends "html/html_home.html" %}
+{% load html_extras%}
+{% block content %}
+<style>
+body{font-family: Verdana, helvetica, arial, sans-serif;}
+td{text-align:center;font-size:13px;}
+td.rights {border-bottom:1px solid #000;border-right:1px solid #000;}
+td.Normal {background:#00DB00}
+td.Down {background:#FF2D2D}
+td.Unstable{background:#FFFF6F}
+td.Off {background:#ADADAD}
+</style>
+<div id="imgall" style="float:left;">
+<table border="1" cellspacing="0" cellpadding="1">
+<tr><th>SN</th><th>titile</th><th>correct config</th><th>default config</th></tr>
+{% for w in widgets%}
+<tr><td>{{forloop.counter}}</td><td><a href="/admin/servers/widget/{{w.id}}/" target="_blank">{{w.title}}</a></td><td style="width:40%;text-align:left;">{{w.data_def|replaceEnter|safe}}</td><td style="width:40%;text-align:left;">{{w.data_default|replaceEnter|safe}}</td></tr>
+{% endfor %}
+</table>
+</div>
+
+{% endblock %}

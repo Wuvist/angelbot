@@ -46,13 +46,20 @@ a img {
 			<table width="250" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
 				<tr><td colspan="5" align="center">Services Status Totals</td></tr>
 				<tr><td align="center">Ok</td><td>Warning</td><td>Critical</td><td width="70">All Problems</td><td width="50">All Types</td></tr>
-				<tr><td align="center">{{services.ok}}</td><td>{{services.warning}}</td><td>{{services.error}}</td><td>{{services.allProblem}}</td>
+				<tr><td align="center">{{services.ok}}</td>
+				<td  {%if services.warning > 0%}style="background:#F0E68C;"{%endif%}><a href="/overview/problem/service" target="rightFrame">{{services.warning}}</a></td>
+				<td {%if services.error > 0%}style="background:#FA8072;"{%endif%}><a href="/overview/problem/service" target="rightFrame">{{services.error}}</a></td><td>{{services.allProblem}}</td>
 				<td>{{services.allType}}</td></tr>
 			</table></td><td>
 			<table width="220" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
 				<tr><td colspan="4" align="center">Ticket Status Totals</td></tr>
 				<tr><td align="center">New</td><td>Processing</td><td>Closed</td><td>Done</td></tr>
 				<tr><td align="center">100</td><td>3</td><td>2</td><td>3</td></tr>
+			</table></td><td>
+			<table width="220" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
+				<tr><td colspan="4" align="center">Widget Config Status</td></tr>
+				<tr><td align="center">All</td><td>Ok</td><td>Diff</td></tr>
+				<tr><td align="center">{{widgetStatus.all}}</td><td>{{widgetStatus.same}}</td><td {%if widgetStatus.diff > 0%}style="background:#FA8072;"{%endif%}><a href="/overview/widget/diff_conf" target="rightFrame">{{widgetStatus.diff}}</a></td></tr>
 			</table></td></tr>
 		</table>
 		{%endif%}
