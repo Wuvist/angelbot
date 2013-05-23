@@ -4,6 +4,7 @@ from django.views.generic.simple import direct_to_template
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import Context, loader, RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
+from django.views.decorators.cache import cache_page
 from django.db.models import Count 
 from servers.models import *
 from django.conf import settings
@@ -319,13 +320,15 @@ def problem_server(request):
             unknown.append(s)
     return render_to_response('html/overview_problem_server.html',{"servers":d+u+unknown+n+o})
 
+@permission_required('user.is_staff')
+@cache_page(settings.CACHE_TIME)
 def problem_service(request):
-    servers  = Server.objects.filter(power_on="Y")
+    servers  = Server.objects.filter(power_on="Y").values_list("id",flat=True)
     for i in settings.EXCLUDE_IPS:
         servers = servers.exclude(ip__contains=i.replace("*",""))
     def get_server_info(w):
         try:
-            if w.server not in servers:w.serverInfo = {"sign":"Unknown"}
+            if w.server.id not in servers:w.serverInfo = {"sign":"Unknown"}
             else:w.serverInfo = RemarkLog.objects.filter(mark=w.server.id,type=2).order_by("-id")[0]
         except:pass
         return w
@@ -364,3 +367,66 @@ def widget_diff_conf(request):
         widgetConfDifCount,widgetConfDifListId = get_widget_diff_conf()
     widgets = Widget.objects.filter(id__in=widgetConfDifListId).values("id","title","data_def","data_default")
     return render_to_response('html/show_widget_diff_conf.html',{"widgets":widgets})
+
+@login_required()
+def quick_view(request):
+    import re
+    import json
+    data = cache.get("quick_view_widgets")
+    if data == None:
+        result = {}
+        widgets = Widget.objects.exclude(project=None).filter(dashboard__id=1)
+        projects = Project.objects.filter(widget__in=widgets).annotate().order_by("-sequence").values("id","name")
+        for p in projects:
+            result[p["name"]] = {}
+            categorys = WidgetCategory.objects.filter(widget__in=widgets.filter(project__id=p["id"])).values("id","title").annotate()
+            for c in categorys:
+                cc = {}
+                try:
+                    widget = widgets.filter(project__id=p["id"],category__id=c["id"])[0]
+                    data = re.findall(r"DS:(\S+):G",widget.rrd.setting)
+                    for i in data:
+                        cc[i] = i
+                    result[p["name"]][c["title"]]=cc
+                except:pass
+        data = json.dumps(result,ensure_ascii=False)
+        cache.set("quick_view_widgets",data,300)
+    e = int(time.time())
+    p = request.GET.get("v_",None)
+    c = request.GET.get("v__",None)
+    v = request.GET.get("v",None)
+    t = request.GET.get("t",None)
+    if t == "Last Hour":s = e - 3600
+    elif t == "Last 7 Hour":s = e - 3600 * 7
+    else:
+        sT = time.strptime(time.strftime("%Y%m%d",time.localtime()),"%Y%m%d")
+        s = int(time.mktime(sT))
+        e = s + 86400
+    
+    return render_to_response("html/quick_view.html",{"data":data,"p":p,"c":c,"v":v,"s":s,"e":e,"w":1000,"h":500})
+
+def quick_view_img(request):
+    from subprocess import Popen, PIPE
+    color = ["#EA0000","#000000","#2828FF","#28FF28","#F9F900","#00FFFF","#9999CC","#D9B3B3","#E2C2DE","#CA8EFF","#EA0000","#000000","#2828FF","#28FF28","#F9F900","#00FFFF","#9999CC","#D9B3B3","#E2C2DE","#CA8EFF"]
+    p = request.GET["p"]
+    c = request.GET["c"]
+    v = request.GET["v"]
+    w = request.GET["w"]
+    h = request.GET["h"]
+    s = request.GET["s"]
+    e = request.GET["e"]
+    line = ""
+    widgets = Widget.objects.filter(dashboard__id=1,project__name=p,category__title=c).order_by("title")
+    for n in range(len(widgets)):
+        line += 'DEF:%s=%s:%s:LAST LINE:%s%s:"%s" ' % (n,widgets[n].rrd.path(),v,n,color[n],widgets[n].title)
+    cmd = 'rrdtool graph - -E --imgformat PNG -s %s -e %s -t "%s" --width %s --height %s %s' % (s, e, p+" - "+c+" - "+v, w, h, line)
+    p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = p.communicate()
+    
+    if len(stderr) > 0:
+        response = HttpResponse(stderr)
+        response["content-type"] = "text/plain"
+        return response
+    response = HttpResponse(stdout)
+    response["content-type"] = "image/png"
+    return response
