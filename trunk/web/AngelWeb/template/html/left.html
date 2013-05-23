@@ -72,10 +72,11 @@
 		<li style="list-style:none; display:inline;"><span class="head">Graph</span>
 			<ul>
 
-						{% for graph_aider in graph_aiders%}
-						<li><a href="/graphaider/{{ graph_aider.id }}/" target="rightFrame">{{ graph_aider.title }}</a></li>
-						{% endfor %}
-						<li><a href="/parse_aider/" target="rightFrame">online hour</a></li>
+				{% for graph_aider in graph_aiders%}
+				<li><a href="/graphaider/{{ graph_aider.id }}/" target="rightFrame">{{ graph_aider.title }}</a></li>
+				{% endfor %}
+				<li><a href="/parse_aider/" target="rightFrame">online hour</a></li>
+				<li><a href="/overview/quickview" target="rightFrame">Quick view</a></li>
 			</ul>
 		</li>
 		<li style="list-style:none; display:inline;"><span class="head">CMDB</span>

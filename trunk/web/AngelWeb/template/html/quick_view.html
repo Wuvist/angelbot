@@ -1,0 +1,41 @@
+{% extends "html/html_home.html" %}
+
+{% block content %}
+<style>
+body{font-family: Verdana, helvetica, arial, sans-serif;}
+td{text-align:center;font-size:13px;}
+td.rights {border-bottom:1px solid #000;border-right:1px solid #000;}
+</style>
+
+<br>
+<form action="">
+Select: <input type="hidden" name="v">
+<input type="submit" name="t" value="Last Hour">
+<input type="submit" name="t" value="Last 7 Hour">
+<input type="submit" name="t" value="Today">
+
+</form>
+<br>
+<hr>
+<br>
+{%if p%}
+<img src="/overview/quickview/img/?p={{p}}&c={{c}}&v={{v}}&w={{w}}&h={{h}}&s={{s}}&e={{e}}" height="{{h}}" width="{{w}}" />
+{%endif%}
+
+
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+<script type="text/javascript" src="/media/js/optionTree.js"></script>
+<script>
+    var option_tree = {{data|safe}}
+    var options = {
+            choose:'Choose...',
+            empty_value:'',
+        };
+    $('input[name=v]').optionTree(option_tree,options);
+</script>
+
+
+
+
+{% endblock %}
