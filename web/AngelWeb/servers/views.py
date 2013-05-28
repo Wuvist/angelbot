@@ -1837,7 +1837,7 @@ def server_ping(request):
             if loss == "100%":sign = "Down"
             value = "\n".join(result.split("\n")[-2:])
             if "100%" in result:
-                value = "Destination Host Unreachable. "+result.split("\n")[-1]
+                value = "Destination Host Unreachable. "+result.split("\n")[-1].replace(", pipe 2","")
             l = RemarkLog()
             l.mark = self.s.id
             l.type = 2
