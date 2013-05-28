@@ -123,28 +123,54 @@ def getdata(projectId="all"):
         projects = Project.objects.filter(id=projectId)
     for p in projects:
         widgetStatusProjects[p.id] = {'projectId':p.id,'projectName':p.name,'error':0,'warning':0,'ok':0,'unkown':0,"servicesValues":{}}
-        for w in p.widget_set.all():
+        for w in p.widget_set.filter(dashboard__id=1):
             try:
                 result = paser_widget(w)
             except:
                 continue
             if result['widgetStatus'] == "error" or result['widgetStatus'] == "noUpdate":
-                servicesDict['error'] += 1
                 widgetStatusProjects[p.id]['error'] += 1
+                servicesDict['error'] += 1
             elif result['widgetStatus'] == "warning":
-                servicesDict['warning'] += 1
                 widgetStatusProjects[p.id]['warning'] += 1
+                servicesDict['warning'] += 1
             else:
-                servicesDict['ok'] += 1
                 widgetStatusProjects[p.id]['ok'] += 1
+                servicesDict['ok'] += 1
             widgetStatusProjects[p.id]['servicesValues'][w.id]=result
             cache.set("widgetData_"+str(w.id),result,settings.CACHE_TIME)
         myResult.append(widgetStatusProjects[p.id])
         cache.set("getdata_"+str(p.id),widgetStatusProjects,settings.CACHE_TIME)
     if projectId == "all":
         cache.set("getdata_all",myResult,settings.CACHE_TIME)
+        servicesDict["allProblem"] = servicesDict["warning"] + servicesDict["error"]
+        servicesDict["allType"] = servicesDict["allProblem"] + servicesDict["ok"]
         cache.set("getdata_servicesDict",servicesDict,settings.CACHE_TIME)
     return myResult,servicesDict,widgetStatusProjects
+
+def get_server_data():
+    serverDict = {"ok":0,"warning":0,"error":0,"allProblem":0,"allType":0}
+    label = RemarkLog.objects.filter(type=2).order_by("-id")[0]
+    data = RemarkLog.objects.filter(type=2,label=label.label).values("sign").annotate(count=Count("sign"))
+    for d in data:
+        if d["sign"] == "Normal":serverDict["ok"] = d["count"]
+        elif d["sign"] == "Unstable":serverDict["warning"] = d["count"]
+        else:serverDict["error"] = d["count"]
+    serverDict["allProblem"] = serverDict["warning"] + serverDict["error"]
+    serverDict["allType"] = serverDict["allProblem"] + serverDict["ok"]
+    cache.set("get_server_data_serverDict",serverDict,settings.CACHE_TIME)
+    return serverDict
+
+def get_ticket_data():
+    ticketDict = {"new":0,"processing":0,"closed":0,"done":0}
+    ticket = Ticket.objects.all().values("status").annotate(count=Count("status"))
+    for t in ticket:
+        if t["status"] == "New":ticketDict["new"] = t["count"]
+        elif t["status"] == "Processing":ticketDict["processing"] = t["count"]
+        elif t["status"] == "Closed":ticketDict["closed"] = t["count"]
+        else:ticketDict["done"] = t["count"]
+    cache.set("get_ticket_data_ticketDict",ticketDict,settings.CACHE_TIME)
+    return ticketDict
 
 def get_widget_diff_conf():
     widgetConfDifCount={"all":0,"same":0,"diff":0}
@@ -215,14 +241,20 @@ def myhome(request):
     return render_to_response('html/main.html') 
     
 def home_top(request):
+    serverDict = cache.get("get_server_data_serverDict")
+    if serverDict == None:
+        serverDict = get_server_data()
     servicesDict = cache.get("getdata_servicesDict")
     if servicesDict == None:
         myResult,servicesDict,widgetStatusProjects = getdata()
+    ticketDict = cache.get("get_ticket_data_ticketDict")
+    if ticketDict == None:
+        ticketDict = get_ticket_data()
     widgetConfDifCount = cache.get("widgetConfDifCount")
     if widgetConfDifCount == None:
         widgetConfDifCount,widgetConfDifListId = get_widget_diff_conf()
     
-    return render_to_response('html/top.html',{"request":request,"services":servicesDict,"widgetStatus":widgetConfDifCount})
+    return render_to_response('html/top.html',{"request":request,"tickets":ticketDict,"servers":serverDict,"services":servicesDict,"widgetStatus":widgetConfDifCount})
     
 def home_center(request):
 

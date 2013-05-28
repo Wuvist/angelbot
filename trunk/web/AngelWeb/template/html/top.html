@@ -4,7 +4,6 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Mozat angel</title>
 <style type="text/css">
-<!--
 body {
 	margin-left: 0px;
 	margin-top: 0px;
@@ -21,14 +20,14 @@ body {
 a img {
 	border:none;
 }
--->
-		td {
- text-align: center;
- font-size:10px;
-}
-</style></head>
+</style>
+</head>
 
 <body>
+<style>
+body{font-family: Verdana, helvetica, arial, sans-serif;}
+td{text-align:center;font-size:11px;}
+</style>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr>
     <td height="57" background="/media/static/images/main_03.gif">
@@ -38,23 +37,27 @@ a img {
         <td>
 		{%if request.user.is_staff%}
 		<table><tr><td>
-			<table width="220" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
+			<table width="250" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
 				<tr><td colspan="5" align="center">Server Status Totals</td></tr>
-				<tr><td align="center">Up</td><td>Down</td><td>Unknow</td><td width="70">All Problems</td><td width="50">All Types</td></tr>
-				<tr><td align="center">&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td> </td></tr>
+				<tr><td>Up</td><td>Down</td><td>Unstable</td><td style="text-align:center;font-size:7px;">All Problems</td><td>All Types</td></tr>
+				<tr><td align="center">{{servers.ok}}</td>
+					<td {%if servers.error > 0%}style="background:#FA8072;"{%endif%}><a href="/overview/problem/server" target="rightFrame">{{servers.error}}</a></td>
+					<td {%if servers.warning > 0%}style="background:#F0E68C;"{%endif%}><a href="/overview/problem/server" target="rightFrame">{{servers.warning}}</a></td>
+					<td><a href="/overview/problem/server" target="rightFrame">{{servers.allProblem}}</a></td>
+					<td><a href="/overview/problem/server" target="rightFrame">{{servers.allType}}</a></td></tr>
 			</table></td><td>
 			<table width="250" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
 				<tr><td colspan="5" align="center">Services Status Totals</td></tr>
-				<tr><td align="center">Ok</td><td>Warning</td><td>Critical</td><td width="70">All Problems</td><td width="50">All Types</td></tr>
+				<tr><td align="center">Ok</td><td>Warning</td><td>Critical</td><td>All Problems</td><td>All Types</td></tr>
 				<tr><td align="center">{{services.ok}}</td>
-				<td  {%if services.warning > 0%}style="background:#F0E68C;"{%endif%}><a href="/overview/problem/service" target="rightFrame">{{services.warning}}</a></td>
+				<td {%if services.warning > 0%}style="background:#F0E68C;"{%endif%}><a href="/overview/problem/service" target="rightFrame">{{services.warning}}</a></td>
 				<td {%if services.error > 0%}style="background:#FA8072;"{%endif%}><a href="/overview/problem/service" target="rightFrame">{{services.error}}</a></td><td>{{services.allProblem}}</td>
 				<td>{{services.allType}}</td></tr>
 			</table></td><td>
 			<table width="220" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
 				<tr><td colspan="4" align="center">Ticket Status Totals</td></tr>
 				<tr><td align="center">New</td><td>Processing</td><td>Closed</td><td>Done</td></tr>
-				<tr><td align="center">100</td><td>3</td><td>2</td><td>3</td></tr>
+				<tr><td align="center">{{tickets.new}}</td><td>{{tickets.processing}}</td><td>{{tickets.closed}}</td><td>{{tickets.done}}</td></tr>
 			</table></td><td>
 			<table width="220" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
 				<tr><td colspan="4" align="center">Widget Config Status</td></tr>
