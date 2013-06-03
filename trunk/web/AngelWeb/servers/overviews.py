@@ -114,15 +114,15 @@ def paser_widget(widget):
     return result
 
 def getdata(projectId="all"):
-    myResult = []
+    myResult = [];widgetStatusProjects = {}
     servicesDict = {"ok":0,"warning":0,"error":0,"allProblem":0,"allType":0}
-    widgetStatusProjects = {}
+    label = RemarkLog.objects.filter(type=2).order_by("-id")[0]
     if projectId == "all":
         projects = Project.objects.all().order_by("-sequence")
     else:
         projects = Project.objects.filter(id=projectId)
     for p in projects:
-        widgetStatusProjects[p.id] = {'projectId':p.id,'projectName':p.name,'error':0,'warning':0,'ok':0,'unkown':0,"servicesValues":{}}
+        widgetStatusProjects[p.id] = {'projectId':p.id,'projectName':p.name,'error':0,'warning':0,'ok':0,'unkown':0,"servicesValues":{},"serversDict":{}}
         for w in p.widget_set.filter(dashboard__id=1):
             try:
                 result = paser_widget(w)
@@ -139,8 +139,18 @@ def getdata(projectId="all"):
                 servicesDict['ok'] += 1
             widgetStatusProjects[p.id]['servicesValues'][w.id]=result
             cache.set("widgetData_"+str(w.id),result,settings.CACHE_TIME)
+        
+        servers = Server.objects.filter(project=p,power_on="Y").values_list("id",flat=True)
+        data = RemarkLog.objects.filter(type=2,label=label.label,mark__in=servers).values("sign").annotate(count=Count("sign"))
+        serverDict = {"ok":0,"warning":0,"error":0,"allProblem":0,"allType":0}
+        for d in data:
+            if d["sign"] == "Normal":serverDict["ok"] = d["count"]
+            elif d["sign"] == "Unstable":serverDict["warning"] = d["count"]
+            else:serverDict["error"] = d["count"]
+        widgetStatusProjects[p.id]["serversDict"] = serverDict
         myResult.append(widgetStatusProjects[p.id])
         cache.set("getdata_"+str(p.id),widgetStatusProjects,settings.CACHE_TIME)
+        
     if projectId == "all":
         cache.set("getdata_all",myResult,settings.CACHE_TIME)
         servicesDict["allProblem"] = servicesDict["warning"] + servicesDict["error"]
@@ -149,6 +159,7 @@ def getdata(projectId="all"):
     return myResult,servicesDict,widgetStatusProjects
 
 def get_server_data():
+    ls = []
     serverDict = {"ok":0,"warning":0,"error":0,"allProblem":0,"allType":0}
     label = RemarkLog.objects.filter(type=2).order_by("-id")[0]
     data = RemarkLog.objects.filter(type=2,label=label.label).values("sign").annotate(count=Count("sign"))
@@ -159,6 +170,10 @@ def get_server_data():
     serverDict["allProblem"] = serverDict["warning"] + serverDict["error"]
     serverDict["allType"] = serverDict["allProblem"] + serverDict["ok"]
     cache.set("get_server_data_serverDict",serverDict,settings.CACHE_TIME)
+    projects = Project.objects.all().order_by("-sequence")##
+    for p in projects:
+        servers = Server.objects.filter(project=p).values_list("id",flat=True)
+        data = RemarkLog.objects.filter(type=2,label=label.label,mark__in=servers).values("sign").annotate(count=Count("sign"))
     return serverDict
 
 def get_ticket_data():
@@ -175,13 +190,18 @@ def get_ticket_data():
 def get_widget_diff_conf():
     widgetConfDifCount={"all":0,"same":0,"diff":0}
     widgetConfDifListId=[]
+    ignoreCount = RemarkLog.objects.filter(type=4).count()
     widgets = Widget.objects.filter(dashboard__id=1).values("id","data_def","data_default")
     for w in widgets:
-        if w['data_def'] == None or w['data_default'] != w['data_def']:
+        if Alarm.objects.filter(widget__id=w["id"]).count() < 1:
+            widgetConfDifListId.append(w['id'])
+            widgetConfDifCount['diff'] += 1 
+        elif w['data_def'] == None or w['data_default'] != w['data_def']:
             widgetConfDifCount['diff'] += 1 
             widgetConfDifListId.append(w['id'])
         else:widgetConfDifCount['same'] += 1
     widgetConfDifCount['all'] = widgets.count()
+    widgetConfDifCount['diff'] = widgetConfDifCount['diff'] - ignoreCount
     cache.set("widgetConfDifCount",widgetConfDifCount,settings.CACHE_TIME)
     cache.set("widgetConfDifListId",widgetConfDifListId,settings.CACHE_TIME)
     return widgetConfDifCount,widgetConfDifListId
@@ -394,10 +414,28 @@ def problem_service(request):
     return render_to_response('html/overview_problem_service.html',{"dashboard_error":dashboard_error,"imgs":imgs,"startTime":startTime,"endTime":endTime,"service":result,"alarmlogs":alarmlogs,"frequentAlarmLogs":frequentAlarmLogs})
 
 def widget_diff_conf(request):
+    if request.GET.has_key("wid"):
+        wid = request.GET["wid"]
+        action = request.GET["action"]
+        if action == "Resume":
+            RemarkLog.objects.filter(type=4,mark=wid).delete()
+        elif action == "Ignore":
+            RemarkLog(type=4,mark=wid).save()
+        return HttpResponseRedirect("/overview/widget/diff_conf/")
     widgetConfDifListId = cache.get("widgetConfDifListId")
     if widgetConfDifListId == None:
         widgetConfDifCount,widgetConfDifListId = get_widget_diff_conf()
     widgets = Widget.objects.filter(id__in=widgetConfDifListId).values("id","title","data_def","data_default")
+    ignoreWidgets = list(RemarkLog.objects.filter(type=4).values_list("mark",flat=True).annotate())
+    for w in widgets:
+        if w["data_def"] == w["data_default"]:w["alarm"] = "Not"
+        else:w["alarm"] = "Unknown"
+        if w["id"] in ignoreWidgets:
+            w["ignore"] = True
+            ignoreWidgets.remove(w["id"])
+        else:w["ignore"] = False
+    RemarkLog.objects.filter(type=4,mark__in=ignoreWidgets).delete()
+    widgets = sorted(widgets, key=lambda x:x["ignore"])
     return render_to_response('html/show_widget_diff_conf.html',{"widgets":widgets})
 
 @login_required()

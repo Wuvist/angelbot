@@ -12,9 +12,10 @@ td.Off {background:#ADADAD}
 </style>
 <div id="imgall" style="float:left;">
 <table border="1" cellspacing="0" cellpadding="1">
-<tr><th>SN</th><th>titile</th><th>correct config</th><th>default config</th></tr>
+<tr><th>SN</th><th>titile</th><th>correct config</th><th>default config</th><th>Alarm</th><th>Action</th></tr>
 {% for w in widgets%}
-<tr><td>{{forloop.counter}}</td><td><a href="/admin/servers/widget/{{w.id}}/" target="_blank">{{w.title}}</a></td><td style="width:40%;text-align:left;">{{w.data_def|replaceEnter|safe}}</td><td style="width:40%;text-align:left;">{{w.data_default|replaceEnter|safe}}</td></tr>
+	<tr><td>{{forloop.counter}}</td><td><a href="/admin/servers/widget/{{w.id}}/" target="_blank">{{w.title}}</a></td><td style="width:40%;text-align:left;">{{w.data_def|replaceEnter|safe}}</td><td style="width:40%;text-align:left;">{{w.data_default|replaceEnter|safe}}</td><td>{{w.alarm}}</td><td>
+	<form action=""><input type="hidden" name="wid" value="{{w.id}}">{%if w.ignore%}<input type="submit" name="action" value="Resume">{%else%}<input type="submit" name="action" value="Ignore"/>{%endif%}</form></td></tr>
 {% endfor %}
 </table>
 </div>

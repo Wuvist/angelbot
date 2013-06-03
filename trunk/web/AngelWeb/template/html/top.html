@@ -57,7 +57,7 @@ td{text-align:center;font-size:11px;}
 			<table width="220" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
 				<tr><td colspan="4" align="center">Ticket Status Totals</td></tr>
 				<tr><td align="center">New</td><td>Processing</td><td>Closed</td><td>Done</td></tr>
-				<tr><td align="center">{{tickets.new}}</td><td>{{tickets.processing}}</td><td>{{tickets.closed}}</td><td>{{tickets.done}}</td></tr>
+				<tr><td {%if tickets.new > 0%}style="background:#FA8072;"{%endif%}><a href="/ticket" target="rightFrame">{{tickets.new}}</a></td><td {%if tickets.processing > 0%}style="background:#F0E68C;"{%endif%}><a href="/ticket" target="rightFrame">{{tickets.processing}}</a></td><td>{{tickets.closed}}</td><td>{{tickets.done}}</td></tr>
 			</table></td><td>
 			<table width="220" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
 				<tr><td colspan="4" align="center">Widget Config Status</td></tr>
@@ -125,7 +125,7 @@ td{text-align:center;font-size:11px;}
         location.reload(true);
     }
     $(function() {
-            setTimeout(reload, 50000);
+            setTimeout(reload, 55000);
     })
 </script>
 </body>
