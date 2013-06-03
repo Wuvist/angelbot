@@ -257,18 +257,24 @@ def myhome(request):
     return render_to_response('html/main.html') 
     
 def home_top(request):
-    serverDict = cache.get("get_server_data_serverDict")
-    if serverDict == None:
+    if request.GET.has_key("action"):
         serverDict = get_server_data()
-    servicesDict = cache.get("getdata_servicesDict")
-    if servicesDict == None:
         myResult,servicesDict,widgetStatusProjects = getdata()
-    ticketDict = cache.get("get_ticket_data_ticketDict")
-    if ticketDict == None:
         ticketDict = get_ticket_data()
-    widgetConfDifCount = cache.get("widgetConfDifCount")
-    if widgetConfDifCount == None:
         widgetConfDifCount,widgetConfDifListId = get_widget_diff_conf()
+    else:
+        serverDict = cache.get("get_server_data_serverDict")
+        if serverDict == None:
+            serverDict = get_server_data()
+        servicesDict = cache.get("getdata_servicesDict")
+        if servicesDict == None:
+            myResult,servicesDict,widgetStatusProjects = getdata()
+        ticketDict = cache.get("get_ticket_data_ticketDict")
+        if ticketDict == None:
+            ticketDict = get_ticket_data()
+        widgetConfDifCount = cache.get("widgetConfDifCount")
+        if widgetConfDifCount == None:
+            widgetConfDifCount,widgetConfDifListId = get_widget_diff_conf()
     
     return render_to_response('html/top.html',{"request":request,"tickets":ticketDict,"servers":serverDict,"services":servicesDict,"widgetStatus":widgetConfDifCount})
     
