@@ -117,6 +117,7 @@ def getdata(projectId="all"):
     myResult = [];widgetStatusProjects = {}
     servicesDict = {"ok":0,"warning":0,"error":0,"allProblem":0,"allType":0}
     label = RemarkLog.objects.filter(type=2).order_by("-id")[0]
+    remarkLogs = RemarkLog.objects.filter(type=2,label=label.label)
     if projectId == "all":
         projects = Project.objects.all().order_by("-sequence")
     else:
@@ -141,7 +142,7 @@ def getdata(projectId="all"):
             cache.set("widgetData_"+str(w.id),result,settings.CACHE_TIME)
         
         servers = Server.objects.filter(project=p,power_on="Y").values_list("id",flat=True)
-        data = RemarkLog.objects.filter(type=2,label=label.label,mark__in=servers).values("sign").annotate(count=Count("sign"))
+        data = remarkLogs.filter(mark__in=servers).values("sign").annotate(count=Count("sign"))
         serverDict = {"ok":0,"warning":0,"error":0,"allProblem":0,"allType":0}
         for d in data:
             if d["sign"] == "Normal":serverDict["ok"] = d["count"]
@@ -159,7 +160,6 @@ def getdata(projectId="all"):
     return myResult,servicesDict,widgetStatusProjects
 
 def get_server_data():
-    ls = []
     serverDict = {"ok":0,"warning":0,"error":0,"allProblem":0,"allType":0}
     label = RemarkLog.objects.filter(type=2).order_by("-id")[0]
     data = RemarkLog.objects.filter(type=2,label=label.label).values("sign").annotate(count=Count("sign"))
@@ -170,10 +170,6 @@ def get_server_data():
     serverDict["allProblem"] = serverDict["warning"] + serverDict["error"]
     serverDict["allType"] = serverDict["allProblem"] + serverDict["ok"]
     cache.set("get_server_data_serverDict",serverDict,settings.CACHE_TIME)
-    projects = Project.objects.all().order_by("-sequence")##
-    for p in projects:
-        servers = Server.objects.filter(project=p).values_list("id",flat=True)
-        data = RemarkLog.objects.filter(type=2,label=label.label,mark__in=servers).values("sign").annotate(count=Count("sign"))
     return serverDict
 
 def get_ticket_data():
@@ -193,10 +189,10 @@ def get_widget_diff_conf():
     ignoreCount = RemarkLog.objects.filter(type=4).count()
     widgets = Widget.objects.filter(dashboard__id=1).values("id","data_def","data_default")
     for w in widgets:
-        if Alarm.objects.filter(widget__id=w["id"]).count() < 1:
+        if w['data_def'] == None or w['data_default'] != w['data_def']:
             widgetConfDifListId.append(w['id'])
             widgetConfDifCount['diff'] += 1 
-        elif w['data_def'] == None or w['data_default'] != w['data_def']:
+        elif Alarm.objects.filter(widget__id=w["id"]).count() < 1:
             widgetConfDifCount['diff'] += 1 
             widgetConfDifListId.append(w['id'])
         else:widgetConfDifCount['same'] += 1
@@ -303,7 +299,7 @@ def project_servers(reqeust,pid):
     if widgetStatusProjects == None:
         myResult,servicesDict,widgetStatusProjects = getdata(pid)
     data = widgetStatusProjects[int(pid)]["servicesValues"]
-    servers = Server.objects.filter(project__id=pid).order_by("ip")
+    servers = Server.objects.filter(project__id=pid).exclude(server_function=4).order_by("ip")
     for s in servers:
         result = {"ok":0,"warning":0,"unknown":0,"error":0}
         widgets = Widget.objects.filter(server=s,project__id=pid).order_by("title")
