@@ -38,6 +38,7 @@ REMARK_LOG_CHOICES = (
     (1, 'cpu_ram_io'),
     (2, 'server ping'),
     (3, 'db show backup'),
+    (4, 'ignore widget config'),
 )
 # Create your models here.
 class Project(models.Model):
