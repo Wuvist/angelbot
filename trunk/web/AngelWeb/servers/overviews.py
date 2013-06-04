@@ -208,7 +208,7 @@ def projects(request):
     myResult = cache.get("getdata_all")
     if myResult == None:
         myResult,servicesDict,widgetStatusProjects = getdata()
-    dashboard_error = get_object_or_404(DashboardError, title="Overall")
+    dashboard_error = get_object_or_404(Dashboard, title="Overall")
     imgs = dashboard_error.graphs.all()
     startTime = int(time.mktime(datetime.strptime(time.strftime("%Y-%m-%d",time.localtime()),"%Y-%m-%d").timetuple()))
     endTime = startTime + 86400
