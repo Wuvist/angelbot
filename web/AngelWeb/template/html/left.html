@@ -55,15 +55,6 @@
 		{%endif%}
 		<li style="list-style:none; display:inline;"><span class="head">Dashboards</span>
 			<ul>
-				{%if request.user.is_staff%}
-				<li class="open">+<span>Error Dashboards</span>
-					<ul>
-						{%for d in error_dashboards%}
-						<li><a href="/dashboard/error/{{d.id}}" target="rightFrame">{{d.title}}</a></li>
-						{%endfor%}
-					</ul>
-				</li>
-				{%endif%}
 				{% for dashboard in dashboards %}
 				<li><a href="/dashboard/{{ dashboard.id }}/" target="rightFrame">{{ dashboard.title }}</a></li>
 				{% endfor %}

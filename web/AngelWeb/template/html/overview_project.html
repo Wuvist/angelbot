@@ -27,9 +27,11 @@ td.rights {border-bottom:1px solid #000;border-right:1px solid #000;}
 <tr><th>Server</th><th>Services Status</th><th style="width:100px;">Action</th></tr>
 {%for s in servers2%}
 <tr><td>{{s.ip}}</td><td style="align:center;">
-	<table align="center" border="0" frame="void" cellpadding="0" cellspacing="0">
+	<table align="center" border="1" frame="void" cellpadding="0" cellspacing="0">
 		<tr><td >Ok</td><td >&nbsp;Warning&nbsp;</td><td >Critical&nbsp;</td><td>Unknown</td></tr>
-		<tr><td >{{s.data.ok}}</td><td >{{s.data.warning}}</td><td>{{s.data.error}}</td><td>{{s.data.unknown}}</td></tr>
+		<tr><td>{{s.data.ok}}</td><td style="background:{%if s.data.warning > 0%}#F0E68C{%endif%};">{{s.data.warning}}</td>
+			<td style="background:{%if s.data.error > 0%}#FA8072{%endif%};">{{s.data.error}}</td>
+			<td style="background:{%if s.data.unknown > 0%}#F0E68C{%endif%};">{{s.data.unknown}}</td></tr>
 	</table>
 	</td><td style="font-size:10px;"><a href="/servers/{{s.id}}">Execute</a><br><a href="/overview/project/{{s.project.id}}/server/{{s.id}}">Services Details</a></td></tr>
 {% endfor %}
