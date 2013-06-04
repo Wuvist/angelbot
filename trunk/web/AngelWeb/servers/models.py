@@ -40,7 +40,12 @@ REMARK_LOG_CHOICES = (
     (3, 'db show backup'),
     (4, 'ignore widget config'),
 )
-# Create your models here.
+
+WIDGET_TYPE_CHOICES = (
+    ('1', 'Show Current Value Only'),
+    ('2', 'Show Current / Yesterday / Last Week Value'),
+)
+
 class Project(models.Model):
     name = models.CharField(max_length=50)
     alarm = models.CharField(max_length=8, choices=ALARM_TYPE_CHOICES)
@@ -134,6 +139,32 @@ class Rrd(models.Model):
     class Meta:
         ordering = ["name"]
 
+class GraphAiderDef(models.Model):
+    title = models.CharField(max_length=50)
+    rrd = models.ForeignKey(Rrd)
+    graph_type = models.CharField(max_length=1, choices=WIDGET_TYPE_CHOICES)
+    lines_def = models.TextField(max_length=256)
+    
+    def __unicode__(self):
+        return self.title
+    
+    class Meta:
+        ordering = ["title"]
+        
+class GraphAider(models.Model):
+    title = models.CharField(max_length=50)
+    sequence = models.IntegerField(max_length=10, null = True, blank = True)
+    graphs = models.ManyToManyField(GraphAiderDef, null = True, blank = True)
+    width = models.IntegerField(max_length=50)
+    height = models.IntegerField(max_length=50)
+    refresh_time = models.IntegerField(max_length=50)
+    user = models.ManyToManyField(User, null = True, blank=True)
+    
+    def __unicode__(self):
+        return self.title
+    
+    class Meta:
+        ordering = ["title"]
 class SeverCmd(models.Model):
     server = models.ForeignKey(Server)
     cmd = models.ForeignKey(Cmd)
@@ -160,6 +191,9 @@ class Dashboard(models.Model):
     title = models.CharField(max_length=50)
     user = models.ManyToManyField(User, null = True, blank=True)
     sequence = models.IntegerField(max_length=10,null = True, blank=True)
+    graphs = models.ManyToManyField(GraphAiderDef)
+    width = models.IntegerField(max_length=8)
+    height = models.IntegerField(max_length=8)
     des = models.TextField(max_length =512, null = True, blank=True)
     
     def __unicode__(self):
@@ -216,11 +250,6 @@ class WidgetGrade(models.Model):
     
     class Meta:
         ordering = ["title"]
-
-WIDGET_TYPE_CHOICES = (
-    ('1', 'Show Current Value Only'),
-    ('2', 'Show Current / Yesterday / Last Week Value'),
-)
 
 class Widget(models.Model):
     title = models.CharField(max_length=50)
@@ -306,32 +335,6 @@ class AlarmLog(models.Model):
     def __unicode__(self):
         return str(self.title) + ": "  + str(self.alarmlevel) +" level "+ str(self.widget) + " (" + str(self.created_on)  +")"
 
-class GraphAiderDef(models.Model):
-    title = models.CharField(max_length=50)
-    rrd = models.ForeignKey(Rrd)
-    graph_type = models.CharField(max_length=1, choices=WIDGET_TYPE_CHOICES)
-    lines_def = models.TextField(max_length=256)
-    
-    def __unicode__(self):
-        return self.title
-    
-    class Meta:
-        ordering = ["title"]
-        
-class GraphAider(models.Model):
-    title = models.CharField(max_length=50)
-    sequence = models.IntegerField(max_length=10, null = True, blank = True)
-    graphs = models.ManyToManyField(GraphAiderDef, null = True, blank = True)
-    width = models.IntegerField(max_length=50)
-    height = models.IntegerField(max_length=50)
-    refresh_time = models.IntegerField(max_length=50)
-    user = models.ManyToManyField(User, null = True, blank=True)
-    
-    def __unicode__(self):
-        return self.title
-    
-    class Meta:
-        ordering = ["title"]
 
 class FrequentAlarm(models.Model):
     title = models.CharField(max_length=50)

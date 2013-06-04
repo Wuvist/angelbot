@@ -156,8 +156,8 @@ td{text-align:center;font-size:11px;}
 </table>
 </div>
 <div id="imgall" style="width:40%;float:right;">
-{% for img in imgs %}
-<img src="/grahaiderimg/{{ img.id }}/w/{{ dashboard_error.width }}/h/{{ dashboard_error.height }}/start/{{ startTime }}/end/{{ endTime }}" height={{ dashboard_error.height }} width={{ dashboard_error.width }} />
+{% for img in dashboard.graphs.all %}
+<img src="/grahaiderimg/{{ img.id }}/w/{{ dashboard.width }}/h/{{ dashboard.height }}/start/{{ startTime }}/end/{{ endTime }}" height={{ dashboard.height }} width={{ dashboard.width }} />
 {% endfor %}
 </div>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>

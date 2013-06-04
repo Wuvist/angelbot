@@ -208,7 +208,7 @@ def projects(request):
     myResult = cache.get("getdata_all")
     if myResult == None:
         myResult,servicesDict,widgetStatusProjects = getdata()
-    dashboard_error = get_object_or_404(DashboardError, id=1)
+    dashboard_error = get_object_or_404(DashboardError, title="Overall")
     imgs = dashboard_error.graphs.all()
     startTime = int(time.mktime(datetime.strptime(time.strftime("%Y-%m-%d",time.localtime()),"%Y-%m-%d").timetuple()))
     endTime = startTime + 86400
@@ -376,7 +376,7 @@ def problem_server(request):
 
 @permission_required('user.is_staff')
 @cache_page(settings.CACHE_TIME)
-def problem_service(request):
+def problem_service(request,did):
     servers  = Server.objects.filter(power_on="Y").values_list("id",flat=True)
     for i in settings.EXCLUDE_IPS:
         servers = servers.exclude(ip__contains=i.replace("*",""))
@@ -387,7 +387,7 @@ def problem_service(request):
         except:pass
         return w
     result = []
-    widgets = Widget.objects.filter(dashboard__id=1).order_by("category__title").annotate(categorys=Count("category"))
+    widgets = Widget.objects.filter(dashboard__id=did).order_by("category__title").annotate(categorys=Count("category"))
     for w in widgets:
         ls = []
         data =  cache.get("widgetData_"+str(w.id))
@@ -407,13 +407,12 @@ def problem_service(request):
             w.widgetData = ",".join(ls)
             w = get_server_info(w)
             result.append(w)
-    dashboard_error = get_object_or_404(DashboardError, id=1)
-    imgs = dashboard_error.graphs.all()
+    dashboard = get_object_or_404(Dashboard, id=did)
     startTime = int(time.mktime(datetime.strptime(time.strftime("%Y-%m-%d",time.localtime()),"%Y-%m-%d").timetuple()))
     endTime = startTime + 86400
     alarmlogs = AlarmLog.objects.filter(created_on__gte = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(time.time())-30*60))).order_by("widget","-created_on")
     frequentAlarmLogs = FrequentAlarmLog.objects.filter(lasterror_time__gte = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(time.time())-30*60))).order_by("widget","-lasterror_time")
-    return render_to_response('html/overview_problem_service.html',{"dashboard_error":dashboard_error,"imgs":imgs,"startTime":startTime,"endTime":endTime,"service":result,"alarmlogs":alarmlogs,"frequentAlarmLogs":frequentAlarmLogs})
+    return render_to_response('html/overview_problem_service.html',{"dashboard":dashboard,"startTime":startTime,"endTime":endTime,"service":result,"alarmlogs":alarmlogs,"frequentAlarmLogs":frequentAlarmLogs})
 
 def widget_diff_conf(request):
     if request.GET.has_key("wid"):
