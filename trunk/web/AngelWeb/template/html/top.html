@@ -38,7 +38,11 @@ td{text-align:center;font-size:11px;}
 		{%if request.user.is_staff%}
 		<table><tr><td>
 			<table width="250" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
+				{%if serverUpdate > 180%}
+				<tr><td colspan="5" align="center" style="background:#FA8072;"><a href="/overview/problem/server" target="rightFrame">Server Status Totals</a></td></tr>
+				{%else%}
 				<tr><td colspan="5" align="center">Server Status Totals</td></tr>
+				{%endif%}
 				<tr><td>Up</td><td>Down</td><td>Unstable</td><td style="text-align:center;font-size:7px;">All Problems</td><td>All Types</td></tr>
 				<tr><td align="center">{{servers.ok}}</td>
 					<td {%if servers.error > 0%}style="background:#FA8072;"{%endif%}><a href="/overview/problem/server" target="rightFrame">{{servers.error}}</a></td>
