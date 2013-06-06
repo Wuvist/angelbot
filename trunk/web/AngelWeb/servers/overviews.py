@@ -1,5 +1,4 @@
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.decorators import permission_required
 from django.views.generic.simple import direct_to_template
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import Context, loader, RequestContext
@@ -203,8 +202,9 @@ def get_widget_diff_conf():
     return widgetConfDifCount,widgetConfDifListId
 
 @login_required()
-@permission_required('user.is_staff')
 def projects(request):
+    if not request.user.is_staff:
+        raise Http404
     myResult = cache.get("getdata_all")
     if myResult == None:
         myResult,servicesDict,widgetStatusProjects = getdata()
@@ -216,8 +216,9 @@ def projects(request):
         {'projects':myResult,"imgs":imgs,"startTime":startTime,"endTime":endTime,"dashboard_error":dashboard_error,"imgsDivWidth":dashboard_error.width*2+5})
 
 @login_required()
-@permission_required('user.is_staff')
 def showdetail_services(request,pid):
+    if not request.user.is_staff:
+        raise Http404
     widgetList = Widget.objects.filter(project__id=pid)
     categorys = widgetList.values("category__id","category__title").order_by("category__title").annotate()
     widgetStatusProjects = cache.get("getdata_"+str(pid))
@@ -374,9 +375,11 @@ def problem_server(request):
             unknown.append(s)
     return render_to_response('html/overview_problem_server.html',{"servers":d+u+unknown+n+o})
 
-@permission_required('user.is_staff')
+@login_required
 @cache_page(settings.CACHE_TIME)
 def problem_service(request,did):
+    if not request.user.is_staff:
+        raise Http404
     servers  = Server.objects.filter(power_on="Y").values_list("id",flat=True)
     for i in settings.EXCLUDE_IPS:
         servers = servers.exclude(ip__contains=i.replace("*",""))
