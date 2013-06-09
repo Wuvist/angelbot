@@ -54,8 +54,8 @@ td{text-align:center;font-size:11px;}
 				<tr><td colspan="5" align="center">Services Status Totals</td></tr>
 				<tr><td align="center">Ok</td><td>Warning</td><td>Critical</td><td>All Problems</td><td>All Types</td></tr>
 				<tr><td align="center">{{services.ok}}</td>
-				<td {%if services.warning > 0%}style="background:#F0E68C;"{%endif%}><a href="/overview/problem/service" target="rightFrame">{{services.warning}}</a></td>
-				<td {%if services.error > 0%}style="background:#FA8072;"{%endif%}><a href="/overview/problem/service" target="rightFrame">{{services.error}}</a></td><td>{{services.allProblem}}</td>
+				<td {%if services.warning > 0%}style="background:#F0E68C;"{%endif%}><a href="/overview/problem/service/1" target="rightFrame">{{services.warning}}</a></td>
+				<td {%if services.error > 0%}style="background:#FA8072;"{%endif%}><a href="/overview/problem/service/1" target="rightFrame">{{services.error}}</a></td><td>{{services.allProblem}}</td>
 				<td>{{services.allType}}</td></tr>
 			</table></td><td>
 			<table width="220" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
