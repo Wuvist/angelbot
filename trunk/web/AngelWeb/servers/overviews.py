@@ -160,7 +160,7 @@ def getdata(projectId="all"):
 
 def get_server_data():
     serverDict = {"ok":0,"warning":0,"error":0,"allProblem":0,"allType":0}
-    label = RemarkLog.objects.filter(type=2).order_by("-id")[0]
+    label = RemarkLog.objects.filter(type=2).order_by("-id")[1]
     data = RemarkLog.objects.filter(type=2,label=label.label).values("sign").annotate(count=Count("sign"))
     for d in data:
         if d["sign"] == "Normal":serverDict["ok"] = d["count"]
