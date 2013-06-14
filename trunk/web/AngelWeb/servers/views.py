@@ -1398,7 +1398,7 @@ def alarm(request):
     
     for alarm in Alarm.objects.all():
         if eval(alarm.enable):
-            for widget in alarm.widget.filter(project__in = Project.objects.filter(alarm = "True")).annotate():
+            for widget in alarm.widget.filter(project__in = Project.objects.filter(alarm = "True"),dashboard__id=1).annotate():
                 try:
                     alarmlog = AlarmLog.objects.filter(widget = widget.id, title = alarm).order_by("-created_on")[0]
                 except:
@@ -1410,7 +1410,7 @@ def alarm(request):
     
     for alarm in FrequentAlarm.objects.all():
         if eval(alarm.enable):
-            for widget in alarm.widget.filter(project__in = Project.objects.filter(alarm = "True")).annotate():
+            for widget in alarm.widget.filter(project__in = Project.objects.filter(alarm = "True"),dashboard__id=1).annotate():
                 try:
                     frequentAlarmLog = FrequentAlarmLog.objects.filter(widget = widget.id,title = alarm).filter(created_on__gte = time.strftime("%Y-%m-%d",time.localtime())).order_by("-created_on")[0]
                 except:
