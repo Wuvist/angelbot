@@ -1074,6 +1074,7 @@ def doCall():
 
 def alarm(request):
     import time
+    import threading
     from django.contrib.auth.models import User
     contact_users = {1:"firstcontact",2:"secondcontact",3:"thirdcontact",4:"fourthcontact",5:"fifthcontact",6:"sixthcontact"}
     def createTicket(errorType,widget,result,users,assign="no"):
@@ -1395,6 +1396,14 @@ def alarm(request):
                         if goingNo:
                             doReport(i,frequentAlarmLog,eval("alarm."+contact_users[i]).all())
                             break
+    class mythread(threading.Thread):
+        def __init__(self,alarm,widget,alarmlog):
+            self.alarm = alarm
+            self.widget = widget
+            self.alarmlog = alarmlog
+            threading.Thread.__init__(self)
+        def run(self):
+            contrastLog(self.alarm,self.widget,self.alarmlog) 
     
     for alarm in Alarm.objects.all():
         if eval(alarm.enable):
@@ -1404,7 +1413,8 @@ def alarm(request):
                 except:
                     alarmlog = ""
                 try:
-                    contrastLog(alarm,widget,alarmlog)
+                    t = mythread(alarm,widget,alarmlog)
+                    t.start()
                 except:
                     pass
     
