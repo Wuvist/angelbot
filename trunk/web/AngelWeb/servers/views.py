@@ -1397,26 +1397,24 @@ def alarm(request):
                             doReport(i,frequentAlarmLog,eval("alarm."+contact_users[i]).all())
                             break
     class mythread(threading.Thread):
-        def __init__(self,alarm,widget,alarmlog):
+        def __init__(self,alarm):
             self.alarm = alarm
-            self.widget = widget
-            self.alarmlog = alarmlog
             threading.Thread.__init__(self)
         def run(self):
-            contrastLog(self.alarm,self.widget,self.alarmlog) 
-    
-    for alarm in Alarm.objects.all():
-        if eval(alarm.enable):
-            for widget in alarm.widget.filter(project__in = Project.objects.filter(alarm = "True"),dashboard__id=1).annotate():
+            for widget in self.alarm.widget.filter(project__in = Project.objects.filter(alarm = "True"),dashboard__id=1).annotate():
                 try:
-                    alarmlog = AlarmLog.objects.filter(widget = widget.id, title = alarm).order_by("-created_on")[0]
+                    alarmlog = AlarmLog.objects.filter(widget = widget.id, title = self.alarm).order_by("-created_on")[0]
                 except:
                     alarmlog = ""
                 try:
-                    t = mythread(alarm,widget,alarmlog)
-                    t.start()
+                    contrastLog(self.alarm,widget,alarmlog) 
                 except:
                     pass
+    
+    for alarm in Alarm.objects.all():
+        if alarm.enable == "True":
+            t = mythread(alarm)
+            t.start()
     
     for alarm in FrequentAlarm.objects.all():
         if eval(alarm.enable):
