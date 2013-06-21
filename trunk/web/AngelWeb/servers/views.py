@@ -5,6 +5,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import Context, loader, RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.cache import cache_page
+from django.core.cache import cache
 from django.db.models import Count
 from servers.models import *
 from django.conf import settings
@@ -1822,6 +1823,8 @@ def server_ping(request):
     import re
     import threading
     label = time.strftime("%Y%m%d%H%M")
+    serverDict = {"ok":0,"warning":0,"error":0,"allProblem":0,"allType":0}
+    t = []
     class mythreads(threading.Thread):
         def __init__(self,s):
             self.s = s
@@ -1844,6 +1847,7 @@ def server_ping(request):
                 pass
             if loss == "100%":sign = "Down"
             value = "\n".join(result.split("\n")[-2:])
+            value = ",".join(value.split(",")[2:])
             if "100%" in result:
                 value = "Destination Host Unreachable. "+result.split("\n")[-1].replace(", pipe 2","")
             l = RemarkLog()
@@ -1853,13 +1857,24 @@ def server_ping(request):
             l.sign = sign
             l.value = value
             l.save()
+            serverDict["allType"] += 1
+            if sign == "Unstable":
+                serverDict["warning"] += 1
+                serverDict["allProblem"] += 1
+            elif sign == "Down":
+                serverDict["error"] += 1
+                serverDict["allProblem"] += 1
+            else:serverDict["ok"] += 1
     servers = Server.objects.filter(power_on="Y")
     for i in settings.EXCLUDE_IPS:
         servers = servers.exclude(ip__contains=i.replace("*",""))
     for s in servers:
         if RemarkLog.objects.filter(mark=s.id,type=2,label=label).count() < 1:
             a = mythreads(s)
+            t.append(a)
             a.start()
+    for i in t:i.join()
+    cache.set("serverDict_"+label,serverDict,600)
     return HttpResponse("Ok")
 
 @login_required()
