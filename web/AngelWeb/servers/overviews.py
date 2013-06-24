@@ -159,13 +159,13 @@ def getdata(projectId="all"):
     return myResult,servicesDict,widgetStatusProjects
 
 def get_server_data():
-    label = RemarkLog.objects.filter(type=2).values("label").annotate().order_by("-id")[1]
-    serverDict = cache.get("serverDict_"+label["label"])
+    t = time.strftime("%Y%m%d%H%M",time.localtime(time.time()-60))
+    serverDict = cache.get("serverDict_"+t)
     if serverDict != None:
         cache.set("get_server_data_serverDict",serverDict,settings.CACHE_TIME)
         return serverDict
     serverDict = {"ok":0,"warning":0,"error":0,"allProblem":0,"allType":0}
-    data = RemarkLog.objects.filter(type=2,label=label["label"]).values("sign").annotate(count=Count("sign"))
+    data = RemarkLog.objects.filter(type=2,label=t).values("sign").annotate(count=Count("sign"))
     for d in data:
         if d["sign"] == "Normal":serverDict["ok"] = d["count"]
         elif d["sign"] == "Unstable":serverDict["warning"] = d["count"]
