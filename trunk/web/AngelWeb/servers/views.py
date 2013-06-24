@@ -1772,11 +1772,9 @@ def widget_value(request):
     import rrdtool 
     import json
     widget = get_object_or_404(Widget,title=request.GET["widget"])
-    result = {}
-    d = int(time.time())
-    t = d % 60
-    d = d - t
-    data = rrdtool.fetch(widget.rrd.path(), "-s", str(d-1), "-e", "s+0", "LAST")
+    last_update = rrdtool.info(widget.rrd.path())["last_update"]
+    result={"last_update":time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(last_update))}
+    data = rrdtool.fetch(widget.rrd.path(), "-s", str(last_update-1), "-e", "s+0", "LAST")
     
     for x,y in zip(data[1],data[2][0]):
         result[x] = y
