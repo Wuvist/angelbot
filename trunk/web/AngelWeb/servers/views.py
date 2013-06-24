@@ -1869,10 +1869,9 @@ def server_ping(request):
     for i in settings.EXCLUDE_IPS:
         servers = servers.exclude(ip__contains=i.replace("*",""))
     for s in servers:
-        if RemarkLog.objects.filter(mark=s.id,type=2,label=label).count() < 1:
-            a = mythreads(s)
-            t.append(a)
-            a.start()
+        a = mythreads(s)
+        t.append(a)
+        a.start()
     for i in t:i.join()
     cache.set("serverDict_"+label,serverDict,600)
     return HttpResponse("Ok")
