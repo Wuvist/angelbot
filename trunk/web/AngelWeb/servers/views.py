@@ -1772,9 +1772,11 @@ def widget_value(request):
     import rrdtool 
     import json
     widget = get_object_or_404(Widget,title=request.GET["widget"])
-    last_update = rrdtool.info(widget.rrd.path())["last_update"]
-    result={"last_update":time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(last_update))}
-    data = rrdtool.fetch(widget.rrd.path(), "-s", str(last_update-1), "-e", "s+0", "LAST")
+    result = {}
+    d = int(time.time())
+    t = d % 60
+    d = d - t
+    data = rrdtool.fetch(widget.rrd.path(), "-s", str(d-1), "-e", "s+0", "LAST")
     
     for x,y in zip(data[1],data[2][0]):
         result[x] = y
@@ -1822,6 +1824,7 @@ def server_ping(request):
     import threading
     label = time.strftime("%Y%m%d%H%M")
     serverDict = {"ok":0,"warning":0,"error":0,"allProblem":0,"allType":0}
+    serverStatus = {}
     t = []
     class mythreads(threading.Thread):
         def __init__(self,s):
@@ -1855,6 +1858,7 @@ def server_ping(request):
             l.sign = sign
             l.value = value
             l.save()
+            serverStatus[self.s.id] = sign
             serverDict["allType"] += 1
             if sign == "Unstable":
                 serverDict["warning"] += 1
@@ -1872,6 +1876,7 @@ def server_ping(request):
         a.start()
     for i in t:i.join()
     cache.set("serverDict_"+label,serverDict,600)
+    cache.set("serverStatus",serverStatus,settings.CACHE_TIME)
     return HttpResponse("Ok")
 
 @login_required()

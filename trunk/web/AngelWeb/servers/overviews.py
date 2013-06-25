@@ -115,8 +115,13 @@ def paser_widget(widget):
 def getdata(projectId="all"):
     myResult = [];widgetStatusProjects = {}
     servicesDict = {"ok":0,"warning":0,"error":0,"allProblem":0,"allType":0}
-    label = RemarkLog.objects.filter(type=2).order_by("-id")[0]
-    remarkLogs = RemarkLog.objects.filter(type=2,label=label.label)
+    serverStatus = cache.get("serverStatus")
+    if serverStatus == None:
+        serverStatus = {}
+        t = time.strftime("%Y%m%d%H%M",time.localtime(time.time()-60))
+        remarkLogs = RemarkLog.objects.filter(type=2,label="201306211459").values("mark","sign")
+        for x in remarkLogs:
+            serverStatus[x["mark"]] = x["sign"]
     if projectId == "all":
         projects = Project.objects.all().order_by("-sequence")
     else:
@@ -141,12 +146,14 @@ def getdata(projectId="all"):
             cache.set("widgetData_"+str(w.id),result,settings.CACHE_TIME)
         
         servers = Server.objects.filter(project=p,power_on="Y").values_list("id",flat=True)
-        data = remarkLogs.filter(mark__in=servers).values("sign").annotate(count=Count("sign"))
         serverDict = {"ok":0,"warning":0,"error":0,"allProblem":0,"allType":0}
-        for d in data:
-            if d["sign"] == "Normal":serverDict["ok"] = d["count"]
-            elif d["sign"] == "Unstable":serverDict["warning"] = d["count"]
-            else:serverDict["error"] = d["count"]
+        for i in servers:
+            try:
+                if serverStatus[i] == "Normal":serverDict["ok"] += 1 
+                elif serverStatus[i] == "Unstable":serverDict["warning"] += 1
+                else:serverDict["error"] += 1
+            except:
+                pass
         widgetStatusProjects[p.id]["serversDict"] = serverDict
         myResult.append(widgetStatusProjects[p.id])
         cache.set("getdata_"+str(p.id),widgetStatusProjects,settings.CACHE_TIME)
