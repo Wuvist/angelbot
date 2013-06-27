@@ -1143,7 +1143,7 @@ def alarm(request):
             try:
                 smsUrl = settings.SMS_API % (str(user.phone), str(subject)+" error happened ! " +str(contents))
                 smsResult = urllib2.urlopen(smsUrl.replace(" ","%20")).read()
-                if smsResult != "{ret:0}":result = "fail"
+                if eval(smsResult)["ret"] != 0:result = "fail"
             except:
                 result = "fail"
         
