@@ -207,8 +207,19 @@ CATEGORY_DISPLAY_MODE_CHOICES = (
     ('0', 'Error & Warning'),
     ('1', 'Error'),
 )
+
+
+class WidgetCategoryTemplate(models.Model):
+    rrd_setting = models.TextField()
+    widget_graph = models.TextField()
+    widget_data = models.TextField()
+    
+    def __unicode__(self):
+        return str(self.id)
+
 class WidgetCategory(models.Model):
-    title = models.CharField(max_length=64, )
+    title = models.CharField(max_length=64)
+    template = models.ForeignKey(WidgetCategoryTemplate, null=True, blank=True)
     display = models.CharField(max_length=8, choices=CATEGORY_DISPLAY_CHOICES)
     display_mode = models.CharField(max_length=1, choices=CATEGORY_DISPLAY_MODE_CHOICES)
     des = models.TextField(null = True, blank=True)
