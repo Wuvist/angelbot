@@ -1897,3 +1897,72 @@ def dba_show_backup(request):
     except:
         return HttpResponse("submit error, please connect DBA.")
     return render_to_response("servers/dba_show_backuplog.html",{"data":data})
+
+def create_rrd(rrd):
+    from subprocess import Popen, PIPE
+    import time
+    start_time = '2010-06-01 00:00'
+    start_time = time.strptime(start_time, "%Y-%m-%d %H:%M")
+    start_time = int(time.mktime(start_time))
+    
+    cmd = 'rrdtool create %s --start %d %s' % (settings.RRD_PATH + rrd.name + ".rrd", start_time, rrd.setting.replace("\n", "").replace("\r", " "))
+    p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = p.communicate()
+    return True
+
+def widget_reg_or_update(request):
+    import json
+    result =  {"err_code":0,"err_msg":"","res":{}}
+    try:
+        category = request.GET["category"]
+        ip = request.GET["ip"]
+        identify = request.GET["identify"]
+    except:
+        result["err_code"] = 1
+        result["err_msg"] = "required parameters:ip,category,identify"
+        return HttpResponse(json.dumps(result,ensure_ascii=False))
+    try:
+        c = WidgetCategory.objects.get(title=category)
+    except ObjectDoesNotExist:
+        result["err_code"] = 1
+        result["err_msg"] = "Category does not exist. see category_list"
+        result["category_list"] = list(WidgetCategory.objects.all().values_list("title",flat=True))
+        return HttpResponse(json.dumps(result,ensure_ascii=False))
+    widgets = Widget.objects.filter(category=c,rrd__des=ip+"_"+identify)
+    if widgets.count() == 0:
+        if not c.template:
+            result["err_code"] = 1
+            result["err_msg"] = "the category template is null." 
+            return HttpResponse(json.dumps(result,ensure_ascii=False))
+        rrdName = category.split(".")[-1]+"_"+ip+"_"+identify
+        r,created = Rrd.objects.get_or_create(des=ip+"_"+identify,defaults={"name":rrdName.replace(".","_").replace(" ","_"),"setting":c.template.rrd_setting}) 
+        if created:
+            r.name = str(r.id)
+            r.save()
+            create_rrd(r)
+        try:s = Server.objects.get(ip=ip)
+        except:s = None
+        widget = Widget()
+        widget.title = category+"("+ip+")"
+        widget.server = s
+        widget.rrd = r
+        widget.category = c
+        widget.grade = WidgetGrade.objects.get(title="minor")
+        widget.widget_type = 1
+        widget.graph_def = c.template.widget_graph
+        widget.data_def = c.template.widget_data
+        widget.data_default = c.template.widget_data
+        widget.save()
+        widget.dashboard.add(Dashboard.objects.get(id=settings.DETECTOR_CREATE_DASHBOARD_ID))
+        widget.project.add(Project.objects.get(id=settings.DETECTOR_CREATE_PROJECT_ID))
+        result["res"]["widget_id"] = widget.id
+        result["res"]["widget_name"] = widget.title
+        result["res"]["rrd_name"] = widget.rrd.name
+    else:
+        widget = widgets[0]
+        result["res"]["widget_id"] = widget.id
+        result["res"]["widget_name"] = widget.title
+        result["res"]["rrd_name"] = widget.rrd.name
+    
+    return HttpResponse(json.dumps(result,ensure_ascii=False))
+        
