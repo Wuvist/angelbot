@@ -8,7 +8,7 @@ from servers.models import Widget
 from servers.models import IDC as s_idc
 from servers.models import Project as s_project
 from servers.models import RemarkLog
-#from cmdb.models import *
+from servers.models import ExtraLog
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
@@ -166,9 +166,9 @@ def cmdbDeployment(request):
                 c.setFont("Helvetica", 7)
                 if io:c.drawCentredString(x+w/2-10+l,y+yy+2,"%.2f" % v)
                 else:c.drawCentredString(x+w/2-10+l,y+yy+2,"%.2f" % v)
-                if io and s.server_type == "W":
-                    if v >= 1:v = 100
-                    else:v = v*100
+                #if io and s.server_type == "W":
+                #    if v >= 1:v = 100
+                #    else:v = v*100
                 if v > 100:v = 100
                 if v < 50:
                     c.setFillColor("lightgreen")
@@ -192,15 +192,15 @@ def cmdbDeployment(request):
             data = ExtraLog.objects.filter(mark=s.id,type=1,label=str(start_s)+"_"+str(end_s),created_on=myTime).order_by("-id")[0]
             data = json.loads(data.value)
             for k in data.keys():
-                if k == "load":dt["cpu"]=data["load"]
-                elif k == "cpu":dt["cpu"]=data["cpu"]
-                elif 'diskqueue' in k:dt["io"].append(data[k])
-                elif k == "util":dt["io"].append(data[k])
-                elif k == 'mem':dt["mem"]=data['mem']*100
-            if dt["io"] == []:dt["io"] = "x"
-            else:dt["io"] = max(dt["io"])
+                if k == "load":angelDt["cpu"]=data["load"]
+                elif k == "cpu":angelDt["cpu"]=data["cpu"]
+                elif 'diskqueue' in k:angelDt["io"].append(data[k])
+                elif k == "util":angelDt["io"].append(data[k])
+                elif k == 'mem':angelDt["mem"]=data['mem']*100
+            if angelDt["io"] == []:angelDt["io"] = None
+            else:angelDt["io"] = max(angelDt["io"])
         except:
-            angelDt = {"cpu":"x","mem":"x","io":"x"}
+            angelDt = {"cpu":"x","mem":"x","io":None}
         dt = {"cpu":"x","mem":"x","io":"x"}
         try:
             perf = json.loads(s.perf)
@@ -209,7 +209,7 @@ def cmdbDeployment(request):
             if perf["disk_ms_max2"] != None:dt["io"]=float(perf["disk_ms_max2"])
         except:
             pass
-        if angelDt["io"] != "x" and angelDt["io"] != []:dt["io"] = angelDt["io"]
+        if angelDt["io"]:dt["io"] = angelDt["io"]
         drawcpu_mem(s,c,dt["cpu"],x,y,w,h,22)
         drawcpu_mem(s,c,dt["mem"],x,y,w,h,12)
         drawcpu_mem(s,c,dt["io"],x,y,w,h,2,io=True)
