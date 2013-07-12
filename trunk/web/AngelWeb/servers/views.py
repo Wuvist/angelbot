@@ -1798,8 +1798,6 @@ def server_rrd(request):
         end_s = 6
     start = tt + start_s * 3600;end = tt + end_s * 3600
     for s in servers:
-        if RemarkLog.objects.filter(mark=s.id,type=1,label=str(start_s)+"_"+str(end_s),created_on=t).count() > 0:
-            continue
         try:
             dt = {}
             widget = s.widget_set.filter(title__icontains="Perfmon")[0]
@@ -1807,14 +1805,15 @@ def server_rrd(request):
             for x in range(len(data[1])):
                 tls = [i[x] for i in data[2] if i[x] != None ]
                 if len(tls) != 0:dt[data[1][x]] = sum(tls) / len(tls)
+            if dt:
+                log = ExtraLog()
+                log.mark = s.id
+                log.type = 1
+                log.label = str(start_s)+"_"+str(end_s)
+                log.value = json.dumps(dt, ensure_ascii=False)
+                log.save()
         except:
-            dt = {}
-        log = RemarkLog()
-        log.mark = s.id
-        log.type = 1
-        log.label = str(start_s)+"_"+str(end_s)
-        log.value = json.dumps(dt, ensure_ascii=False)
-        log.save()
+            pass
 
     return HttpResponse("Done")
 
