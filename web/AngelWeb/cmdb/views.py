@@ -187,10 +187,9 @@ def cmdbDeployment(request):
                     c.rect(x+w/2-20,y+yy,0.499*l,h,stroke=0,fill=1)
                 c.grid([x+w/2-20+i for i in range(0,l+10,10)],[y+yy,y+yy+h])
             return c
-        '''
         try:
-            dt = {"cpu":"x","mem":"x","io":[]}
-            data = RemarkLog.objects.get(mark=s.id,type=1,label=str(start_s)+"_"+str(end_s),created_on=myTime)
+            angelDt = {"cpu":"x","mem":"x","io":[]}
+            data = ExtraLog.objects.filter(mark=s.id,type=1,label=str(start_s)+"_"+str(end_s),created_on=myTime).order_by("-id")[0]
             data = json.loads(data.value)
             for k in data.keys():
                 if k == "load":dt["cpu"]=data["load"]
@@ -201,8 +200,7 @@ def cmdbDeployment(request):
             if dt["io"] == []:dt["io"] = "x"
             else:dt["io"] = max(dt["io"])
         except:
-            dt = {"cpu":"x","mem":"x","io":"x"}
-        '''
+            angelDt = {"cpu":"x","mem":"x","io":"x"}
         dt = {"cpu":"x","mem":"x","io":"x"}
         try:
             perf = json.loads(s.perf)
@@ -211,6 +209,7 @@ def cmdbDeployment(request):
             if perf["disk_ms_max2"] != None:dt["io"]=float(perf["disk_ms_max2"])
         except:
             pass
+        if angelDt["io"] != "x" and angelDt["io"] != []:dt["io"] = angelDt["io"]
         drawcpu_mem(s,c,dt["cpu"],x,y,w,h,22)
         drawcpu_mem(s,c,dt["mem"],x,y,w,h,12)
         drawcpu_mem(s,c,dt["io"],x,y,w,h,2,io=True)

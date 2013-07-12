@@ -95,6 +95,19 @@ class Server(models.Model):
     class Meta:
         ordering = ["ip"]
 
+#type 1:deployment parser
+class ExtraLog(models.Model):
+    mark = models.IntegerField(max_length=10,null = True, blank = True)
+    type = models.IntegerField(max_length=8)
+    label = models.CharField(max_length=64,null = True, blank = True)
+    sign = models.CharField(max_length=64,null = True, blank = True)
+    value = models.TextField(null = True, blank = True)
+    created_on = models.DateField(auto_now_add= True)
+    created_time = models.DateTimeField(auto_now_add = True)
+    
+    def __unicode__(self):
+        return str(self.type) + " " + str(self.mark)
+
 class RemarkLog(models.Model):
     mark = models.IntegerField(max_length=10,null = True, blank = True)
     type = models.IntegerField(max_length=8,choices=REMARK_LOG_CHOICES,null = True, blank = True)
