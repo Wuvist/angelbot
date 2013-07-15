@@ -1880,12 +1880,9 @@ def server_ping(request):
 
 @login_required()
 def dba_show_backup(request):
-    data = []
-    for l in open(settings.DB_LOG).readlines():
-        l = l.strip().replace(r"\\","\\").split("\t")
-        data.append(l)
+    data = open(settings.DB_LOG).read().replace("\n","<br>")
 
-    return render_to_response("servers/dba_show_backuplog.html",{"data":data})
+    return HttpResponse(data)
 
 def create_rrd(rrd):
     from subprocess import Popen, PIPE
