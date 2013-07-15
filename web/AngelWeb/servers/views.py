@@ -1880,21 +1880,11 @@ def server_ping(request):
 
 @login_required()
 def dba_show_backup(request):
-    if request.GET.has_key("v"):
-        data = request.GET["v"]
-        l = RemarkLog()
-        l.type = 3
-        l.label = "db_backup"
-        l.value = data
-        l.save()
-        return HttpResponse("Done")
-    try:
-        data = RemarkLog.objects.filter(type=3,label="db_backup").order_by("-id")[0]
-        data = eval(data.value)
-        for i in range(len(data)):
-            data[i] = data[i].split(",")
-    except:
-        return HttpResponse("submit error, please connect DBA.")
+    data = []
+    for l in open(settings.DB_LOG).readlines():
+        l = l.strip().replace(r"\\","\\").split("\t")
+        data.append(l)
+
     return render_to_response("servers/dba_show_backuplog.html",{"data":data})
 
 def create_rrd(rrd):
