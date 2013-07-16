@@ -119,7 +119,7 @@ def getdata(projectId="all"):
     if serverStatus == None:
         serverStatus = {}
         t = time.strftime("%Y%m%d%H%M",time.localtime(time.time()-60))
-        remarkLogs = RemarkLog.objects.filter(type=2,label="201306211459").values("mark","sign")
+        remarkLogs = RemarkLog.objects.filter(type=2,label=t).values("mark","sign")
         for x in remarkLogs:
             serverStatus[x["mark"]] = x["sign"]
     if projectId == "all":

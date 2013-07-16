@@ -1910,7 +1910,7 @@ def server_ping(request):
 
 @login_required()
 def dba_show_backup(request):
-    data = open(settings.DB_LOG).read().replace("\n","<br>")
+    data = open(settings.DB_LOG).read().replace("\n","<br>").replace(" ","&nbsp;")
 
     return HttpResponse(data)
 
