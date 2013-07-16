@@ -110,17 +110,10 @@ def cmdbDeployment(request):
     from reportlab.pdfgen import canvas
     from reportlab.lib import colors
     import json
-    import time
+    import datetime
     import re
     
-    try:
-        start_s = settings.DEPLOYMENT_CONSUMPTION_START
-        end_s = settings.DEPLOYMENT_CONSUMPTION_END
-    except:
-        start_s = 3
-        end_s = 6
-    
-    myTime = time.strftime("%Y-%m-%d")
+    myTime = datetime.date.today() + datetime.timedelta(-1)
     def filterWidget(w):
         if w.service_type == None:
             w.dep_type = "---"
@@ -187,20 +180,6 @@ def cmdbDeployment(request):
                     c.rect(x+w/2-20,y+yy,0.499*l,h,stroke=0,fill=1)
                 c.grid([x+w/2-20+i for i in range(0,l+10,10)],[y+yy,y+yy+h])
             return c
-        try:
-            angelDt = {"cpu":"x","mem":"x","io":[]}
-            data = ExtraLog.objects.filter(mark=s.id,type=1,label=str(start_s)+"_"+str(end_s),created_on=myTime).order_by("-id")[0]
-            data = json.loads(data.value)
-            for k in data.keys():
-                if k == "load":angelDt["cpu"]=data["load"]
-                elif k == "cpu":angelDt["cpu"]=data["cpu"]
-                elif 'diskqueue' in k:angelDt["io"].append(data[k])
-                elif k == "util":angelDt["io"].append(data[k])
-                elif k == 'mem':angelDt["mem"]=data['mem']*100
-            if angelDt["io"] == []:angelDt["io"] = None
-            else:angelDt["io"] = max(angelDt["io"])
-        except:
-            angelDt = {"cpu":"x","mem":"x","io":None}
         dt = {"cpu":"x","mem":"x","io":"x"}
         try:
             perf = json.loads(s.perf)
@@ -209,7 +188,12 @@ def cmdbDeployment(request):
             if perf["disk_ms_max2"] != None:dt["io"]=float(perf["disk_ms_max2"])
         except:
             pass
-        if angelDt["io"]:dt["io"] = angelDt["io"]
+        try:
+            
+            log = ExtraLog.objects.filter(mark=s.id,type=1,created_on=myTime).order_by("-id")[0]
+            if log:dt["io"] = float(log.value)
+        except:
+            pass
         drawcpu_mem(s,c,dt["cpu"],x,y,w,h,22)
         drawcpu_mem(s,c,dt["mem"],x,y,w,h,12)
         drawcpu_mem(s,c,dt["io"],x,y,w,h,2,io=True)
