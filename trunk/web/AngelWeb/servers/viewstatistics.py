@@ -523,7 +523,7 @@ def statistics_show(request):
         return result
     def get_incidents(project,start,end):
         incidents = [];total = 0;incidenttype = [];serious = [];minor = [];
-        incid = Ticket.objects.filter(project__name=project,starttime__gte=start,starttime__lte=end).values("incidenttype","project__name","incidentgrade").annotate(count=Count('incidentgrade'))
+        incid = Ticket.objects.filter(project__name=project,starttime__gte=start,starttime__lte=end).values("incidenttype","incidentgrade").annotate(count=Count('incidentgrade'))
         for i in incid:
             if i["incidentgrade"] == u"严重故障":
                 serious.append(i["count"])
@@ -722,17 +722,17 @@ def ssh_log(request):
     names = SshName.objects.all().values("name").annotate()
     start = time.strftime("%Y-%m-%d",time.localtime(time.time()-1296000))
     end = time.strftime("%Y-%m-%d")
-    n = ""
+    name = ""
     result = []
     if request.GET.has_key("s"):start = request.GET["s"]
     if request.GET.has_key("e"):end = request.GET["e"]
-    if request.GET.has_key("n"):n = request.GET["n"]
+    if request.GET.has_key("n"):name = request.GET["n"]
     logs = SshLog.objects.filter(date__gte=start+" 00:00:00",date__lte=end + " 23:59:59").order_by("date")
     for n in names:
         result.append({"name":n["name"],"count":logs.filter(name=n["name"]).count()})
     result = sorted(result,key=lambda x:x["count"],reverse=True)
-    if n != "":logs = logs.filter(name=n)
+    if name != "":logs = logs.filter(name=name)
     for l in logs:
         l.ips = json.loads(l.ips)
 
-    return render_to_response("servers/sshlog.html",{"logs":logs,"s":start,"e":end,"names":names,"ns":n,"result":result})
+    return render_to_response("servers/sshlog.html",{"logs":logs,"s":start,"e":end,"names":names,"ns":name,"result":result})
