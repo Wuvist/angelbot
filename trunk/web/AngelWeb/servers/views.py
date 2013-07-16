@@ -1782,7 +1782,7 @@ def widget_value(request):
         result[x] = y
     
     return HttpResponse(json.dumps(result, ensure_ascii=False))
-
+'''
 def server_rrd(request):
     import rrdtool
     import json
@@ -1811,6 +1811,36 @@ def server_rrd(request):
                 log.type = 1
                 log.label = str(start_s)+"_"+str(end_s)
                 log.value = json.dumps(dt, ensure_ascii=False)
+                log.save()
+        except:
+            pass
+
+    return HttpResponse("Done")
+'''
+def server_rrd(request):
+    import rrdtool
+    import json
+    servers = Server.objects.all()
+    t = time.strftime("%Y-%m-%d")
+    end = int(time.mktime(time.strptime(t,"%Y-%m-%d")))
+    start = end - 86400
+    logTime = time.strftime("%Y-%m-%d",time.localtime(start))
+    for s in servers:
+        try:
+            ls = []
+            widget = s.widget_set.filter(category__id = settings.WINDOWS_PERFMON_CATEGORY_ID)[0]
+            data = rrdtool.fetch(widget.rrd.path(), "-s", str(start), "-e",str(end), "LAST")
+            for x in range(len(data[1])):
+                if data[1][x] == 'avg_diskqueue':
+                    for q in range(0,1440,60):
+                        tls = [i[x] for i in data[2][q:q+60] if i[x] != None ]
+                        if len(tls) != 0:ls.append(sum(tls) / len(tls))
+            if ls:
+                log = ExtraLog()
+                log.mark = s.id
+                log.type = 1
+                log.created_on = logTime
+                log.value = max(ls)
                 log.save()
         except:
             pass

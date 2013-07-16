@@ -102,7 +102,7 @@ class ExtraLog(models.Model):
     label = models.CharField(max_length=64,null = True, blank = True)
     sign = models.CharField(max_length=64,null = True, blank = True)
     value = models.TextField(null = True, blank = True)
-    created_on = models.DateField(auto_now_add= True)
+    created_on = models.DateField()
     created_time = models.DateTimeField(auto_now_add = True)
     
     def __unicode__(self):
