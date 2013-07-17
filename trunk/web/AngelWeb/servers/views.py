@@ -1828,10 +1828,10 @@ def server_rrd(request):
     for s in servers:
         try:
             ls = []
-            widget = s.widget_set.filter(category__id = settings.WINDOWS_PERFMON_CATEGORY_ID)[0]
+            widget = s.widget_set.filter(category__title__contains = settings.SERVER_PERFMON_CATEGORY_TITLE)[0]
             data = rrdtool.fetch(widget.rrd.path(), "-s", str(start), "-e",str(end), "LAST")
             for x in range(len(data[1])):
-                if data[1][x] == 'avg_diskqueue':
+                if data[1][x] == 'avg_diskqueue' or data[1][x] == 'util':
                     for q in range(0,1440,60):
                         tls = [i[x] for i in data[2][q:q+60] if i[x] != None ]
                         if len(tls) != 0:ls.append(sum(tls) / len(tls))
