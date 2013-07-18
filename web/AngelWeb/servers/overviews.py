@@ -287,8 +287,12 @@ def home_top(request):
         widgetConfDifCount = cache.get("widgetConfDifCount")
         if widgetConfDifCount == None:
             widgetConfDifCount,widgetConfDifListId = get_widget_diff_conf()
-    t = datetime.now() - RemarkLog.objects.filter(type=2).order_by("-id")[0].created_time
-    return render_to_response('html/top.html',{"request":request,"serverUpdate":t.days*86400+t.seconds,"tickets":ticketDict,"servers":serverDict,"services":servicesDict,"widgetStatus":widgetConfDifCount})
+    try:
+        t = datetime.now() - RemarkLog.objects.filter(type=2).order_by("-id")[0].created_time
+        serverUpdate = t.days*86400+t.seconds
+    except:
+        serverUpdate = 10000
+    return render_to_response('html/top.html',{"request":request,"serverUpdate":serverUpdate,"tickets":ticketDict,"servers":serverDict,"services":servicesDict,"widgetStatus":widgetConfDifCount})
     
 def home_center(request):
 

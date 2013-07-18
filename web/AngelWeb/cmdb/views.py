@@ -223,7 +223,7 @@ def cmdbDeployment(request):
                     xserver = x
                     maxXX = x
                     if yls == []:
-                        yserver -= 60
+                        yserver -= 6 * h
                     else:
                         yserver = min(yls) - 3 * h
                         yls = []
@@ -235,7 +235,7 @@ def cmdbDeployment(request):
                     xserver = x
                     maxXX = wserver
                     if yls == []:
-                        yserver -= 60
+                        yserver -= 6 * h
                     else:
                         yserver = min(yls) - 3 * h
                         yls = []
@@ -275,7 +275,7 @@ def cmdbDeployment(request):
                         xxservice += w
                     xserver = x
                     if yls == []:
-                        yserver -= 60
+                        yserver -= 6 * h
                     else:
                         yserver = min(yls) - 3 * h
                         yls = []
