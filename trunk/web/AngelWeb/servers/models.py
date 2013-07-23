@@ -96,13 +96,14 @@ class Server(models.Model):
         ordering = ["ip"]
 
 #type 1:deployment parser
+#type 2:db backup log
 class ExtraLog(models.Model):
     mark = models.IntegerField(max_length=10,null = True, blank = True)
     type = models.IntegerField(max_length=8)
-    label = models.CharField(max_length=64,null = True, blank = True)
+    label = models.CharField(max_length=256,null = True, blank = True)
     sign = models.CharField(max_length=64,null = True, blank = True)
     value = models.TextField(null = True, blank = True)
-    created_on = models.DateField()
+    created_on = models.DateField(null = True, blank = True)
     created_time = models.DateTimeField(auto_now_add = True)
     
     def __unicode__(self):

@@ -1911,10 +1911,21 @@ def server_ping(request):
 @login_required()
 def dba_show_backup(request):
     result = []
-    for i in open(settings.DB_LOG).read().split("||"):
+    if request.GET.has_key("remark"):
+        i = request.GET["id"]
+        r = request.GET["remark"]
+        log,created = ExtraLog.objects.get_or_create(type=2,label=i,defaults={"label":i,"value":r,"type":2})
+        if not created:
+            log.value = r
+            log.save()
+        return HttpResponseRedirect("/dba/backlog/")
+    for i in open(settings.DB_LOG).readlines():
         i = i.split(",")
-        if len(i) > 4:
-            i[-1] = i[-1].replace("\n","<br>").replace(" ","&nbsp;")
+        try:
+            log = ExtraLog.objects.get(type=2,label=i[0]+"_"+i[1])
+            i.insert(0,log.value)
+        except:i.insert(0,"")
+        if len(i) > 5:
             result.append(i)
     
     return render_to_response("servers/dba_show_backuplog.html",{"data":result})
