@@ -355,7 +355,7 @@ def cmdbDeployment(request):
     
     response = HttpResponse(temp.getvalue())
     response["conten-type"] = "application/pdf"
-    response["Content-Disposition"] = ("attachment;filename=mozat_deployment_%s.pdf" % myTime)
+    response["Content-Disposition"] = ("attachment;filename=mozat_deployment_%s.pdf" % datetime.date.today())
     
     return response
 
