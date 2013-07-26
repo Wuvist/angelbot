@@ -97,6 +97,7 @@ class Server(models.Model):
 
 #type 1:deployment parser
 #type 2:db backup log
+#type 3:detector info
 class ExtraLog(models.Model):
     mark = models.IntegerField(max_length=10,null = True, blank = True)
     type = models.IntegerField(max_length=8)
