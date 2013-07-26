@@ -1919,14 +1919,24 @@ def dba_show_backup(request):
             log.value = r
             log.save()
         return HttpResponseRedirect("/dba/backlog/")
-    for i in open(settings.DB_LOG).readlines():
-        i = i.split(",")
+    data = open(settings.DB_MYSQL_DETAIL_LOG).read().split("\n\n")
+    for i in open(settings.DB_MYSQL_INFO_LOG).readlines():
+        i = ["","",""] + i.split(",")
+        if len(i) < 7:continue
+        i[3] = i[3].replace("_",":")
+        i[4] = i[4].replace("_",":")
         try:
-            log = ExtraLog.objects.get(type=2,label=i[0]+"_"+i[1])
-            i.insert(0,log.value)
-        except:i.insert(0,"")
-        if len(i) > 5:
-            result.append(i)
+            log = ExtraLog.objects.get(type=2,label=i[3]+"_"+i[4])
+            i[0] = log.value
+        except:pass
+        for d in data:
+            if i[3] in d and i[3] != "":
+                i[1] = d.replace(" ","&nbsp;").replace("\n","<br>")
+                continue
+            if i[4] in d and i[4] != "":
+                i[2] = d.replace(" ","&nbsp;").replace("\n","<br>")
+                continue
+        result.append(i)
     
     return render_to_response("servers/dba_show_backuplog.html",{"data":result})
 
