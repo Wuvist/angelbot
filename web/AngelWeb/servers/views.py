@@ -1949,23 +1949,24 @@ def widget_reg_or_update(request):
         category = request.GET["category"]
         ip = request.GET["ip"]
         identify = request.GET["identify"]
+        info = request.GET["info"]
     except:
         result["err_code"] = 1
         result["err_msg"] = "required parameters:ip,category,identify"
-        return HttpResponse(json.dumps(result,ensure_ascii=False))
+        return HttpResponse(json.dumps(result))
     try:
         c = WidgetCategory.objects.get(title=category)
     except ObjectDoesNotExist:
         result["err_code"] = 1
         result["err_msg"] = "Category does not exist. see category_list"
         result["category_list"] = list(WidgetCategory.objects.all().values_list("title",flat=True))
-        return HttpResponse(json.dumps(result,ensure_ascii=False))
+        return HttpResponse(json.dumps(result))
     widgets = Widget.objects.filter(category=c,rrd__des=ip+"_"+identify)
     if widgets.count() == 0:
         if not c.template:
             result["err_code"] = 1
             result["err_msg"] = "the category template is null." 
-            return HttpResponse(json.dumps(result,ensure_ascii=False))
+            return HttpResponse(json.dumps(result))
         rrdName = category.split(".")[-1]+"_"+ip+"_"+identify
         r,created = Rrd.objects.get_or_create(des=ip+"_"+identify,defaults={"name":rrdName.replace(".","_").replace(" ","_"),"setting":c.template.rrd_setting}) 
         if created:
@@ -1995,6 +1996,22 @@ def widget_reg_or_update(request):
         result["res"]["widget_id"] = widget.id
         result["res"]["widget_name"] = widget.title
         result["res"]["rrd_name"] = widget.rrd.name
+    try:
+        log = ExtraLog.objects.get(type=3,mark=widget.id)
+        log.mark = widget.id
+        log.type = 3
+        log.value = info
+        log.save()
+    except:
+        log = ExtraLog()
+        log.mark = widget.id
+        log.type = 3
+        log.value = info
+        log.save()
     
-    return HttpResponse(json.dumps(result,ensure_ascii=False))
+    return HttpResponse(json.dumps(result))
         
+@login_required()
+def service_info_show(request):
+    
+    return render_to_response("servers/servies_info_show.html",{})
