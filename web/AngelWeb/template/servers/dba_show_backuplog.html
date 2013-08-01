@@ -4,16 +4,14 @@
 <link rel="stylesheet" type="text/css" href="/media/css/base.css" />
 <style>
 body{font-family: Verdana, helvetica, arial, sans-serif;}
-td{text-align:center;font-size:11px;}
+td{text-align:center;font-size:11px;height:10px}
 td.hi {display:none;}
 td.rights {border-bottom:1px solid #000;border-right:1px solid #000;}
 td.Normal {background:#00DB00}
 td.Down {background:#FF2D2D}
 td.Unstable{background:#FFFF6F}
 td.Off {background:#ADADAD}
-tr {height:10px}
-.row1 {background: #EDF3FE;}
-.row2 {background: white;}
+td.black {background:#000000}
 #inputtext {width:25px}
 .dialog-overlay {BACKGROUND: gray; FILTER: alpha(opacity:50); opacity: 0.5}
 .dialog {PADDING-RIGHT: 10px; PADDING-LEFT: 10px; BACKGROUND: gray; FILTER: alpha(opacity:70); PADDING-BOTTOM: 10px; PADDING-TOP: 10px; opacity: 0.9; border-radius: 3px; -moz-border-radius: 3px; -webkit-border-radius: 3px}
@@ -21,15 +19,22 @@ tr {height:10px}
 .dialog .bar {PADDING-RIGHT: 6px; PADDING-LEFT: 6px; MIN-HEIGHT: 15px; BACKGROUND: #000; PADDING-BOTTOM: 6px; CURSOR: move; COLOR: #fff; PADDING-TOP: 6px}
 .dialog .bar .title {FLOAT: left; MARGIN-RIGHT: 10px}
 .dialog .bar .close {FLOAT: right; CURSOR: pointer; TEXT-DECORATION: underline}
-.dialog .content {height:550px; width:780px; overflow: auto; PADDING-RIGHT: 10px; PADDING-LEFT: 10px; BACKGROUND: #fff; PADDING-BOTTOM: 10px; PADDING-TOP: 10px}
+.dialog .content {height:300px; width:580px; overflow: auto; PADDING-RIGHT: 10px; PADDING-LEFT: 10px; BACKGROUND: #fff; PADDING-BOTTOM: 10px; PADDING-TOP: 10px}
 .dialog IFRAME {WIDTH: '80%'; HEIGHT: '80%'}
-.content IMG {MAX-WIDTH: '80'%; OVERFLOW: auto; MAX-HEIGHT: '80%'}
+.content IMG {MAX-WIDTH: '80%'; OVERFLOW: auto; MAX-HEIGHT: '80%'}
 </style>
 <table id="tb" cellspacing="0" cellpadding="1">
-<tr><td>SN</td><td>Master</td><td>Slave</td><td>Replication Result</td><td>Backup Time</td><td>Backup Result</td><td>Backup Size</td><td>Backup Used%</td><td>Backup Dir</td><td>Backup File</td><td>Backup Spend(minutes)</td>
-<td>Others</td></tr><tr></tr><tr></tr>
+<tr style="background:#ADADAD"><td>SN</td><td>Master</td><td>Slave</td><td>Replication Result</td><td>Backup Time</td><td>Backup Result</td><td>Backup Size</td><td>Backup Used%</td><td>Backup Dir</td><td colspan=7>Backup File</td><td>Backup Spend(minutes)</td><td>Others</td></tr>
 {% for d in data%}
-<tr><td>{{forloop.counter}}</td><td><a href="javascript:void(0)" onclick="showdetail('a_{{forloop.counter}}')">{{d.3}}</a></td><td><a href="javascript:void(0)" onclick="showdetail('b_{{forloop.counter}}')">{{d.4}}</a></td><td>{{d.5}}</td><td>{{d.6}}</td><td>{{d.7}}</td><td>{{d.8}}</td><td>{{d.9}}</td><td>{{d.10}}</td><td>{{d.11}}</td><td>{{d.12}}</td>
+<tr><td>{{forloop.counter}}</td><td><a href="javascript:void(0)" onclick="showdetail('a_{{forloop.counter}}')">{{d.3}}</a></td><td><a href="javascript:void(0)" onclick="showdetail('b_{{forloop.counter}}')">{{d.4}}</a></td><td>{{d.5}}</td><td>{{d.6}}</td><td>{{d.7}}</td><td>{{d.8}}</td><td>{{d.9}}</td><td>{{d.10}}</td>
+<td style="background:{%if 'full' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">1</td>
+<td style="background:{%if '0' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">2</td>
+<td style="background:{%if '1' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">3</td>
+<td style="background:{%if '2' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">4</td>
+<td style="background:{%if '3' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">5</td>
+<td style="background:{%if '4' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">6</td>
+<td style="background:{%if '5' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">7</td>
+<td>{{d.12}}</td>
 <td class="hi" id="a_{{forloop.counter}}">{{d.1}}</td><td class="hi" id="b_{{forloop.counter}}">{{d.2}}</td>
 <td class="hi" id="c_{{forloop.counter}}">
 <hr>
@@ -113,7 +118,7 @@ function Dialog(content, options)
                 .hide();
         }
 
-        dialog.css({'width':'800px','height':'600px','z-index':++Dialog.__zindex, 'position':options.fixed ? 'fixed' : 'absolute'});
+        dialog.css({'width':'600px','height':'350px','z-index':++Dialog.__zindex, 'position':options.fixed ? 'fixed' : 'absolute'});
 
         if(isIe6 && options.fixed)
         {
@@ -274,6 +279,12 @@ function show(id){
         $("#showOthers").toggle();
     };
 };
+$("#showOthers").dblclick(function() {
+    if ($("#showOthers").is(":visible")==true){
+        $("#showOthers").toggle();
+    };
+
+});
 function dialog(content, options)
 {
 	var dlg = new Dialog(content, options);
