@@ -1931,10 +1931,10 @@ def dba_show_backup(request):
         except:pass
         for d in data:
             if i[3] in d and i[3] != "":
-                i[1] = d.replace(" ","&nbsp;").replace("\n","<br>")
+                i[1] = d.replace(" ","&nbsp;&nbsp;").replace("\n","<br>")
                 continue
             if i[4] in d and i[4] != "":
-                i[2] = d.replace(" ","&nbsp;").replace("\n","<br>")
+                i[2] = d.replace(" ","&nbsp;&nbsp;").replace("\n","<br>")
                 continue
         result.append(i)
     
