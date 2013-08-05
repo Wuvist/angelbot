@@ -1143,9 +1143,14 @@ def alarm(request):
             try:
                 smsUrl = settings.SMS_API % (str(user.phone), str(subject)+" error happened ! " +str(contents))
                 smsResult = urllib2.urlopen(smsUrl.replace(" ","%20")).read()
-                if eval(smsResult)["ret"] != 0:result = "fail"
+                if '"ret":0' not in smsResult:result = "fail, "  + smsResult[1:8]
             except:
-                result = "fail"
+                try:
+                    smsUrl = settings.SMS_API % (str(user.phone), str(subject)+" error happened ! " +str(contents))
+                    smsResult = urllib2.urlopen(smsUrl.replace(" ","%20")).read()
+                    if '"ret":0' not in smsResult:result = "fail, " + smsResult[1:8]
+                except:
+                    result = "fail"
         
         return result
     
@@ -1910,7 +1915,36 @@ def server_ping(request):
 
 @login_required()
 def dba_show_backup(request):
-    result = []
+    import json
+    def sendmail(c,n,s):
+        import smtplib
+        from email.mime.text import MIMEText
+
+        des = "\n\nThis email auto send by Mozat Angel, if any questions, please kindly feed back to operation team. thanks !\nBest Regards\nMozat Angel"
+        sender = 'wumingyou@mozat.com'
+        msg = MIMEText("Dear,\n\n%s backup error happened,please visit bleow url for more details\n http://angel.morange.com/dba/backlog/%s"  % (c,des))
+        msg['Subject'] = "[DB backup] %s" % s
+        msg['From'] = "Mozat Angel"
+        msg['To'] = n
+        s = smtplib.SMTP('i-smtp.mozat.com')
+        s.sendmail(sender, n.split(";"), msg.as_string())
+        s.close()
+    
+    result = [];t = time.strftime("%Y%m%d%H%M")
+    try:
+        errorDataLog = ExtraLog.objects.get(type=4)
+        errorData = json.loads(errorDataLog.value)
+    except:errorData = {}
+    def addError(k,edit=False):
+        if edit:
+            if errorData.has_key(k):
+                errorData[k].append(t)
+                errorData[k] = list(set(errorData[k]))
+            else:errorData[k] = [t]
+        else:
+            try:del errorData[k]
+            except:pass
+            
     if request.GET.has_key("remark"):
         i = request.GET["id"]
         r = request.GET["remark"]
@@ -1937,6 +1971,20 @@ def dba_show_backup(request):
                 i[2] = d.replace(" ","&nbsp;&nbsp;").replace("\n","<br>")
                 continue
         result.append(i)
+        try:    
+            timeDiff = time.time() - time.mktime(time.strptime(i[6], "%Y-%m-%d %H:%M:%S"))
+            if "ERROR" in i[5] or "ERROR" in i[7] or int(i[9][:-1]) > 95 or timeDiff > 24*60*60+600:
+                addError(i[3]+"-"+i[4],edit=True)
+                if len(errorData[i[3]+"-"+i[4]]) > settings.DB_ERROR_TIME:
+                    sendmail(i[3]+"-"+i[4],settings.DB_RECEIVER,i[3]+"-"+i[4]) 
+            else:addError(i[3]+"-"+i[4])
+        except:
+            pass
+    try:
+        errorDataLog.value = json.dumps(errorData)
+        errorDataLog.save()
+    except:
+        log = ExtraLog(type=4,value=json.dumps(errorData)).save()
     
     return render_to_response("servers/dba_show_backuplog.html",{"data":result})
 
