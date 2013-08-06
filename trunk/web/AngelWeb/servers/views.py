@@ -1913,7 +1913,6 @@ def server_ping(request):
     cache.set("serverStatus",serverStatus,settings.CACHE_TIME)
     return HttpResponse("Ok")
 
-@login_required()
 def dba_show_backup(request):
     import json
     def sendmail(c,n,s):
@@ -1938,9 +1937,9 @@ def dba_show_backup(request):
     def addError(k,edit=False):
         if edit:
             if errorData.has_key(k):
-                errorData[k].append(t)
-                errorData[k] = list(set(errorData[k]))
-            else:errorData[k] = [t]
+                errorData[k]["times"].append(t)
+                errorData[k]["times"] = list(set(errorData[k]["times"]))
+            else:errorData[k] = {"send":False,"times":[t]}
         else:
             try:del errorData[k]
             except:pass
@@ -1970,13 +1969,18 @@ def dba_show_backup(request):
             if i[4] in d and i[4] != "":
                 i[2] = d.replace(" ","&nbsp;&nbsp;").replace("\n","<br>")
                 continue
+        try:i[9] = int(i[9][:-1])
+        except:pass
         result.append(i)
         try:    
             timeDiff = time.time() - time.mktime(time.strptime(i[6], "%Y-%m-%d %H:%M:%S"))
-            if "ERROR" in i[5] or "ERROR" in i[7] or int(i[9][:-1]) > 95 or timeDiff > 24*60*60+600:
+            if i[14] == "full":timeDiffConf = 30*24*60*60+1200
+            else:timeDiffConf = 24*60*60+1200
+            if "ERROR" in i[5] or "ERROR" in i[7] or i[9] > 95 or timeDiff > timeDiffConf:
                 addError(i[3]+"-"+i[4],edit=True)
-                if len(errorData[i[3]+"-"+i[4]]) > settings.DB_ERROR_TIME:
+                if len(errorData[i[3]+"-"+i[4]]["times"]) > settings.DB_ERROR_TIME and errorData[i[3]+"-"+i[4]]["send"] == False:
                     sendmail(i[3]+"-"+i[4],settings.DB_RECEIVER,i[3]+"-"+i[4]) 
+                    errorData[i[3]+"-"+i[4]]["send"] = True
             else:addError(i[3]+"-"+i[4])
         except:
             pass

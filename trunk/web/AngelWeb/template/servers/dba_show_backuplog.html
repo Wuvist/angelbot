@@ -12,6 +12,7 @@ td.Down {background:#FF2D2D}
 td.Unstable{background:#FFFF6F}
 td.Off {background:#ADADAD}
 td.black {background:#000000}
+td.red{background:#FF2D2D}
 #inputtext {width:25px}
 .dialog-overlay {BACKGROUND: gray; FILTER: alpha(opacity:50); opacity: 0.5}
 .dialog {PADDING-RIGHT: 10px; PADDING-LEFT: 10px; BACKGROUND: gray; FILTER: alpha(opacity:70); PADDING-BOTTOM: 10px; PADDING-TOP: 10px; opacity: 0.9; border-radius: 3px; -moz-border-radius: 3px; -webkit-border-radius: 3px}
@@ -26,7 +27,7 @@ td.black {background:#000000}
 <table id="tb" cellspacing="0" cellpadding="1">
 <tr style="background:#ADADAD"><td>SN</td><td>Master</td><td>Slave</td><td>Replication</td><td>Backup Time</td><td>Result</td><td>Size</td><td>Backup Used%</td><td>Backup Dir</td><td colspan=7>Backup File</td><td>Spend(minutes)</td><td>Others</td></tr>
 {% for d in data%}
-<tr><td>{{forloop.counter}}</td><td><a href="javascript:void(0)" onclick="showdetail('a_{{forloop.counter}}')">{{d.3}}</a></td><td><a href="javascript:void(0)" onclick="showdetail('b_{{forloop.counter}}')">{{d.4}}</a></td><td>{{d.5}}</td><td>{{d.6}}</td><td>{{d.7}}</td><td>{{d.8}}</td><td>{{d.9}}</td><td>{{d.10}}</td>
+<tr><td>{{forloop.counter}}</td><td><a href="javascript:void(0)" onclick="showdetail('a_{{forloop.counter}}')">{{d.3}}</a></td><td><a href="javascript:void(0)" onclick="showdetail('b_{{forloop.counter}}')">{{d.4}}</a></td><td {%if d.5 == "ERROR"%}class="red"{%endif%}>{{d.5}}</td><td>{{d.6}}</td><td {%if d.7 == "ERROR"%}class="red"{%endif%}>{{d.7}}</td><td>{{d.8}}</td><td {%if d.9 > 95%}class="red"{%endif%}>{{d.9}}%</td><td>{{d.10}}</td>
 <td style="background:{%if 'full' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">1</td>
 <td style="background:{%if '0' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">2</td>
 <td style="background:{%if '1' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">3</td>
