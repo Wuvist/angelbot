@@ -2018,7 +2018,7 @@ def widget_reg_or_update(request):
         result["err_msg"] = "required parameters:ip,category,service_type,identify,info"
         return HttpResponse(json.dumps(result))
     try:
-        serviceType = WidgetCategory.objects.get(name=service_type)
+        serviceType = WidgetServiceType.objects.get(name=service_type)
     except ObjectDoesNotExist:
         result["err_code"] = 1
         result["err_msg"] = "service_type does not exist. "
