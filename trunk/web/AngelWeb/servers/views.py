@@ -2012,10 +2012,16 @@ def widget_reg_or_update(request):
         ip = request.GET["ip"]
         identify = request.GET["identify"]
         info = request.GET["info"]
+        service_type = request.GET["service_type"]
     except:
         result["err_code"] = 1
-        result["err_msg"] = "required parameters:ip,category,identify"
+        result["err_msg"] = "required parameters:ip,category,service_type,identify,info"
         return HttpResponse(json.dumps(result))
+    try:
+        serviceType = WidgetCategory.objects.get(name=service_type)
+    except ObjectDoesNotExist:
+        result["err_code"] = 1
+        result["err_msg"] = "service_type does not exist. "
     try:
         c = WidgetCategory.objects.get(title=category)
     except ObjectDoesNotExist:
@@ -2042,6 +2048,7 @@ def widget_reg_or_update(request):
         widget.server = s
         widget.rrd = r
         widget.category = c
+        widget.service_type = serviceType
         widget.grade = WidgetGrade.objects.get(title="minor")
         widget.widget_type = 1
         widget.graph_def = c.template.widget_graph
@@ -2058,22 +2065,65 @@ def widget_reg_or_update(request):
         result["res"]["widget_id"] = widget.id
         result["res"]["widget_name"] = widget.title
         result["res"]["rrd_name"] = widget.rrd.name
-    try:
-        log = ExtraLog.objects.get(type=3,mark=widget.id)
-        log.mark = widget.id
-        log.type = 3
-        log.value = info
-        log.save()
-    except:
-        log = ExtraLog()
-        log.mark = widget.id
-        log.type = 3
-        log.value = info
-        log.save()
+    log = DetectorInfo()
+    log.widget = widget
+    log.data = info
+    log.save()
     
     return HttpResponse(json.dumps(result))
-        
-@login_required()
-def service_info_show(request):
-    
-    return render_to_response("servers/servies_info_show.html",{})
+
+def api_show_services(request):
+    import json
+    def get_show_key(data):
+        title = [];titleKey = []
+        for i in data.split(","):
+            try:
+                x,y = i.split(":")
+                title.append(x)
+                titleKey.append(y)
+            except:continue
+        title.append("update time")
+        titleKey.append("update_time")
+        return title,titleKey
+    result = {};ls = []
+    for s in Widget.objects.filter(dashboard__id__in=settings.CMDB_SHOW_WIDGET_DASHBOARD_ID):
+        dt = {"searchKey":""}
+        dt["id"] = s.id
+        dt["title"] = s.title
+        dt["searchKey"] += s.title
+        if s.project:
+            dt["project"] = ",".join(s.project.all().values_list("name",flat=True))
+            dt["searchKey"] += dt["project"] + "__"
+        else:dt["project"] = ""
+        if s.server:
+            dt["ip"] = s.server.ip;
+            dt["searchKey"] += dt["ip"]
+            if s.server.server_type == "W":dt["system"] = "Windows"
+            elif s.server.server_type == "L":dt["system"] = "Linux"
+            elif s.server.server_type == "V":dt["system"] = "VMware"
+        else:dt["ip"] = "";dt["system"] = ""
+        if s.service_type:dt["service_type"] = s.service_type.name
+        else:dt["service_type"] = ""
+        dt["searchKey"] = dt["searchKey"].lower() #convert to lower for search
+        ls.append(dt)
+        if s.service_type and not result.has_key(s.service_type.id): #every service type id is key
+             result[s.service_type.id] = {"title":[],"titleKey":[],"data":[]}
+        if s.service_type and s.service_type.show_key:
+             if not result[s.service_type.id]["title"]:
+                 result[s.service_type.id]["title"],result[s.service_type.id]["titleKey"] = get_show_key(s.service_type.show_key) 
+             try:
+                 det = s.detectorinfo_set.all().order_by("-id")[0]
+                 searchKey = ""
+                 values = json.loads(det.data)
+                 for k in result[s.service_type.id]["titleKey"][:-1]:
+                     searchKey += values[k] + "__"
+                 values["update_time"] = det.created_time.strftime("%Y-%m-%d %H:%M")
+                 values["searchKey"] = searchKey.lower()
+                 values["id"] = s.id
+                 result[s.service_type.id]["data"].append(values)
+             except:
+                 pass
+                
+    indexData = {"title":["Project","Title","IP","System","Service Type"],"titleKey":["project","title","ip","system","service_type"],"data":ls}
+    result["index"] = indexData
+    return HttpResponse(json.dumps(result))

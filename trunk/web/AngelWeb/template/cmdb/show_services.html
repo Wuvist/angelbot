@@ -1,58 +1,62 @@
-{% extends "base_site.html" %}
+{% extends "base_simple.html" %}
 {% load cmdb_extras %}
 
 {% block content %}
 <!--<link rel="stylesheet" type="text/css" href="/media/css/forms.css" /> -->
 <link rel="stylesheet" type="text/css" href="/media/css/forms.css" /> 
+<style>
+*{margin:0;padding:0;}
+img{border:0;}
+li{list-style:none;}
+a{text-decoration:none;}
+a:hover{text-decoration:underline;}
+body{background:#ffffff;font-size:12px;font-family:Verdana, Geneva, sans-serif;}
+.warp{position:relative;width:960px;margin:0 auto;}
+.list{width:670px;}
+.entry{float:left;width:202px;position:relative;margin:10px;_display:inline;}
+.entry a{display:block;text-decoration:none;border:1px #000000 solid;}
+.entry a:hover{border:1px #999 solid;}
+.entry .url{position:absolute;left:1px;bottom:1px;height:28px;width:200px;background:#000;text-align:center;
+			filter:alpha(opacity=80);-moz-opacity:0.8;opacity: 0.8;}
+.entry .url span{display:block;border:0;color:#fff;margin-top:6px;padding:2px;font-weight:bold;}
+
+.detail{position:absolute;right:45px;top:10px;width:216px;padding:10px;background:#393939;border:1px #555 solid;color:#fff;}
+.detail li{margin-bottom:4px;}
+.detail li.mt10{margin-bottom:10px;}
+#url, #company , #description{color:#999;}
+.detail a{color:#999;}
+.detail a:hover{color:#fff;}
+
+#content h1{color:#ccc;font-size:20px;text-align:center;padding:70px 0;}
+/* www.codefans.net */
+#pager{clear:both;color:Black;}
+#pager a{color:Black;}
+#total{float:left;color:Black;}
+#pagelist{float:right; color:Black}
+.f90{color:Black;}
+.dialog-overlay {BACKGROUND: #E0E0E0; FILTER: alpha(opacity:50); opacity: 0.5}
+</style>
 	
 <fieldset class="module aligned ">
 	<div class="form-row title"> 
 	    <div>
 		<form action="" method="GET" >
-			<h>ip: <input type="text" name="ip" value="{{ ip }}" >
-			title: <input type="text" name="title" value="{{ title }}" >
-			physical ip: <input type="text" name="pip" value="{{ pip }}" ></h><br/>
-			<h>service name: 
-			<select name="service_name" >
-				<option value="" {% if service_name == "" %}selected="selected"{% endif %} >All</option>
+			Service name: 
+			<select name="serviceType" id="serviceType" >
+				<option value="index">All</option>
 				{% for s in services_name %}
-				<option value="{{ s }}" {% if service_name == s %}selected="selected"{% endif %} >{{ s }}</option>
+				<option value="{{ s.0 }}">{{ s.1 }}</option>
 				{% endfor %}
 			</select>
-			service type: 
-			<select name="service_type" >
-				<option value="" {% if service_type == "" %}selected="selected"{% endif %} >All</option>
-				{% for s in services_type %}
-				<option value="{{ s }}" {% if service_type == s %}selected="selected"{% endif %} >{{ s }}</option>
-				{% endfor %}
-			</select>
-			system:
-			<select name="system" >
-				<option value="" {% if system == "" %}selected="selected"{% endif %} >All</option>
-				<option value="W" {% if system == "W" %}selected="selected"{% endif %} >Windows</option>
-				<option value="L" {% if system == "L" %}selected="selected"{% endif %} >Linux</option>
-				<option value="V" {% if system == "V" %}selected="selected"{% endif %} >VMware</option>
-			</select>
-
-			project:
-			<select name="project" >
-				<option value="" {% if project == "" %}selected="selected"{% endif %} >All</option>
-				{% for p in projects %}
-				<option value="{{ p.name }}" {% if project == p.name %}selected="selected"{% endif %} >{{ p.name }}</option>
-				{% endfor %}
-			</select>
-
-			created on:
-			<input name="created_on" value="{{ created_on }}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span></h>
-			&nbsp;&nbsp;
-			<input type="submit" value = "Show Data" />
+			Search: <input type="text" name="Search" id="Search" value="" >
+			&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
 			<input type="button" value = "Download Deployment" id="download" name="download"/><br/>
 		</form>
 		</div>
 	</div>
 <div id="download_div" style="display:none;width:800px">
 	<form action="/cmdb/deployment/" method="GET">
-		{% for p in projects_d %}
+		{% for p in projects %}
 			<h><input type='checkbox' class='usercheck' name = 'ps' value ='{{p}}' />{{p}}</h>&nbsp;
 			{% endfor %}
 			<h><input type='checkbox' id='chkAll' value = "checkall"  onclick='select_all()'/>All</h></h><br>
@@ -61,67 +65,52 @@
 </div>
 
 </fieldset>
-	<style>
-	th {width:100px;}
-	</style>
-	<h2>services:</h2>
-	<table id="tb">
-	<tr style="background:#f7f89a" role="head">
-		<th sort="true" style="width:25px" >sn</th><th sort="true" >project</th><th sort="true" >title</th><th sort="true">ip</th><th sort="true"  style="width:130px" >[Cores-RAM-HD]</th><th sort="true" >system</th><th sort="true" >service name</th><th sort="true" >service type</th><th sort="true" style="width:100px" >created on</th><th sort="true" style="width:150px" >latest udpate</th></tr>
-		{% for s in services %}
-		{% if forloop.counter0|tr_color %}
-		<tr class="row1">
-		{% else %}
-		<tr>
-		{% endif %}
-			<td>{{ forloop.counter }}</td>
-			<td>{{s|showProjects}}</td><td>{{ s.title }}</td><td><a href="/cmdb/servers/?ip={{ s.server.ip }}">{{ s.server.ip }}</a></td>
-			<td>{{ s.server|showServerInfo|safe }}</td>
-			<td>
-			{%if s.server%}
-                        {% if s.server.server_type == "W" %}
-                        Windows
-                        {% else %}
-                        {%if s.server.server_type == "L" %}
-                        Linux
-                        {%else%}
-                        VMware
-                        {% endif %}
-                        {% endif %}
-			{%else%}
-			Unknown
-			{%endif%}
-			</td>
-			<td>
-			{{ s.service_type.name }}
-			</td>
-			<td>{{ s.service_type.type.name }}</td>
-			<td>{{ s.created_on|date:"Y-m-d H:i:s" }}</td>
-			<td>{{ s.update_time|date:"Y-m-d H:i:s" }}</td>
-		</tr>
-		{% endfor %}
-	</table>
-
-
-<script type="text/javascript" src="/admin/jsi18n/"></script>
-<script type="text/javascript" src="/media/js/core.js"></script>
-<script type="text/javascript" src="/media/js/calendar.js"></script>
-<script type="text/javascript" src="/media/js/admin/DateTimeShortcuts.js"></script>
+<div class="list">
+	<div id="content"></div>
+	<div id="pager">
+        	<div id="total"></div>
+            	<div id="pagelist"></div>
+        </div>
+</div>
+<div id="__result"></div>
+<div id="dialog-overlay" class="dialog-overlay" style="left: 0px; top: 0px; width: 100%; height: 100%; z-index: 505; position: absolute; display: none; opacity: 0.5;">
+	<div id="loading" style="margin-left:40%;margin-top:20%;text-align:center;padding-top:20px;position:absolute;">
+		<img src="/media/img/loading.gif"/>
+</div>
+</div>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js"></script>
 <script type="text/javascript" src="/media/js/jquery.min.js"></script>
 <script type="text/javascript" src="/media/js/jquery.init.js"></script> 
 <script type="text/javascript" src="/media/js/actions.min.js"></script>
 <script type="text/javascript" src="/media/js/TableSort.js"></script>
-<script type="text/javascript"> 
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="/media/js/core.js"></script>
+<script type="text/javascript" src="/media/js/calendar.js"></script>
+<script type="text/javascript" src="/media/js/ShowServiceInfo.js"></script>
+<script type="text/javascript" src="/media/js/admin/DateTimeShortcuts.js"></script>
+<script type="text/javascript">
+var os = new ObjSearch();
+function Init(){
+    os.kw = $('#Search').val().toLowerCase();        
+    os.option = $('#serviceType').val();
+}
+Init();os.search();
+$("#tb").find("tr:odd").addClass("row1");
+$("#Search").bind("input change", function() {
+    Init();os.search();
+});
+$("#serviceType").bind("select change", function() {
+    Init();os.search();
+});
+
+
 
 $(function() { 
 	$("#download").click(function(){
 		$("#download_div").toggle();
 	});
 });
-</script>
 
-<script type = 'text/javascript'>
 $(document).ready( function(){
 $('#download_div input:checkbox.usercheck').click(function(){
 if (this.checked){
@@ -139,21 +128,6 @@ $('#download_div input:checkbox.usercheck').each(function(){
 this.checked = e;
 });
 }
-</script>
-<script type="text/javascript">
-$(function(){
-	$("#tb").sorttable({
-		ascImgUrl: "/media/img/bullet_arrow_up.png",
-		descImgUrl: "/media/img/bullet_arrow_down.png",
-		ascImgSize: "8px",
-		descImgSize: "8px",
-		allowMask:false,
-		onSorted: function (cell) {
-		$("#tb").find("tr").removeClass("row1");
-		$("#tb").find("tr:odd").addClass("row1");
-		}
-	});
-});
 </script>
 
 {% endblock %}

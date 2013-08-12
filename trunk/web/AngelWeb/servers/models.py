@@ -260,6 +260,7 @@ class ServiceType(models.Model):
 class WidgetServiceType(models.Model):
     name = models.CharField(max_length=50)
     type = models.ForeignKey(ServiceType)
+    show_key = models.TextField(null = True, blank=True)
     remark = models.CharField(max_length=256, null = True, blank = True)
     
     def __unicode__(self):
@@ -300,6 +301,11 @@ class Widget(models.Model):
     
     class Meta:
         ordering = ["title"]
+
+class DetectorInfo(models.Model):
+    widget = models.ForeignKey(Widget)
+    data = models.TextField(null = True, blank = True)
+    created_time = models.DateTimeField(auto_now_add = True)
 
 class StatisticsDay(models.Model):
     widget = models.ForeignKey(Widget)
