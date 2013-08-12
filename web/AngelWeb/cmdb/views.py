@@ -3,17 +3,13 @@ from django.views.generic.simple import direct_to_template
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import Context, loader, RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
-from servers.models import Server
-from servers.models import Widget
-from servers.models import IDC as s_idc
-from servers.models import Project as s_project
-from servers.models import RemarkLog
-from servers.models import ExtraLog
+from servers.models import *
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from datetime import datetime
 import time
+import json
 
 
 @login_required
@@ -42,11 +38,11 @@ def show_servers(request):
     c = RequestContext(request,
         {"servers":servers,
         "project":project,
-        "projects":s_project.objects.all().order_by("name"),
+        "projects":Project.objects.all().order_by("name"),
         "ip":ip,
         "name":name,
         "idc":idc,
-        "idcs":s_idc.objects.all(),
+        "idcs":IDC.objects.all(),
         "ispserver":ispserver,
         "pip":pip,
         "system":system,
@@ -62,48 +58,10 @@ def show_services(request):
     
     if not request.user.is_staff:
         raise Http404
-    
-    ip = request.GET.get("ip","")
-    title = request.GET.get("title","")
-    service_name = request.GET.get("service_name","")
-    service_type = request.GET.get("service_type","")
-    project = request.GET.get("project","")
-    service_type = request.GET.get("service_type","")
-    pip = request.GET.get("pip","")
-    system = request.GET.get("system","")
-    remark = request.GET.get("remark","")
-    created_on = request.GET.get("created_on","")
-    
-    services = Widget.objects.filter(server__ip__contains=ip, title__icontains=title,\
-    server__server_type__contains=system, server__physical_server_ip__contains=pip,remark__contains=remark,).order_by("title")
-    if service_name != "":
-        services = services.filter(service_type__name=service_name)
-    if service_type != "":
-        services = services.filter(service_type__type__name=service_type)
-    if project != "":
-        services = services.filter(project__name=project)
-    if created_on != "":
-        services = services.filter(created_on__range=(time.strftime("%Y-%m-%d",time.strptime(created_on, "%Y-%m-%d")),\
-        time.strftime("%Y-%m-%d %H:%M:%S",time.strptime(created_on+" 23:59:59", "%Y-%m-%d %H:%M:%S"))))
-        
-        
-    c = RequestContext(request,
-        {"services":services,
-        "ip":ip,
-        "title":title,
-        "pip":pip,
-        "service_name":service_name,
-        "services_name":Widget.objects.values_list("service_type__name",flat=True).annotate().order_by("service_type__name"),
-        "service_type":service_type,
-        "services_type":Widget.objects.values_list("service_type__type__name",flat=True).annotate().order_by("service_type__type__name"),
-        "project":project,
-        "projects":s_project.objects.values("name").annotate().order_by("name"),
-        "projects_d":s_project.objects.all().exclude(server=None).values_list("name",flat=True).annotate().order_by("-sequence"),
-        "system":system,
-        "created_on":created_on,
-        })
-    
-    return render_to_response('cmdb/show_services.html',c)
+     
+    return render_to_response('cmdb/show_services.html',{
+    "services_name":WidgetServiceType.objects.values_list("id","name").order_by("name"),
+    "projects":Project.objects.all().values_list("name",flat=True)})
 
 def cmdbDeployment(request):
     from cStringIO import StringIO
@@ -346,7 +304,7 @@ def cmdbDeployment(request):
     servers_p = servers.filter(physical_server = "Y")
     projects =  request.GET.getlist("ps")    
     if len(projects) == 0:
-        projects = s_project.objects.filter(server__in=servers_p).annotate().order_by("-sequence").values_list("name",flat=True)
+        projects = Project.objects.filter(server__in=servers_p).annotate().order_by("-sequence").values_list("name",flat=True)
     temp = StringIO()
     temp,yy = main(x,y)
     if yy < 0:
