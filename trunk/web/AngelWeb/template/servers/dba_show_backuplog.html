@@ -25,8 +25,8 @@ td.red{background:#FF2D2D}
 .content IMG {MAX-WIDTH: '80%'; OVERFLOW: auto; MAX-HEIGHT: '80%'}
 </style>
 <table id="tb" cellspacing="0" cellpadding="1">
-<tr style="background:#ADADAD"><td>SN</td><td>Master</td><td>Slave</td><td>Replication</td><td>Backup Time</td><td>Result</td><td>Size</td><td>Backup Used%</td><td>Backup Dir</td><td colspan=7>Backup File</td><td>Spend(minutes)</td><td>Others</td></tr>
-{% for d in data%}
+<tr style="background:#ADADAD"><td>SN</td><td>Master(Mysql)</td><td>Slave</td><td>Replication</td><td>Backup Time</td><td>Result</td><td>Size</td><td>Backup Used%</td><td>Backup Dir</td><td colspan=7>Backup File</td><td>Spend(mins)</td><td>Others</td></tr>
+{% for d in mysqlData%}
 <tr><td>{{forloop.counter}}</td><td><a href="javascript:void(0)" onclick="showdetail('a_{{forloop.counter}}')">{{d.3}}</a></td><td><a href="javascript:void(0)" onclick="showdetail('b_{{forloop.counter}}')">{{d.4}}</a></td><td {%if d.5 == "ERROR"%}class="red"{%endif%}>{{d.5}}</td><td>{{d.6}}</td><td {%if d.7 == "ERROR"%}class="red"{%endif%}>{{d.7}}</td><td>{{d.8}}</td><td {%if d.9 > 95 and d.9 != ""%}class="red"{%endif%}>{%if d.9 != ""%}{{d.9}}%{%endif%}</td><td>{{d.10}}</td>
 <td style="background:{%if 'full' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">1</td>
 <td style="background:{%if '0' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">2</td>
@@ -39,7 +39,7 @@ td.red{background:#FF2D2D}
 <td class="hi" id="a_{{forloop.counter}}">{{d.1}}</td><td class="hi" id="b_{{forloop.counter}}">{{d.2}}</td>
 <td class="hi" id="c_{{forloop.counter}}">
 <hr>
-<table id="hitable">
+<table id="hitable" border="2">
 <tr><td>SN</td><td>Backup Databases</td><td>Backup Type</td><td>Backup Crontab</td><td>remark</td></tr>
 <tr><td>{{forloop.counter}}</td><td>{{d.13}}</td><td>{{d.14}}</td><td>{{d.15}}</td><td>
 <form action="">
@@ -51,6 +51,37 @@ td.red{background:#FF2D2D}
 </td>
 <td>
 <a href="javascript:void(0)" onclick="show('c_{{forloop.counter}}')">show detail</a>
+</td>
+</tr>{% endfor %}
+</table>
+<br><br><br>
+<table id="tb" cellspacing="0" cellpadding="1">
+<tr style="background:#ADADAD"><td>SN</td><td>Master(Sqlserver)</td><td>Slave</td><td>Replication</td><td>Backup Time</td><td>Result</td><td>Size</td><td>Backup Used%</td><td>Backup Dir</td><td colspan=7>Backup File</td><td>Spend(minutes)</td><td>Others</td></tr>
+{% for d in sqlserverData%}
+<tr><td>{{forloop.counter}}</td><td><a href="javascript:void(0)" onclick="showdetail('s_a_{{forloop.counter}}')">{{d.3}}</a></td><td><a href="javascript:void(0)" onclick="showdetail('s_b_{{forloop.counter}}')">{{d.4}}</a></td><td {%if d.5 == "ERROR"%}class="red"{%endif%}>{{d.5}}</td><td>{{d.6}}</td><td {%if d.7 == "ERROR"%}class="red"{%endif%}>{{d.7}}</td><td>{{d.8}}</td><td {%if d.9 > 95 and d.9 != ""%}class="red"{%endif%}>{%if d.9 != ""%}{{d.9}}%{%endif%}</td><td>{{d.10}}</td>
+<td style="background:{%if 'full' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">1</td>
+<td style="background:{%if '0' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">2</td>
+<td style="background:{%if '1' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">3</td>
+<td style="background:{%if '2' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">4</td>
+<td style="background:{%if '3' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">5</td>
+<td style="background:{%if '4' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">6</td>
+<td style="background:{%if '5' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">7</td>
+<td>{{d.12}}</td>
+<td class="hi" id="s_a_{{forloop.counter}}">{{d.1}}</td><td class="hi" id="s_b_{{forloop.counter}}">{{d.2}}</td>
+<td class="hi" id="s_c_{{forloop.counter}}">
+<hr>
+<table id="hitable1" border="2">
+<tr><td>SN</td><td>Backup Databases</td><td>Backup Type</td><td>Backup Crontab</td><td>remark</td></tr>
+<tr><td>{{forloop.counter}}</td><td>{{d.13}}</td><td>{{d.14}}</td><td>{{d.15}}</td><td>
+<form action="">
+<textarea name="remark" cols="40" rows="2">{{d.0}}</textarea>
+<input type="hidden" name="id" value="{{d.3}}_{{d.4}}"/>
+<input type="submit" value="save"></td></tr>
+</form>
+</table>
+</td>
+<td>
+<a href="javascript:void(0)" onclick="show('s_c_{{forloop.counter}}')">show detail</a>
 </td>
 </tr>{% endfor %}
 </table>
@@ -272,8 +303,9 @@ function Dialog(content, options)
 Dialog.__zindex = 500;
 Dialog.__count = 1;
 Dialog.version = '1.0 beta';
-$("#tb").find("tbody>tr:odd",this).addClass("row1");
+$("[id=tb]").find("tbody>tr:odd",this).addClass("row1");
 $("[id=hitable]").find("tbody>tr:odd",this).removeClass("row1");
+$("[id=hitable1]").find("tbody>tr:even",this).removeClass("row1");
 function show(id){
     var t = $('#'+id).html();
     $("#showOthers").html(t);

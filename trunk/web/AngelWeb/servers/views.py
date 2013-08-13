@@ -1929,11 +1929,6 @@ def dba_show_backup(request):
         s.sendmail(sender, n.split(";"), msg.as_string())
         s.close()
     
-    result = [];t = time.strftime("%Y%m%d%H%M")
-    try:
-        errorDataLog = ExtraLog.objects.get(type=4)
-        errorData = json.loads(errorDataLog.value)
-    except:errorData = {}
     def addError(k,edit=False):
         if edit:
             if errorData.has_key(k):
@@ -1952,45 +1947,56 @@ def dba_show_backup(request):
             log.value = r
             log.save()
         return HttpResponseRedirect("/dba/backlog/")
-    data = open(settings.DB_MYSQL_DETAIL_LOG).read().split("\n\n")
-    for i in open(settings.DB_MYSQL_INFO_LOG).readlines():
-        i = ["","",""] + i.split(",")
-        if len(i) < 7:continue
-        i[3] = i[3].replace("_",":")
-        i[4] = i[4].replace("_",":")
-        try:
-            log = ExtraLog.objects.get(type=2,label=i[3]+"_"+i[4])
-            i[0] = log.value
-        except:pass
-        for d in data:
-            if i[3] in d and i[3] != "":
-                i[1] = d.replace(" ","&nbsp;&nbsp;").replace("\n","<br>")
-                continue
-            if i[4] in d and i[4] != "":
-                i[2] = d.replace(" ","&nbsp;&nbsp;").replace("\n","<br>")
-                continue
-        try:i[9] = int(i[9][:-1])
-        except:pass
-        result.append(i)
-        try:    
-            timeDiff = time.time() - time.mktime(time.strptime(i[6], "%Y-%m-%d %H:%M:%S"))
-            if i[14] == "full":timeDiffConf = 30*24*60*60+1200
-            else:timeDiffConf = 24*60*60+1200
-            if "ERROR" in i[5] or "ERROR" in i[7] or i[9] > 95 or timeDiff > timeDiffConf:
-                addError(i[3]+"-"+i[4],edit=True)
-                if len(errorData[i[3]+"-"+i[4]]["times"]) > settings.DB_ERROR_TIME and errorData[i[3]+"-"+i[4]]["send"] == False:
-                    sendmail(i[3]+"-"+i[4],settings.DB_RECEIVER,i[3]+"-"+i[4]) 
-                    errorData[i[3]+"-"+i[4]]["send"] = True
-            else:addError(i[3]+"-"+i[4])
-        except:
-            pass
+    t = time.strftime("%Y%m%d%H%M")
+    try:
+        errorDataLog = ExtraLog.objects.get(type=4)
+        errorData = json.loads(errorDataLog.value)
+    except:errorData = {}
+    def parserLog(infoLog,detailLog):
+        result = []
+        try:data = open(detailLog).read().split("\n\n")
+        except:data = []
+        for i in open(infoLog).readlines():
+            i = ["","",""] + i.split(",")
+            if len(i) < 7:continue
+            i[3] = i[3].replace("_",":")
+            i[4] = i[4].replace("_",":")
+            try:
+                log = ExtraLog.objects.get(type=2,label=i[3]+"_"+i[4])
+                i[0] = log.value
+            except:pass
+            for d in data:
+                if i[3] in d and i[3] != "":
+                    i[1] = d.replace(" ","&nbsp;&nbsp;").replace("\n","<br>")
+                    continue
+                if i[4] in d and i[4] != "":
+                    i[2] = d.replace(" ","&nbsp;&nbsp;").replace("\n","<br>")
+                    continue
+            try:i[9] = int(i[9][:-1])
+            except:pass
+            result.append(i)
+            try:    
+                timeDiff = time.time() - time.mktime(time.strptime(i[6], "%Y-%m-%d %H:%M:%S"))
+                if i[14] == "full":timeDiffConf = 30*24*60*60+1200
+                else:timeDiffConf = 24*60*60+1200
+                if "ERROR" in i[5] or "ERROR" in i[7] or i[9] > 95 or timeDiff > timeDiffConf:
+                    addError(i[3]+"-"+i[4],edit=True)
+                    if len(errorData[i[3]+"-"+i[4]]["times"]) > settings.DB_ERROR_TIME and errorData[i[3]+"-"+i[4]]["send"] == False:
+                        sendmail(i[3]+"-"+i[4],settings.DB_RECEIVER,i[3]+"-"+i[4]) 
+                        errorData[i[3]+"-"+i[4]]["send"] = True
+                else:addError(i[3]+"-"+i[4])
+            except:
+                pass
+        return result
+    mysqlData = parserLog(settings.DB_MYSQL_INFO_LOG,settings.DB_MYSQL_DETAIL_LOG)
+    sqlserverData = parserLog(settings.DB_SQLSERVER_INFO_LOG,settings.DB_SQLSERVER_DETAIL_LOG)
     try:
         errorDataLog.value = json.dumps(errorData)
         errorDataLog.save()
     except:
         log = ExtraLog(type=4,value=json.dumps(errorData)).save()
     
-    return render_to_response("servers/dba_show_backuplog.html",{"data":result})
+    return render_to_response("servers/dba_show_backuplog.html",{"mysqlData":mysqlData,"sqlserverData":sqlserverData})
 
 def create_rrd(rrd):
     from subprocess import Popen, PIPE
