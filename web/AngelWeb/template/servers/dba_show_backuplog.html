@@ -56,22 +56,16 @@ td.red{background:#FF2D2D}
 </table>
 <br><br><br>
 <table id="tb" cellspacing="0" cellpadding="1">
-<tr style="background:#ADADAD"><td>SN</td><td>Master(Sqlserver)</td><td>Slave</td><td>Replication</td><td>Backup Time</td><td>Result</td><td>Size</td><td>Backup Used%</td><td>Backup Dir</td><td colspan=7>Backup File</td><td>Spend(minutes)</td><td>Others</td></tr>
+<tr style="background:#ADADAD"><td>SN</td><td>Master(Sqlserver)</td><td>Slave</td><td>Replication</td><td>Backup Time</td><td>Result</td><td>Size</td><td>Backup Used%</td><td>Backup Dir</td><td>Backup File</td><td>Spend(minutes)</td><td>Others</td></tr>
 {% for d in sqlserverData%}
 <tr><td>{{forloop.counter}}</td><td><a href="javascript:void(0)" onclick="showdetail('s_a_{{forloop.counter}}')">{{d.3}}</a></td><td><a href="javascript:void(0)" onclick="showdetail('s_b_{{forloop.counter}}')">{{d.4}}</a></td><td {%if d.5 == "ERROR"%}class="red"{%endif%}>{{d.5}}</td><td>{{d.6}}</td><td {%if d.7 == "ERROR"%}class="red"{%endif%}>{{d.7}}</td><td>{{d.8}}</td><td {%if d.9 > 95 and d.9 != ""%}class="red"{%endif%}>{%if d.9 != ""%}{{d.9}}%{%endif%}</td><td>{{d.10}}</td>
-<td style="background:{%if 'full' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">1</td>
-<td style="background:{%if '0' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">2</td>
-<td style="background:{%if '1' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">3</td>
-<td style="background:{%if '2' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">4</td>
-<td style="background:{%if '3' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">5</td>
-<td style="background:{%if '4' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">6</td>
-<td style="background:{%if '5' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">7</td>
+<td>{{d.11}}</td>
 <td>{{d.12}}</td>
 <td class="hi" id="s_a_{{forloop.counter}}">{{d.1}}</td><td class="hi" id="s_b_{{forloop.counter}}">{{d.2}}</td>
 <td class="hi" id="s_c_{{forloop.counter}}">
 <hr>
 <table id="hitable1" border="2">
-<tr><td>SN</td><td>Backup Databases</td><td>Backup Type</td><td>Backup Crontab</td><td>remark</td></tr>
+<tr><td>SN</td><td>Backup Databases</td><td>Job Name</td><td>Backup Crontab</td><td>remark</td></tr>
 <tr><td>{{forloop.counter}}</td><td>{{d.13}}</td><td>{{d.14}}</td><td>{{d.15}}</td><td>
 <form action="">
 <textarea name="remark" cols="40" rows="2">{{d.0}}</textarea>
