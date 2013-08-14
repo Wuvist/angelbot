@@ -40,7 +40,13 @@ body{background:#ffffff;font-size:12px;font-family:Verdana, Geneva, sans-serif;}
 <fieldset class="module aligned ">
 	<div class="form-row title"> 
 	    <div>
-		<form action="" method="GET" >
+		Page Size:<select id='userPageSize'>
+				<option value='10000' {%if pageSize == 10000%}selected='selected'{%endif%}>All</option>
+				<option value='20' {%if pageSize == 20%}selected='selected'{%endif%}>20</option>
+				<option value='50' {%if pageSize == 50%}selected='selected'{%endif%}>50</option>
+				<option value='100' {%if pageSize == 100%}selected='selected'{%endif%}>100</option>
+				<option value='200' {%if pageSize == 200%}selected='selected'{%endif%}>200</option>
+				</select>
 			Service name: 
 			<select name="serviceType" id="serviceType" >
 				<option value="index">All</option>
@@ -51,7 +57,6 @@ body{background:#ffffff;font-size:12px;font-family:Verdana, Geneva, sans-serif;}
 			Search: <input type="text" name="Search" id="Search" value="" >
 			&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
 			<input type="button" value = "Download Deployment" id="download" name="download"/><br/>
-		</form>
 		</div>
 	</div>
 <div id="download_div" style="display:none;width:800px">
@@ -93,6 +98,7 @@ var os = new ObjSearch();
 function Init(){
     os.kw = $('#Search').val().toLowerCase();        
     os.option = $('#serviceType').val();
+    os.PageSize = $('#userPageSize').val();
 }
 Init();os.search();
 $("#tb").find("tr:odd").addClass("row1");
@@ -101,6 +107,11 @@ $("#Search").bind("input change", function() {
 });
 $("#serviceType").bind("select change", function() {
     Init();os.search();
+});
+$("#userPageSize").bind("pageSize change", function() {
+    Init();os.search();
+    $.get("/cmdb/services/?&pageSize=" + $('#userPageSize').val(), function(data){
+                });
 });
 
 
