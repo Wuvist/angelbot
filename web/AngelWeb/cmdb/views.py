@@ -58,8 +58,15 @@ def show_services(request):
     
     if not request.user.is_staff:
         raise Http404
-     
+    if request.GET.has_key("pageSize"):
+        pageSize = request.GET["pageSize"]
+        request.COOKIES["pageSize"] = pageSize
+    elif request.COOKIES.has_key("pageSize"):
+        pageSize = request.COOKIES["pageSize"]
+    else:pageSize = 100
+    
     return render_to_response('cmdb/show_services.html',{
+    "pageSize":pageSize,
     "services_name":WidgetServiceType.objects.values_list("id","name").order_by("name"),
     "projects":Project.objects.all().values_list("name",flat=True)})
 
