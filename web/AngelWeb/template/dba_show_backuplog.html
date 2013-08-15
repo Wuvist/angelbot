@@ -70,7 +70,7 @@ td.red{background:#FF2D2D}
 <td class="hi" id="s_a_{{forloop.counter}}">{{d.1}}</td><td class="hi" id="s_b_{{forloop.counter}}">{{d.2}}</td>
 <td class="hi" id="s_c_{{forloop.counter}}">
 <hr>
-<table id="hitable1" border="2">
+<table id="hitable" border="2">
 <tr><td>SN</td><td>Backup Databases</td><td>Job Name</td><td>Backup Crontab</td><td>remark</td></tr>
 <tr><td>{{forloop.counter}}</td><td>{{d.13}}</td><td>{{d.14}}</td><td>{{d.15}}</td><td>
 <form action="">
@@ -304,8 +304,7 @@ Dialog.__zindex = 500;
 Dialog.__count = 1;
 Dialog.version = '1.0 beta';
 $("[id=tb]").find("tbody>tr:odd",this).addClass("row1");
-$("[id=hitable]").find("tbody>tr:odd",this).removeClass("row1");
-$("[id=hitable1]").find("tbody>tr:even",this).removeClass("row1");
+$("[id=hitable]").find("tbody>tr",this).removeClass("row1");
 function show(id){
     var t = $('#'+id).html();
     $("#showOthers").html(t);
