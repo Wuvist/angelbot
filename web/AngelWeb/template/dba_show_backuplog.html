@@ -23,6 +23,7 @@ td.red{background:#FF2D2D}
 .dialog .content {height:300px; width:580px; overflow: auto; PADDING-RIGHT: 10px; PADDING-LEFT: 10px; BACKGROUND: #fff; PADDING-BOTTOM: 10px; PADDING-TOP: 10px}
 .dialog IFRAME {WIDTH: '80%'; HEIGHT: '80%'}
 .content IMG {MAX-WIDTH: '80%'; OVERFLOW: auto; MAX-HEIGHT: '80%'}
+#hitable td {font-size: 11px;line-height: 13px;border: 1px solid #000000;vertical-align: top;padding: 5px;}
 </style>
 <table id="tb" cellspacing="0" cellpadding="1">
 <tr style="background:#ADADAD"><td>SN</td><td>Master(Mysql)</td><td>Slave</td><td>Replication</td><td>Backup Time</td><td>Result</td><td>Size</td><td>Backup Used%</td><td>Backup Dir</td><td colspan=7>Backup File</td><td>Spend(mins)</td><td>Others</td></tr>
@@ -39,7 +40,7 @@ td.red{background:#FF2D2D}
 <td class="hi" id="a_{{forloop.counter}}">{{d.1}}</td><td class="hi" id="b_{{forloop.counter}}">{{d.2}}</td>
 <td class="hi" id="c_{{forloop.counter}}">
 <hr>
-<table id="hitable" border="2">
+<table id="hitable">
 <tr><td>SN</td><td>Backup Databases</td><td>Backup Type</td><td>Backup Crontab</td><td>remark</td></tr>
 <tr><td>{{forloop.counter}}</td><td>{{d.13}}</td><td>{{d.14}}</td><td>{{d.15}}</td><td>
 <form action="">
@@ -70,7 +71,7 @@ td.red{background:#FF2D2D}
 <td class="hi" id="s_a_{{forloop.counter}}">{{d.1}}</td><td class="hi" id="s_b_{{forloop.counter}}">{{d.2}}</td>
 <td class="hi" id="s_c_{{forloop.counter}}">
 <hr>
-<table id="hitable" border="2">
+<table id="hitable">
 <tr><td>SN</td><td>Backup Databases</td><td>Job Name</td><td>Backup Crontab</td><td>remark</td></tr>
 <tr><td>{{forloop.counter}}</td><td>{{d.13}}</td><td>{{d.14}}</td><td>{{d.15}}</td><td>
 <form action="">
