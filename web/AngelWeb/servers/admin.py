@@ -20,12 +20,14 @@ def projectChangeAlarmOff(self, request, queryset):
     if rowsUpdated == 1:ms = "1 project was"
     else:ms = "%s projects were" % rowsUpdated
     self.message_user(request, "%s successfully changed alarm Off." % ms)
+projectChangeAlarmOff.short_description = "Change selected projects alarm Off"
 
 def projectChangeAlarmOn(self, request, queryset):
     rowsUpdated = queryset.update(alarm='True')
     if rowsUpdated == 1:ms = "1 project was"
     else:ms = "%s projects were" % rowsUpdated
     self.message_user(request, "%s successfully changed alarm On." % ms)
+projectChangeAlarmOn.short_description = "Change selected projects alarm On"
 
 class DashboardAdmin(admin.ModelAdmin):
     list_display = ('title', 'sequence')
