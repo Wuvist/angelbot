@@ -1739,7 +1739,8 @@ def sync_server(request):
         if hard_disk == None:hard_disk="0G"
         elif hard_disk > 1024:hard_disk = "%.1fT" % (hard_disk/1024.0)
         else:hard_disk = "%dG" % hard_disk
-        if d['ram_gb'] != None:d['ram_gb'] = "%.0fG" % d['ram_gb']
+        if d['ram_gb'] == None:d['ram_gb'] = "";
+        else:d['ram_gb'] = "%.0fG" % d['ram_gb']
         state = "Y"
         if d['state'] == "Off":state = "N"
         physical_server = "Y"
