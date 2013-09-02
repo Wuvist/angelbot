@@ -11,6 +11,22 @@ from django.contrib import admin
 from AngelWeb.servers.models import *
 from django.forms import ModelForm, PasswordInput
 
+
+
+
+
+def projectChangeAlarmOff(self, request, queryset):
+    rowsUpdated = queryset.update(alarm='False')
+    if rowsUpdated == 1:ms = "1 project was"
+    else:ms = "%s projects were" % rowsUpdated
+    self.message_user(request, "%s successfully changed alarm Off." % ms)
+
+def projectChangeAlarmOn(self, request, queryset):
+    rowsUpdated = queryset.update(alarm='True')
+    if rowsUpdated == 1:ms = "1 project was"
+    else:ms = "%s projects were" % rowsUpdated
+    self.message_user(request, "%s successfully changed alarm On." % ms)
+
 class DashboardAdmin(admin.ModelAdmin):
     list_display = ('title', 'sequence')
     ordering = ('title',)
@@ -40,6 +56,7 @@ class FrequentAlarmAdmin(admin.ModelAdmin):
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ('name', 'alarm', 'sequence')
     ordering = ('name',)
+    actions = [projectChangeAlarmOff,projectChangeAlarmOn]
 
 class ServicesTypeAdmin(admin.ModelAdmin):
     list_display = ('name', 'color')
