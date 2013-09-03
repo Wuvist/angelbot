@@ -61,13 +61,13 @@ td.red{background:#FF2D2D}
 {% for d in sqlserverData%}
 <tr><td>{{forloop.counter}}</td><td><a href="javascript:void(0)" onclick="showdetail('s_a_{{forloop.counter}}')">{{d.3}}</a></td>
 <td>{{d.6}}</td><td {%if d.7 == "ERROR"%}class="red"{%endif%}>{{d.7}}</td><td>{{d.8}}</td><td {%if d.9 > 95 and d.9 != ""%}class="red"{%endif%}>{%if d.9 != ""%}{{d.9}}%{%endif%}</td><td>{{d.10}}</td>
-<td style="background:{%if '1' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">1</td>
-<td style="background:{%if '2' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">2</td>
-<td style="background:{%if '3' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">3</td>
-<td style="background:{%if '4' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">4</td>
-<td style="background:{%if '5' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">5</td>
-<td style="background:{%if '6' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">6</td>
-<td style="background:{%if '7' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">7</td>
+<td style="background:{%if '1:Y' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">1</td>
+<td style="background:{%if '2:Y' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">2</td>
+<td style="background:{%if '3:Y' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">3</td>
+<td style="background:{%if '4:Y' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">4</td>
+<td style="background:{%if '5:Y' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">5</td>
+<td style="background:{%if '6:Y' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">6</td>
+<td style="background:{%if '7:Y' in d.11%}#93FF93{%else%}#d0d0d0{%endif%}">7</td>
 <td>{{d.12}}</td>
 <td class="hi" id="s_a_{{forloop.counter}}">{{d.1}}</td><td class="hi" id="s_b_{{forloop.counter}}">{{d.2}}</td>
 <td class="hi" id="s_c_{{forloop.counter}}">
