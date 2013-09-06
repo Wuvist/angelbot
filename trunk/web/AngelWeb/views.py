@@ -129,6 +129,7 @@ def dba_show_backup(request):
 @login_required
 def diff_netword_cfg(request):
     import os
+    import re
     import json
     import urllib2
     from subprocess import Popen, PIPE
@@ -142,13 +143,19 @@ def diff_netword_cfg(request):
         try:
             i = i.split(": ")
             data[i[0]] = i[1]
-        except:raise #pass
+        except:pass
     lastRev = int(data["Last Changed Rev"])
     for i in range(lastRev,lastRev-settings.SVN_DIFF_NUMBER,-1):
         tmpDt = {};tmpLs = []
-        for j in execute_cmd("diff -r %s:%s" % (i-1,i)).split("\n"):
-            if j.startswith("@") or j.startswith("-") or j.startswith("+"):
-                tmpLs.append(j)
+        data = execute_cmd("diff -r %s:%s" % (i-1,i))
+        if "--- 2.1" in data and data.count("---") == 1:continue
+        for j in re.sub("--- 2\.1.+---","",data.replace("\n","<br>").replace("\t","    ")).split("<br>"):
+            #if j.startswith("@") or j.startswith("-") or j.startswith("+"):
+             if j.startswith("---"):continue
+             elif j.startswith("+++"):tmpLs.append(re.findall("\+\+\+ (.+)  ",j)[0])
+             elif j.startswith("@"):tmpLs.append(j)
+             elif j.startswith("-"):tmpLs.append(j)
+             elif j.startswith("+"):tmpLs.append(j)
         tmpDt["content"] = tmpLs
         d = execute_cmd("info -r %s" % i)
         i = d.index("Last Changed Date: ")
