@@ -124,3 +124,56 @@ def dba_show_backup(request):
         log = ExtraLog(type=4,value=json.dumps(errorData)).save()
 
     return render_to_response("dba_show_backuplog.html",{"mysqlData":mysqlData,"sqlserverData":sqlserverData})
+
+
+@login_required
+def diff_netword_cfg(request):
+    import os
+    import json
+    import urllib2
+    from subprocess import Popen, PIPE
+    
+    def execute_cmd(cmd):
+        cmd = "svn --username %s --password %s %s %s" % (settings.SVN_USERNAME,settings.SVN_PASSWORD,cmd,settings.SVN_NETWORK_CONFIG)
+        data = os.popen(cmd).read().replace("\r","").replace("##############################","").strip()
+        return data
+    data = {};svnDt = {}; svnLs = [];dates = [];ticketsDt = {};result = []
+    for i in execute_cmd("info").split("\n"):
+        try:
+            i = i.split(": ")
+            data[i[0]] = i[1]
+        except:raise #pass
+    lastRev = int(data["Last Changed Rev"])
+    for i in range(lastRev,lastRev-settings.SVN_DIFF_NUMBER,-1):
+        tmpDt = {};tmpLs = []
+        for j in execute_cmd("diff -r %s:%s" % (i-1,i)).split("\n"):
+            if j.startswith("@") or j.startswith("-") or j.startswith("+"):
+                tmpLs.append(j)
+        tmpDt["content"] = tmpLs
+        d = execute_cmd("info -r %s" % i)
+        i = d.index("Last Changed Date: ")
+        changedTime = d[i+19:i+39]
+        tmpDt["changedTime"] = changedTime
+        tmpDt["changedDate"] = changedTime[:10]
+        dates.append(tmpDt["changedDate"])
+        svnLs.append(tmpDt)
+        svnDt[tmpDt["changedDate"]] = tmpDt
+    try:
+        tickets = json.loads(urllib2.urlopen(settings.TICKET_API % (svnLs[-1]["changedDate"],svnLs[0]["changedDate"])).read())
+    except:
+        tickets = []
+    for t in tickets:
+        dates.append(t["created_date"])
+        ticketsDt.setdefault(t["created_date"],[]).append(t)
+    dates = list(set(dates))
+    dates.sort()
+    dates.reverse()
+    for d in dates:
+       tmp = {}
+       if d in svnDt:tmp["svn"] = svnDt[d]
+       if d in ticketsDt:tmp["ticket"] = ticketsDt[d]
+       if tmp:
+           tmp["date"] = d
+           result.append(tmp)
+    return render_to_response("netcfg_diff.html",{"data":result})
+    
