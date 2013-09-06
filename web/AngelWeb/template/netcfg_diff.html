@@ -18,11 +18,15 @@ td,th {font-size: 11px;line-height: 13px;border: 1px solid #000000;vertical-alig
     <th style="width:70px;">Date</th><th>Network config change</th><th>Tickets</th>
     {%for l in data%}
     <tr><td class="center">{{l.date}}</td><td>
-	{%for i in l.svn.content%}{%if i.0 == '-' %}&nbsp;&nbsp;&nbsp;&nbsp;<strike>{{i}}</strike><br>{%else%}{%if i.0 == '+' %}&nbsp;&nbsp;&nbsp;&nbsp;{{i}}<br>{%else%}{{i}}<br>{%endif%}{%endif%}
+	{%for i in l.svn.content%}
+		{%if i.0 == '@'%}&nbsp;&nbsp;&nbsp;&nbsp;{{i}}<br>{%else%}
+		{%if i.0 == '-' %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strike>{{i}}</strike><br>{%else%}
+		{%if i.0 == '+' %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{i}}<br>{%else%}
+		{{i}}<br>{%endif%}{%endif%}{%endif%}
 	{%endfor%}
 	</td><td>
 	{% for i in l.ticket%}
-	<a href="http://ticket.mozat.com/Ticket/IdcView/{{i.id}}" target="_blank">{%if i.label%}{{i.label}}|{%endif%}{{i.subject}}</a>{%if i.external_ip or i.internal_ip%}({{i.external_ip}}:{{i.external_port}}-->{{i.internal_ip}}:{{i.internal_port}}){%endif%}<br>{%endfor%}</td></tr>{%endfor%}
+	<a href="http://ticket.mozat.com/Ticket/IdcView/{{i.id}}" target="_blank">{%if i.label%}{{i.label}} | {%endif%}{{i.subject}}</a>{%if i.external_ip or i.internal_ip%}({{i.external_ip}}:{{i.external_port}}-->{{i.internal_ip}}:{{i.internal_port}}){%endif%}<br>{%endfor%}</td></tr>{%endfor%}
         </table>
     </div>
 {% endblock %}

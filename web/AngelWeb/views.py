@@ -136,7 +136,7 @@ def diff_netword_cfg(request):
     
     def execute_cmd(cmd):
         cmd = "svn --username %s --password %s %s %s" % (settings.SVN_USERNAME,settings.SVN_PASSWORD,cmd,settings.SVN_NETWORK_CONFIG)
-        data = os.popen(cmd).read().replace("\r","").replace("##############################","").strip()
+        data = os.popen(cmd).read().replace("\r","").strip()
         return data
     data = {};svnDt = {}; svnLs = [];dates = [];ticketsDt = {};result = []
     for i in execute_cmd("info").split("\n"):
@@ -151,7 +151,7 @@ def diff_netword_cfg(request):
         if "--- 2.1" in data and data.count("---") == 1:continue
         for j in re.sub("--- 2\.1.+---","",data.replace("\n","<br>").replace("\t","    ")).split("<br>"):
             #if j.startswith("@") or j.startswith("-") or j.startswith("+"):
-             if j.startswith("---"):continue
+             if j.startswith("---") or "@@ -1,4 +1,4 @@" in j or "#############" in j:continue
              elif j.startswith("+++"):tmpLs.append(re.findall("\+\+\+ (.+)  ",j)[0])
              elif j.startswith("@"):tmpLs.append(j)
              elif j.startswith("-"):tmpLs.append(j)
