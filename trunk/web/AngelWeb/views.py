@@ -134,9 +134,21 @@ def diff_netword_cfg(request):
     import urllib2
     
     if "tid" in request.GET:
-        try:tid = int(request.GET["tid"])
+        try:
+            if request.GET["tid"] == "":
+                ExtraLog.objects.get(type=5,label=request.GET["date"]).delete()
+            tid = int(request.GET["tid"])
         except:return HttpResponseRedirect("/netcfg/diff/")
-        log,created = ExtraLog.objects.get_or_create(type=5,label=request.GET["date"],value=request.GET["tid"],defaults={"label":request.GET["date"],"value":request.GET["tid"],"type":5})
+        try:
+            log = ExtraLog.objects.get(type=5,label=request.GET["date"])
+            log.value = request.GET["tid"]
+            log.save()
+        except:
+            log = ExtraLog()
+            log.type = 5
+            log.label = request.GET["date"]
+            log.value = request.GET["tid"]
+            log.save()
         return HttpResponseRedirect("/netcfg/diff/")
     
     def execute_cmd(cmd):
@@ -189,8 +201,9 @@ def diff_netword_cfg(request):
            log = ExtraLog.objects.get(type=5,label=d)
            tmp["ticket"] = ticketIdDt[log.value]
            tmp["relatedTicket"] = log.value
-           relatedTicket.append(log.value)
+           tmp["date"] = d
            result.append(tmp)
+           relatedTicket.append(log.value)
            continue
        except:log = None
        if d in ticketsDt:
