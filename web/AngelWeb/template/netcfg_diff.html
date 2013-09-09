@@ -15,7 +15,7 @@ td.center{vertical-align:middle;}
 td,th {font-size: 11px;line-height: 13px;border: 1px solid #000000;vertical-align: top;padding: 5px;}
 </style>
 <table>
-    <th style="width:70px;">Date</th><th>Network config change</th><th>Tickets</th>
+    <th style="width:70px;">Date</th><th>Network config change</th><th>Tickets</th><th>Action</th>
     {%for l in data%}
     <tr><td class="center">{{l.date}}</td><td>
 	{%for i in l.svn.content%}
@@ -26,7 +26,11 @@ td,th {font-size: 11px;line-height: 13px;border: 1px solid #000000;vertical-alig
 	{%endfor%}
 	</td><td>
 	{% for i in l.ticket%}
-	<a href="http://ticket.mozat.com/Ticket/IdcView/{{i.id}}" target="_blank">{%if i.label%}{{i.label}} | {%endif%}{{i.subject}}</a>{%if i.external_ip or i.internal_ip%}({{i.external_ip}}:{{i.external_port}}-->{{i.internal_ip}}:{{i.internal_port}}){%endif%}<br>{%endfor%}</td></tr>{%endfor%}
+	<a href="http://ticket.mozat.com/Ticket/IdcView/{{i.id}}" target="_blank">({{i.id}}){%if i.label%}{{i.label}} | {%endif%}{{i.subject}}</a>{%if i.external_ip or i.internal_ip%}({{i.external_ip}}:{{i.external_port}}-->{{i.internal_ip}}:{{i.internal_port}}){%endif%}<br>{%endfor%}</td><td>{%if l.svn%}
+		<form action="">
+			ticket id:<input type="text" name="tid" value="{{l.relatedTicket}}" style="width:40px;"/>
+				  <input type="hidden" name="date" value="{{l.date}}"/>
+				  <input type="submit" value="submit"></form>{%endif%}</td></tr>{%endfor%}
         </table>
     </div>
 {% endblock %}

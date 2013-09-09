@@ -132,13 +132,18 @@ def diff_netword_cfg(request):
     import re
     import json
     import urllib2
-    from subprocess import Popen, PIPE
+    
+    if "tid" in request.GET:
+        try:tid = int(request.GET["tid"])
+        except:return HttpResponseRedirect("/netcfg/diff/")
+        log,created = ExtraLog.objects.get_or_create(type=5,label=request.GET["date"],value=request.GET["tid"],defaults={"label":request.GET["date"],"value":request.GET["tid"],"type":5})
+        return HttpResponseRedirect("/netcfg/diff/")
     
     def execute_cmd(cmd):
-        cmd = "svn --username %s --password %s %s %s" % (settings.SVN_USERNAME,settings.SVN_PASSWORD,cmd,settings.SVN_NETWORK_CONFIG)
+        cmd = "svn --username %s --password %s --no-auth-cache %s %s" % (settings.SVN_USERNAME,settings.SVN_PASSWORD,cmd,settings.SVN_NETWORK_CONFIG)
         data = os.popen(cmd).read().replace("\r","").strip()
         return data
-    data = {};svnDt = {}; svnLs = [];dates = [];ticketsDt = {};result = []
+    data = {};svnDt = {}; svnLs = [];dates = [];ticketsDt = {};ticketIdDt = {};result = []
     for i in execute_cmd("info").split("\n"):
         try:
             i = i.split(": ")
@@ -172,13 +177,27 @@ def diff_netword_cfg(request):
     for t in tickets:
         dates.append(t["created_date"])
         ticketsDt.setdefault(t["created_date"],[]).append(t)
+        ticketIdDt.setdefault(t["id"],[]).append(t)
     dates = list(set(dates))
     dates.sort()
     dates.reverse()
+    relatedTicket = []
     for d in dates:
        tmp = {}
        if d in svnDt:tmp["svn"] = svnDt[d]
-       if d in ticketsDt:tmp["ticket"] = ticketsDt[d]
+       try:
+           log = ExtraLog.objects.get(type=5,label=d)
+           tmp["ticket"] = ticketIdDt[log.value]
+           tmp["relatedTicket"] = log.value
+           relatedTicket.append(log.value)
+           result.append(tmp)
+           continue
+       except:log = None
+       if d in ticketsDt:
+           for i in ticketsDt[d]:
+               if i["id"] in relatedTicket:
+                   ticketsDt[d].remove(i)
+           tmp["ticket"] = ticketsDt[d]
        if tmp:
            tmp["date"] = d
            result.append(tmp)
