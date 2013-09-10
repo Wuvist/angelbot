@@ -137,17 +137,17 @@ def diff_netword_cfg(request):
         try:
             if request.GET["tid"] == "":
                 ExtraLog.objects.get(type=5,label=request.GET["date"]).delete()
-            tid = int(request.GET["tid"])
         except:return HttpResponseRedirect("/netcfg/diff/")
+        tid = request.GET["tid"].replace(","," ").strip()
         try:
             log = ExtraLog.objects.get(type=5,label=request.GET["date"])
-            log.value = request.GET["tid"]
+            log.value = tid
             log.save()
         except:
             log = ExtraLog()
             log.type = 5
             log.label = request.GET["date"]
-            log.value = request.GET["tid"]
+            log.value = tid
             log.save()
         return HttpResponseRedirect("/netcfg/diff/")
     
@@ -189,28 +189,28 @@ def diff_netword_cfg(request):
     for t in tickets:
         dates.append(t["created_date"])
         ticketsDt.setdefault(t["created_date"],[]).append(t)
-        ticketIdDt.setdefault(t["id"],[]).append(t)
+        ticketIdDt[t["id"]] = t
     dates = list(set(dates))
     dates.sort()
     dates.reverse()
     relatedTicket = []
     for d in dates:
-       tmp = {}
+       tmp = {"ticket":[]}
        if d in svnDt:tmp["svn"] = svnDt[d]
        try:
            log = ExtraLog.objects.get(type=5,label=d)
-           tmp["ticket"] = ticketIdDt[log.value]
+           for i in log.value.split():
+               tmp["ticket"].append(ticketIdDt[i])
+               relatedTicket.append(i)
            tmp["relatedTicket"] = log.value
            tmp["date"] = d
            result.append(tmp)
-           relatedTicket.append(log.value)
            continue
        except:log = None
        if d in ticketsDt:
            for i in ticketsDt[d]:
-               if i["id"] in relatedTicket:
-                   ticketsDt[d].remove(i)
-           tmp["ticket"] = ticketsDt[d]
+               if i["id"] not in relatedTicket:
+                   tmp["ticket"].append(i)
        if tmp:
            tmp["date"] = d
            result.append(tmp)
