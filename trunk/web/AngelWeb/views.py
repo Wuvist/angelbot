@@ -194,6 +194,8 @@ def diff_netword_cfg(request):
     dates.sort()
     dates.reverse()
     relatedTicket = []
+    for i in ExtraLog.objects.filter(type=5,label__in=dates):
+        relatedTicket += i.value.split()
     for d in dates:
        tmp = {"ticket":[]}
        if d in svnDt:tmp["svn"] = svnDt[d]
@@ -201,11 +203,7 @@ def diff_netword_cfg(request):
            log = ExtraLog.objects.get(type=5,label=d)
            for i in log.value.split():
                tmp["ticket"].append(ticketIdDt[i])
-               relatedTicket.append(i)
            tmp["relatedTicket"] = log.value
-           tmp["date"] = d
-           result.append(tmp)
-           continue
        except:log = None
        if d in ticketsDt:
            for i in ticketsDt[d]:

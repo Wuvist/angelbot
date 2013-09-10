@@ -26,7 +26,7 @@ td,th {font-size: 11px;line-height: 13px;border: 1px solid #000000;vertical-alig
 	{%endfor%}
 	</td><td>
 	{% for i in l.ticket%}
-	<a href="http://ticket.mozat.com/ticket/mainIndex/?url=Ticket/IdcView/{{i.id}}" target="_blank">({{i.id}}){%if i.label%}{{i.label}} | {%endif%}{{i.subject}}</a>{%if i.external_ip or i.internal_ip%}({{i.external_ip}}:{{i.external_port}}-->{{i.internal_ip}}:{{i.internal_port}}){%endif%}<br>{%endfor%}</td><td>{%if l.svn%}
+	<a href="http://ticket.mozat.com/ticket/mainIndex/?url=Ticket/IdcView/{{i.id}}" target="_blank">({{i.id}}){%if i.label%}{{i.label}} | {%endif%}{{i.subject}}</a>{%if i.external_ip or i.internal_ip%}<br>({{i.external_ip}}:{{i.external_port}}-->{{i.internal_ip}}:{{i.internal_port}}){%endif%}<br>{%endfor%}</td><td>{%if l.svn%}
 		<form action="">
 			<input type="text" name="tid" value="{{l.relatedTicket}}" style="width:40px;"/>
 			<input type="hidden" name="date" value="{{l.date}}"/>
