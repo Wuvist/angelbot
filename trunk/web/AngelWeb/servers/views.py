@@ -1073,6 +1073,18 @@ def doCall():
     else:
         return False
 
+def callUseApi(users,msg):
+    import urllib2
+    result = True
+    for user in users:
+        try:
+            smsUrl = settings.CALL_API % (str(user.phone), msg)
+            smsResult = urllib2.urlopen(smsUrl.replace(" ","%20")).read()
+            if '"ret":0' not in smsResult:result = False
+        except:
+            result = False
+    return result
+
 def alarm(request):
     import time
     import threading
@@ -1266,10 +1278,14 @@ def alarm(request):
                     contactReault = sendSMS(contactUsers,widget.title,"ticketID: "+str(ticketId))
                     resultAlarm = ""
                 if "call" in alarmMode:
-                    try:
-                        contactReault = doCall()
-                    except:
-                        contactReault = "error"
+                    if callUseApi(contactUsers,widget.title + " error happen"):
+                        contactReault = "call ok"
+                    else:
+                        try:
+                            if doCall():contactReault = "call ok"
+                            else:contactReault = "call error"
+                        except:
+                            contactReault = "error"
                     resultAlarm = ""
                 if "cmd" in alarmMode:
                     cmd = alarmMode.split(":")[1]
