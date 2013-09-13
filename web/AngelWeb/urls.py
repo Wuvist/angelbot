@@ -18,6 +18,7 @@ urlpatterns = patterns('',
     
     (r'^accounts/login/$', 'django.contrib.auth.views.login'),
     (r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login'),
+    (r'^control/call/$', 'views.control_call'),
     (r'^$', 'servers.overviews.myhome'),
     (r'^home/$', 'views.home'),
     (r'^home/top$', 'servers.overviews.home_top'),

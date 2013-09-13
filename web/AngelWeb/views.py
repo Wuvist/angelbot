@@ -214,3 +214,26 @@ def diff_netword_cfg(request):
            result.append(tmp)
     return render_to_response("netcfg_diff.html",{"data":result})
     
+
+@login_required()
+def control_call(request):
+    try:
+        log = ExtraLog.objects.get(type=6)
+        call = log.value
+    except:
+        log = ExtraLog(type=6)
+        call = "off"
+    if request.GET.has_key("call"):
+        c = request.GET.get("call","")
+        if c == "on":
+            log.value = "on"
+            log.save()
+            call == "on"
+        elif c == "off":
+            log.value = "off"
+            log.save()
+            call == "off"
+        return HttpResponseRedirect("./")
+    if call == "on":
+        return HttpResponse('<center><input type="button" style="width:500px;height:250px;" onclick="javascript: location.href = \'./?call=off\'" value = "On" /></center>')
+    else:return HttpResponse('<center><input type="button" style="width:500px;height:250px;" onclick="javascript: location.href = \'./?call=on\'" value = "Off" /></center>')
