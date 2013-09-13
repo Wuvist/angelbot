@@ -209,7 +209,7 @@ def diff_netword_cfg(request):
            for i in ticketsDt[d]:
                if i["id"] not in relatedTicket:
                    tmp["ticket"].append(i)
-       if tmp:
+       if tmp["ticket"] != [] or "svn" in tmp:
            tmp["date"] = d
            result.append(tmp)
     return render_to_response("netcfg_diff.html",{"data":result})
