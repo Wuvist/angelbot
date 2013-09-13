@@ -292,7 +292,25 @@ def home_top(request):
         serverUpdate = t.days*86400+t.seconds
     except:
         serverUpdate = 10000
-    return render_to_response('html/top.html',{"request":request,"serverUpdate":serverUpdate,"tickets":ticketDict,"servers":serverDict,"services":servicesDict,"widgetStatus":widgetConfDifCount})
+    try:
+        log = ExtraLog.objects.get(type=6)
+        call = log.value
+    except:
+        log = ExtraLog(type=6)
+        call = "off"
+    if request.GET.has_key("call"):
+        c = request.GET.get("call","")
+        if c == "on":
+            log.value = "on"
+            log.save()
+            call == "on"
+        elif c == "off":
+            log.value = "off"
+            log.save()
+            call == "off"
+        return HttpResponseRedirect("/home/top")
+    disAlarmPros = Project.objects.filter(alarm="False")
+    return render_to_response('html/top.html',{"request":request,"call":call,"disAlarmPros":disAlarmPros,"serverUpdate":serverUpdate,"tickets":ticketDict,"servers":serverDict,"services":servicesDict,"widgetStatus":widgetConfDifCount})
     
 def home_center(request):
 

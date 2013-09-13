@@ -14,7 +14,7 @@ body {
 	font-size: 12px;
 	color: #000000;
 }
-.STYLE5 {font-size: 12}
+.STYLE5 {font-size: 12px}
 .STYLE7 {font-size: 12px; color: #FFFFFF; }
 .STYLE7 a{font-size: 12px; color: #FFFFFF; }
 a img {
@@ -33,7 +33,7 @@ td{text-align:center;font-size:11px;}
     <td height="57" background="/media/static/images/main_03.gif">
 	<table width="100%" border="0" cellspacing="0" cellpadding="0">
       <tr>
-        <td style="width:350px;font-size:30px;color:#ECFFFF;text-align:left">&nbsp;&nbsp;&nbsp;Mozat Angel</td>
+        <td style="width:100px;"></td>
         <td>
 		{%if request.user.is_staff%}
 		<table><tr><td>
@@ -67,7 +67,12 @@ td{text-align:center;font-size:11px;}
 				<tr><td colspan="4" align="center">Widget Config Status</td></tr>
 				<tr><td align="center">All</td><td>Ok</td><td>Diff</td></tr>
 				<tr><td align="center">{{widgetStatus.all}}</td><td>{{widgetStatus.same}}</td><td {%if widgetStatus.diff > 0%}style="background:#FA8072;"{%endif%}><a href="/overview/widget/diff_conf" target="rightFrame">{{widgetStatus.diff}}</a></td></tr>
-			</table></td></tr>
+			</table></td><td>
+			<table width="400" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
+				<tr><td>Disable Alarm Project</td><td>Call Status</td></tr>
+				<tr><td>{%for p in disAlarmPros%}{{p}} {%endfor%}</td><td>{%if call == 'on'%}<a href="/home/top?call=off">on</a>{%else%}<a href="/home/top?call=on">off</a>{%endif%}</td></tr>
+			</table>
+				</td></tr>
 		</table>
 		{%endif%}
 		</td>

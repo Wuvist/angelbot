@@ -100,6 +100,7 @@ class Server(models.Model):
 #type 3:cmdb show service user page size
 #type 4:db error mark
 #type 5:network config diff
+#type 6:alarm disable call
 class ExtraLog(models.Model):
     mark = models.IntegerField(max_length=10,null = True, blank = True)
     type = models.IntegerField(max_length=8)
