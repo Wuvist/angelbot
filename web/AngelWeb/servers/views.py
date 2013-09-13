@@ -1223,7 +1223,7 @@ def alarm(request):
         
         return alarmError,result
         
-    def contrastLog(alarm,widget,alarmlog):
+    def contrastLog(alarm,widget,alarmlog,ifCall):
         rrdTime = 0
         alarmDataDef = eval(alarm.alarm_def.replace("\n", "").replace("\r", ""))
         
@@ -1238,7 +1238,7 @@ def alarm(request):
                 alarmLevel = 1
                 alarmMode = eval(alarmDataDef[1])["mode"]
                 contactUsers = alarm.firstcontact.all()
-        elif (datetime.now()-alarmlog.created_on).seconds/60 > int(eval(alarmDataDef[int(alarmlog.alarmlevel)+1])["time"]):
+        elif (datetime.now()-alarmlog.created_on).seconds/60+int(eval(alarmDataDef[int(alarmlog.alarmlevel)])["time"])>int(eval(alarmDataDef[int(alarmlog.alarmlevel)+1])["time"]):
             rrdTime = eval(alarmDataDef[int(alarmlog.alarmlevel)+1])["time"]
             alarmLevel = int(alarmlog.alarmlevel)+1
             alarmMode = eval(alarmDataDef[int(alarmlog.alarmlevel)+1])["mode"]
@@ -1266,6 +1266,7 @@ def alarm(request):
                         ticketId = alarmlog.ticketid
                 except:
                     ticketId = ""
+                resultAlarm = ""
                 if "ticket" in alarmMode:
                     try:
                         assign = eval(alarmDataDef[i])["assign"]
@@ -1276,8 +1277,7 @@ def alarm(request):
                     resultAlarm,contactReault = sendMail(contactUsers,widget.title,result,ticketId)
                 if "sms" in alarmMode:
                     contactReault = sendSMS(contactUsers,widget.title,"ticketID: "+str(ticketId))
-                    resultAlarm = ""
-                if "call" in alarmMode:
+                if "call" in alarmMode and ifCall:
                     if callUseApi(contactUsers,widget.title + " error happen"):
                         contactReault = "call ok"
                     else:
@@ -1286,14 +1286,12 @@ def alarm(request):
                             else:contactReault = "call error"
                         except:
                             contactReault = "error"
-                    resultAlarm = ""
                 if "cmd" in alarmMode:
                     cmd = alarmMode.split(":")[1]
                     try:
                         contactReault = executeCmd(widget,cmd)
                     except Exception,e:
                         contactReault = "execute cmd fail"
-                    resultAlarm = ""
                 logs = AlarmLog()
                 logs.title = alarm
                 logs.widget = widget
@@ -1419,8 +1417,9 @@ def alarm(request):
                             doReport(i,frequentAlarmLog,eval("alarm."+contact_users[i]).all())
                             break
     class mythread(threading.Thread):
-        def __init__(self,alarm):
+        def __init__(self,alarm,ifCall):
             self.alarm = alarm
+            self.call = ifCall
             threading.Thread.__init__(self)
         def run(self):
             for widget in self.alarm.widget.filter(project__in = Project.objects.filter(alarm = "True"),dashboard__id=1).annotate():
@@ -1429,13 +1428,16 @@ def alarm(request):
                 except:
                     alarmlog = ""
                 try:
-                    contrastLog(self.alarm,widget,alarmlog) 
+                    contrastLog(self.alarm,widget,alarmlog,self.call) 
                 except:
                     pass
-    
+    try:
+        log = ExtraLog.objects.get(type=6)
+        ifCall = True if log.value == "on" else False
+    except:ifCall = True
     for alarm in Alarm.objects.all():
         if alarm.enable == "True":
-            t = mythread(alarm)
+            t = mythread(alarm,ifCall)
             t.start()
     
     for alarm in FrequentAlarm.objects.all():
