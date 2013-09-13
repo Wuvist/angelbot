@@ -33,11 +33,11 @@ td{text-align:center;font-size:11px;}
     <td height="57" background="/media/static/images/main_03.gif">
 	<table width="100%" border="0" cellspacing="0" cellpadding="0">
       <tr>
-        <td style="width:100px;"></td>
+        <td><table width="160px"></table></td>
         <td>
 		{%if request.user.is_staff%}
 		<table><tr><td>
-			<table width="250" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
+			<table width="250px" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
 				{%if serverUpdate > 180%}
 				<tr><td colspan="5" align="center" style="background:#FA8072;"><a href="/overview/problem/server" target="rightFrame">Server Status Totals</a></td></tr>
 				{%else%}
@@ -50,7 +50,7 @@ td{text-align:center;font-size:11px;}
 					<td><a href="/overview/problem/server" target="rightFrame">{{servers.allProblem}}</a></td>
 					<td><a href="/overview/problem/server" target="rightFrame">{{servers.allType}}</a></td></tr>
 			</table></td><td>
-			<table width="250" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
+			<table width="250px" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
 				<tr><td colspan="5" align="center">Services Status Totals</td></tr>
 				<tr><td align="center">Ok</td><td>Warning</td><td>Critical</td><td>All Problems</td><td>All Types</td></tr>
 				<tr><td align="center">{{services.ok}}</td>
@@ -58,7 +58,7 @@ td{text-align:center;font-size:11px;}
 				<td {%if services.error > 0%}style="background:#FA8072;"{%endif%}><a href="/overview/problem/service/1" target="rightFrame">{{services.error}}</a></td><td>{{services.allProblem}}</td>
 				<td>{{services.allType}}</td></tr>
 			</table></td><td>
-			<table width="220" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
+			<table width="220px" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
 				<tr><td colspan="4" align="center">Ticket Status Totals</td></tr>
 				<tr><td align="center">New</td><td>Processing</td><td>Closed</td><td>Done</td></tr>
 				<tr><td {%if tickets.new > 0%}style="background:#FA8072;"{%endif%}><a href="/ticket" target="rightFrame">{{tickets.new}}</a></td><td {%if tickets.processing > 0%}style="background:#F0E68C;"{%endif%}><a href="/ticket" target="rightFrame">{{tickets.processing}}</a></td><td>{{tickets.closed}}</td><td>{{tickets.done}}</td></tr>
@@ -68,9 +68,9 @@ td{text-align:center;font-size:11px;}
 				<tr><td align="center">All</td><td>Ok</td><td>Diff</td></tr>
 				<tr><td align="center">{{widgetStatus.all}}</td><td>{{widgetStatus.same}}</td><td {%if widgetStatus.diff > 0%}style="background:#FA8072;"{%endif%}><a href="/overview/widget/diff_conf" target="rightFrame">{{widgetStatus.diff}}</a></td></tr>
 			</table></td><td>
-			<table width="400" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
+			<table width="200px" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
 				<tr><td>Disable Alarm Project</td><td>Call Status</td></tr>
-				<tr><td>{%for p in disAlarmPros%}{{p}} {%endfor%}</td><td>{%if call == 'on'%}<a href="/home/top?call=off">on</a>{%else%}<a href="/home/top?call=on">off</a>{%endif%}</td></tr>
+				<tr><td>{{disAlarmPros}}</td><td {%if call == 'off'%}style="background:#FA8072;"{%endif%}>{%if call == 'on'%}<a href="/home/top?call=off">on</a>{%else%}<a href="/home/top?call=on">off</a>{%endif%}</td></tr>
 			</table>
 				</td></tr>
 		</table>
