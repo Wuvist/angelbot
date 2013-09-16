@@ -101,6 +101,7 @@ class Server(models.Model):
 #type 4:db error mark
 #type 5:network config diff
 #type 6:alarm disable call
+#type 7:disable alarm call log
 class ExtraLog(models.Model):
     mark = models.IntegerField(max_length=10,null = True, blank = True)
     type = models.IntegerField(max_length=8)
@@ -111,7 +112,7 @@ class ExtraLog(models.Model):
     created_time = models.DateTimeField(auto_now_add = True)
     
     def __unicode__(self):
-        return str(self.type) + " " + str(self.mark)
+        return str(self.type) + " " + str(self.created_time)
 
 class RemarkLog(models.Model):
     mark = models.IntegerField(max_length=10,null = True, blank = True)

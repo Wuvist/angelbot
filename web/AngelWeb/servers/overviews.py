@@ -308,6 +308,9 @@ def home_top(request):
             log.value = "off"
             log.save()
             call == "off"
+        l = ExtraLog(type=7,value=c)
+        if request.user.is_authenticated():l.label = request.user.username
+        l.save()
         return HttpResponseRedirect("/home/top")
     disAlarmPros = Project.objects.filter(alarm="False").count()
     return render_to_response('html/top.html',{"request":request,"call":call,"disAlarmPros":disAlarmPros,"serverUpdate":serverUpdate,"tickets":ticketDict,"servers":serverDict,"services":servicesDict,"widgetStatus":widgetConfDifCount})
