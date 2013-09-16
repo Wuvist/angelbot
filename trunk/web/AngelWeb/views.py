@@ -233,7 +233,17 @@ def control_call(request):
             log.value = "off"
             log.save()
             call == "off"
+        l = ExtraLog(type=7,value=c,label=request.user.username)
+        l.save()
         return HttpResponseRedirect("./")
     if call == "on":
         return HttpResponse('<center><input type="button" style="width:500px;height:250px;" onclick="javascript: location.href = \'./?call=off\'" value = "On" /></center>')
     else:return HttpResponse('<center><input type="button" style="width:500px;height:250px;" onclick="javascript: location.href = \'./?call=on\'" value = "Off" /></center>')
+
+@login_required()
+def control_call_showlog(request):
+    logs = ExtraLog.objects.filter(type=7).order_by("-id")[:100]
+    result = "<center><table border='1px'><tr><th>User name</th><th>Action</th><th>Time</th></tr>"
+    for l in logs:
+        result += "<tr><td>%s</td><td>%s</td><td>%s</td></tr>" % (l.label,l.value,l.created_time)
+    return HttpResponse(result + "</table></center>")
