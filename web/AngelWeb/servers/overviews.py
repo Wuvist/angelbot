@@ -556,7 +556,7 @@ def api_show_widget_detail(request,wid):
     ls.append(["title",w.title])
     ls.append(["widget status",widgetStatus["widgetStatus"]])
     try:
-        d = widget.detectorinfo_set.all().order_by("-id")[0]
+        d = w.detectorinfo_set.all().order_by("-id")[0]
         detectorInfo = json.loads(d.data)
     except:detectorInfo = {}
     if w.service_type and w.service_type.show_detail_key:
