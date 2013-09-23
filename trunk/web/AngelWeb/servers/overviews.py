@@ -298,7 +298,7 @@ def home_top(request):
     except:
         log = ExtraLog(type=6)
         call = "off"
-    if request.GET.has_key("call"):
+    if request.GET.has_key("call") and request.user.is_authenticated():
         c = request.GET.get("call","")
         if c == "on":
             log.value = "on"
@@ -309,7 +309,7 @@ def home_top(request):
             log.save()
             call == "off"
         l = ExtraLog(type=7,value=c)
-        if request.user.is_authenticated():l.label = request.user.username
+        l.label = request.user.username
         l.save()
         return HttpResponseRedirect("/home/top")
     disAlarmPros = Project.objects.filter(alarm="False").count()
@@ -374,7 +374,6 @@ def project_server(request,pid,sid):
         myResult,servicesDict,widgetStatusProjects = getdata(pid)
     data = widgetStatusProjects[int(pid)]["servicesValues"]
     for w in widgets:
-        print w.id
         try:
             w.dt = {"showTitle":"","value":"<td>"+w.title+"</td>"}
             for k in data[w.id]["valueList"]:
@@ -540,3 +539,32 @@ def quick_view_img(request):
     response = HttpResponse(stdout)
     response["content-type"] = "image/png"
     return response
+
+def get_show_key(data):
+    titleKey = []
+    for i in data.replace(";",",").split(","):
+        try:
+            titleKey.append(i.split(":"))
+        except:continue
+    return titleKey
+
+def api_show_widget_detail(request,wid):
+    import json
+    ls = [];lines = []
+    w = get_object_or_404(Widget,id=wid)
+    widgetStatus = paser_widget(w)
+    ls.append(["title",w.title])
+    ls.append(["widget status",widgetStatus["widgetStatus"]])
+    try:
+        d = widget.detectorinfo_set.all().order_by("-id")[0]
+        detectorInfo = json.loads(d.data)
+    except:detectorInfo = {}
+    if w.service_type and w.service_type.show_detail_key:
+        for title,titleKey in get_show_key(w.service_type.show_detail_key):
+            if titleKey in widgetStatus["valueList"]:lines.append(titleKey)
+            if titleKey in widgetStatus:ls.append([title,widgetStatus[titleKey]["value"]])
+            elif titleKey in detectorInfo:ls.append([title,detectorInfo[titleKey]])
+            else:ls.append([title,""])
+    ls.append(["production",",".join(w.dashboard.values_list("title",flat=True))])
+    start = int(time.time() - time.time() % 86400)
+    return render_to_response("cmdb/show_widget_detail.html",{"result":ls,"widget":w,"start":start,"end":start+86400,"lines":lines})

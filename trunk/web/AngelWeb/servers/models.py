@@ -264,6 +264,7 @@ class WidgetServiceType(models.Model):
     name = models.CharField(max_length=50)
     type = models.ForeignKey(ServiceType)
     show_key = models.TextField(null = True, blank=True)
+    show_detail_key = models.TextField(null = True, blank=True)
     remark = models.CharField(max_length=256, null = True, blank = True)
     
     def __unicode__(self):
