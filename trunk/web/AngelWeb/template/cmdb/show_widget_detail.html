@@ -3,10 +3,10 @@
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
 	<title>Mozat Angel</title>
+	<link rel="stylesheet" type="text/css" href="/media/css/base.css" />
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js"></script>
 </head>
 <body>
-        
-<link rel="stylesheet" type="text/css" href="/media/css/base.css" />
 <table>
 <tr><td>
 <table>
@@ -15,8 +15,15 @@
 {%endfor%}
 </table></td><td>
 <a href="/dashboard/1/widget/{{widget.id}}/graph" target="rightFrame"><img src="/rrd/img/{{widget.id}}/?&start={{start}}&end={{end}}&height=200&width=400&cl={{lines}}" height="200" width="400" /></a>
-</td><tr>
+</td><td><textarea name="remark" id="widget_remark" cols="60" rows="10">{{widget.remark}}</textarea></td><tr>
 </table>
+<script type="text/javascript">
+$(document).ready(function(){
+$("#widget_remark").change(function(){
+    $.get("/api/update_widget_info/",{"wid":{{widget.id}},"remark":$("#widget_remark").val()}, function(data){
+    });
+    });
+});
+</script>
 </body>
 </html>
-

@@ -568,3 +568,11 @@ def api_show_widget_detail(request,wid):
     ls.append(["production",",".join(w.dashboard.values_list("title",flat=True))])
     start = int(time.time() - time.time() % 86400)
     return render_to_response("cmdb/show_widget_detail.html",{"result":ls,"widget":w,"start":start,"end":start+86400,"lines":lines})
+
+def update_widget_info(request):
+    wid = request.GET["wid"]
+    remark = request.GET["remark"]
+    widget = get_object_or_404(Widget,id=wid)
+    widget.remark = remark
+    widget.save()
+    return HttpResponse("ok")
