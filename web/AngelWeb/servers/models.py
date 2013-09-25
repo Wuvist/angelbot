@@ -297,7 +297,7 @@ class Widget(models.Model):
     data_def = models.TextField(max_length =512, null = True, blank=True)
     data_default = models.TextField(max_length =512, null = True, blank=True)
     path = models.CharField(max_length=128, null = True, blank=True)
-    remark = models.CharField(max_length=256, null = True, blank = True)
+    remark = models.TextField(null = True, blank = True)
     update_time = models.DateTimeField(null = True, blank = True)
     created_on = models.DateTimeField(auto_now_add = True)
     def __unicode__(self):
