@@ -15,7 +15,7 @@
 {%endfor%}
 </table></td><td>
 <a href="/dashboard/1/widget/{{widget.id}}/graph" target="rightFrame"><img src="/rrd/img/{{widget.id}}/?&start={{start}}&end={{end}}&height=200&width=400&cl={{lines}}" height="200" width="400" /></a>
-</td><td><textarea name="remark" id="widget_remark" cols="60" rows="10">{{widget.remark}}</textarea></td><tr>
+</td><td><textarea name="remark" id="widget_remark" cols="60" rows="10">{%if widget.remark%}{{widget.remark}}{%endif%}</textarea></td><tr>
 </table>
 <script type="text/javascript">
 $(document).ready(function(){
