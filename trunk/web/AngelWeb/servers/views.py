@@ -1860,7 +1860,9 @@ def server_rrd(request):
                         tls = [i[x] for i in data[2][q:q+60] if i[x] != None ]
                         if len(tls) != 0:ls.append(sum(tls) / len(tls))
             if ls:
-                log = ExtraLog()
+                try:
+                    log = ExtraLog.objects.get(type=1,mark=s.id)
+                except:log = ExtraLog()
                 log.mark = s.id
                 log.type = 1
                 log.created_on = logTime
