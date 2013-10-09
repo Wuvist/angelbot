@@ -289,7 +289,7 @@ def home_top(request):
         if widgetConfDifCount == None:
             widgetConfDifCount,widgetConfDifListId = get_widget_diff_conf()
     try:
-        t = datetime.now() - RemarkLog.objects.filter(type=2).order_by("-id")[0].created_time
+        t = datetime.now() - ServerPing.objects.all().order_by("-created_time")[0].created_time
         serverUpdate = t.days*86400+t.seconds
     except:
         serverUpdate = 10000
