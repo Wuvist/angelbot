@@ -552,3 +552,14 @@ class SshLog(models.Model):
     
     def __unicode__(self):
         return self.name + " " + str(self.created_on)
+
+class ServerPing(models.Model):
+    mark = models.IntegerField(max_length=10,null = True, blank = True)
+    label = models.CharField(max_length=64,null = True, blank = True)
+    sign = models.CharField(max_length=64,null = True, blank = True)
+    value = models.TextField(null = True, blank = True)
+    created_on = models.DateField(auto_now_add= True)
+    created_time = models.DateTimeField(auto_now_add = False)
+    
+    def __unicode__(self):
+        return str(self.mark) + " " + str(self.value)

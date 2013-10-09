@@ -167,12 +167,13 @@ def getdata(projectId="all"):
 
 def get_server_data():
     t = time.strftime("%Y%m%d%H%M",time.localtime(time.time()-60))
+    myTime = time.strftime("%Y-%m-%d %H:%M:00",time.localtime(time.time()-60))
+    data = ServerPing.objects.filter(created_time=myTime).values("sign").annotate(count=Count("sign"))
     serverDict = cache.get("serverDict_"+t)
     if serverDict != None:
         cache.set("get_server_data_serverDict",serverDict,settings.CACHE_TIME)
         return serverDict
     serverDict = {"ok":0,"warning":0,"error":0,"allProblem":0,"allType":0}
-    data = RemarkLog.objects.filter(type=2,label=t).values("sign").annotate(count=Count("sign"))
     for d in data:
         if d["sign"] == "Normal":serverDict["ok"] = d["count"]
         elif d["sign"] == "Unstable":serverDict["warning"] = d["count"]
@@ -392,6 +393,8 @@ def project_server(request,pid,sid):
 
 def problem_server(request):
     n = [];d = [];u = [];o = [];unknown = []
+    myTime = time.strftime("%Y-%m-%d %H:%M:00",time.localtime(time.time()-60))
+    logs = ServerPing.objects.filter(created_time=myTime).order_by("-created_time")
     servers = Server.objects.all().order_by("ip")
     for i in settings.EXCLUDE_IPS:
         servers = servers.exclude(ip__contains=i.replace("*",""))
@@ -401,7 +404,7 @@ def problem_server(request):
                 s.log = {"sign":"Off"}
                 o.append(s)
             else:
-                s.log = RemarkLog.objects.filter(mark=s.id,type=2).order_by("-id")[0]
+                s.log = logs.filter(mark=s.id)[0]
                 if s.log.sign == "Normal":n.append(s)
                 elif s.log.sign == "Unstable":u.append(s)
                 else:d.append(s)

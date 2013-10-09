@@ -1876,8 +1876,11 @@ def server_rrd(request):
 def server_ping(request):
     import os
     import re
+    import json
     import threading
     label = time.strftime("%Y%m%d%H%M")
+    created_on = time.strftime("%Y-%m-%d")
+    created_time = time.strftime("%Y-%m-%d %H:%M:00")
     serverDict = {"ok":0,"warning":0,"error":0,"allProblem":0,"allType":0}
     serverStatus = {}
     t = []
@@ -1886,11 +1889,17 @@ def server_ping(request):
             self.s = s
             threading.Thread.__init__(self)
         def run(self):
-            sign = "Normal"
+            sign = "Normal";pingResult = {}
             result = os.popen("ping -c 2 %s" % self.s.ip).read().strip()
             loss = re.search("(\d+)\%",result).group()
+            pingTime = re.findall("time (\d+)ms",result)[0]
+            pingResult["loss"] = int(loss[:-1])
+            pingResult["time"] = pingTime
             if int(loss[:-1]) > settings.ERROR_LOSS:
                 sign = "Unstable"
+            if loss == "100%":sign = "Down"
+            value = "\n".join(result.split("\n")[-2:])
+            value = ",".join(value.split(",")[2:])
             try:
                 data = result.split()[-2].split("/")
                 if float(data[0]) > settings.ERROR_MIN:
@@ -1899,19 +1908,23 @@ def server_ping(request):
                     sign = "Unstable"
                 if float(data[2]) > settings.ERROR_MAX:
                     sign = "Unstable"
+                rttNum = re.findall("(\d+\.\d+)",value)
+                pingResult["min"] = rttNum[0]
+                pingResult["avg"] = rttNum[1]
+                pingResult["max"] = rttNum[2]
+                pingResult["mdev"] = rttNum[3]
+                value = json.dumps(pingResult)
             except:
                 pass
-            if loss == "100%":sign = "Down"
-            value = "\n".join(result.split("\n")[-2:])
-            value = ",".join(value.split(",")[2:])
             if "100%" in result:
                 value = "Destination Host Unreachable. "+result.split("\n")[-1].replace(", pipe 2","")
-            l = RemarkLog()
+            l = ServerPing()
             l.mark = self.s.id
-            l.type = 2
             l.label = label
             l.sign = sign
             l.value = value
+            l.created_on = created_on
+            l.created_time = created_time
             l.save()
             serverStatus[self.s.id] = sign
             serverDict["allType"] += 1

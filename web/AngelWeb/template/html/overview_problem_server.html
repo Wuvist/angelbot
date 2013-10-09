@@ -15,7 +15,7 @@ td.Off {background:#ADADAD}
 <tr><th>SN</th><th>Server</th><th>Status</th><th>Last Update</th><th>Status Information</th></tr>
 {% for s in servers%}
 <tr><td>{{forloop.counter}}</td><td>{{s.ip}}</td><td class="{{s.log.sign}}">{{s.log.sign}}
-	</td><td style="font-size:10px;">{{s.log.created_time|date:"Y-m-d H:i"}}</td><td>{{s.log.value}}</td></tr>
+	</td><td style="font-size:10px;">{{s.log.created_time|date:"Y-m-d H:i"}}&nbsp;</td><td>{{s.log.value}}</td></tr>
 {% endfor %}
 </table>
 </div>
