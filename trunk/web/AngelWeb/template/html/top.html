@@ -43,7 +43,7 @@ td{text-align:center;font-size:11px;}
 				{%else%}
 				<tr><td colspan="5" align="center">Server Status Totals</td></tr>
 				{%endif%}
-				<tr><td>Up</td><td>Down</td><td>Unstable</td><td style="text-align:center;font-size:7px;">All Problems</td><td>All Types</td></tr>
+				<tr><td>Up</td><td>Down</td><td>Unstable</td><td style="text-align:center;font-size:7px;">AllProblems</td><td>AllTypes</td></tr>
 				<tr><td align="center">{{servers.ok}}</td>
 					<td {%if servers.error > 0%}style="background:#FA8072;"{%endif%}><a href="/overview/problem/server" target="rightFrame">{{servers.error}}</a></td>
 					<td {%if servers.warning > 0%}style="background:#F0E68C;"{%endif%}><a href="/overview/problem/server" target="rightFrame">{{servers.warning}}</a></td>
@@ -52,7 +52,7 @@ td{text-align:center;font-size:11px;}
 			</table></td><td>
 			<table width="250px" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
 				<tr><td colspan="5" align="center">Services Status Totals</td></tr>
-				<tr><td align="center">Ok</td><td>Warning</td><td>Critical</td><td>All Problems</td><td>All Types</td></tr>
+				<tr><td align="center">Ok</td><td>Warning</td><td>Critical</td><td>AllProblems</td><td>AllTypes</td></tr>
 				<tr><td align="center">{{services.ok}}</td>
 				<td {%if services.warning > 0%}style="background:#F0E68C;"{%endif%}><a href="/overview/problem/service/1" target="rightFrame">{{services.warning}}</a></td>
 				<td {%if services.error > 0%}style="background:#FA8072;"{%endif%}><a href="/overview/problem/service/1" target="rightFrame">{{services.error}}</a></td><td>{{services.allProblem}}</td>
