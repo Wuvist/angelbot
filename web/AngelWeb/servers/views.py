@@ -1432,7 +1432,7 @@ def alarm(request):
                 except:
                     pass
     try:
-        log = ExtraLog.objects.get(type=6)
+        log = ExtraLog.objects.filter(type=6)[0]
         ifCall = True if log.value == "on" else False
     except:ifCall = True
     for alarm in Alarm.objects.all():
