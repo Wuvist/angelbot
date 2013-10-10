@@ -87,6 +87,13 @@ td.red{background:#FF2D2D}
 </td>
 </tr>{% endfor %}
 </table>
+<br><br><br>
+<table id="tb">
+<tr style="background:#ADADAD"><td>IDC</td><td>DB</td><td>Size</td><td>Time</td></tr>
+{%for i in remoteData%}
+<tr><td>{{i.0}}</td><td>{{i.1}}</td><td>{{i.2}}</td><td>{{i.3}}</td></tr>
+{%endfor%}
+</table>
 <br><br><br><br><br><br><br><br>
 <div id="showOthers" style="display:none;position:fixed;margin:auto;bottom:0;width:100%;height:100px;background:#DFFFDF;">
 </div>
