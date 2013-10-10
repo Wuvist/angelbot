@@ -294,7 +294,7 @@ def home_top(request):
     except:
         serverUpdate = 10000
     try:
-        log = ExtraLog.objects.get(type=6)
+        log = ExtraLog.objects.filter(type=6)[0]
         call = log.value
     except:
         log = ExtraLog(type=6)
@@ -309,8 +309,9 @@ def home_top(request):
             log.value = "off"
             log.save()
             call == "off"
-        l = ExtraLog(type=7,value=c)
-        l.label = request.user.username
+        l = DisableAlarmLog()
+        l.name = request.user.username
+        l.action = c
         l.save()
         return HttpResponseRedirect("/home/top")
     disAlarmPros = Project.objects.filter(alarm="False").count()
