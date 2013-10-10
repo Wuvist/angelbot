@@ -1917,7 +1917,7 @@ def server_ping(request):
             except:
                 pass
             if "100%" in result:
-                value = "Destination Host Unreachable. "+result.split("\n")[-1].replace(", pipe 2","")
+                value = "Destination Host Unreachable. "+result.split("\n")[-1].replace("pipe 2","")
             l = ServerPing()
             l.mark = self.s.id
             l.label = label
