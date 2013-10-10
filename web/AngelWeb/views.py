@@ -122,8 +122,9 @@ def dba_show_backup(request):
         errorDataLog.save()
     except:
         log = ExtraLog(type=4,value=json.dumps(errorData)).save()
-
-    return render_to_response("dba_show_backuplog.html",{"mysqlData":mysqlData,"sqlserverData":sqlserverData})
+    remoteData = open(settings.DB_REMOTE_BACKUP).readlines()
+    remoteData = [i.split(",") for i in remoteData]
+    return render_to_response("dba_show_backuplog.html",{"mysqlData":mysqlData,"sqlserverData":sqlserverData,"remoteData":remoteData})
 
 
 @login_required
