@@ -73,7 +73,7 @@ class ServerServerForm(ModelForm):
 
 class ServerServerAdmin(admin.ModelAdmin):
     form = ServerServerForm
-    list_display = ('uid', 'name', 'ip', 'physical_server_ip', 'idc')
+    list_display = ('uid', 'name', 'ip', 'physical_server_ip', 'idc', 'projects')
     search_fields = ('ip','name','uid','physical_server_ip' )
     ordering = ('name',)
 

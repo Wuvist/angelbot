@@ -92,6 +92,9 @@ class Server(models.Model):
     def __unicode__(self):
         return self.name + "(" + str(self.ip) + ")"
     
+    def projects(self):
+        return ",".join(self.project.all().values_list("name",flat=True))
+    
     class Meta:
         ordering = ["ip"]
 
