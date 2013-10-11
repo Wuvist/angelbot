@@ -395,7 +395,7 @@ def project_server(request,pid,sid):
 def problem_server(request):
     n = [];d = [];u = [];o = [];unknown = []
     myTime = time.strftime("%Y-%m-%d %H:%M:00",time.localtime(time.time()-60))
-    logs = ServerPing.objects.filter(created_time=myTime).order_by("-created_time")
+    logs = ServerPing.objects.filter(created_time=myTime)
     servers = Server.objects.all().order_by("ip")
     for i in settings.EXCLUDE_IPS:
         servers = servers.exclude(ip__contains=i.replace("*",""))

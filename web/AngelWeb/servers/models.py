@@ -119,7 +119,7 @@ class DisableAlarmLog(models.Model):
     created_on = models.DateTimeField(auto_now_add = True)
     
     def __unicode__(self):
-        return self.name + " " + self.action + " " + str(self.created_on)
+        return self.name + " turn " + self.action + "(" + str(self.created_on) + ")"
 
 class RemarkLog(models.Model):
     mark = models.IntegerField(max_length=10,null = True, blank = True)
