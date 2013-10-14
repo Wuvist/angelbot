@@ -393,9 +393,10 @@ def project_server(request,pid,sid):
     return render_to_response('html/overview_project_server.html',{"widgets":widgets})
 
 def problem_server(request):
-    n = [];d = [];u = [];o = [];unknown = []
+    n = [];d = [];u = [];o = [];unknown = [];tDt = {}
     myTime = time.strftime("%Y-%m-%d %H:%M:00",time.localtime(time.time()-60))
     logs = ServerPing.objects.filter(created_time=myTime)
+    for i in logs:tDt[i.mark] = i
     servers = Server.objects.all().order_by("ip")
     for i in settings.EXCLUDE_IPS:
         servers = servers.exclude(ip__contains=i.replace("*",""))
@@ -405,7 +406,7 @@ def problem_server(request):
                 s.log = {"sign":"Off"}
                 o.append(s)
             else:
-                s.log = logs.filter(mark=s.id)[0]
+                s.log = tDt[s.id]
                 if s.log.sign == "Normal":n.append(s)
                 elif s.log.sign == "Unstable":u.append(s)
                 else:d.append(s)
