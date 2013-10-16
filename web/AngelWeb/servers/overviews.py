@@ -315,7 +315,8 @@ def home_top(request):
         l.save()
         return HttpResponseRedirect("/home/top")
     disAlarmPros = Project.objects.filter(alarm="False").count()
-    return render_to_response('html/top.html',{"request":request,"call":call,"disAlarmPros":disAlarmPros,"serverUpdate":serverUpdate,"tickets":ticketDict,"servers":serverDict,"services":servicesDict,"widgetStatus":widgetConfDifCount})
+    disAlarms = Alarm.objects.filter(enable="False").count()
+    return render_to_response('html/top.html',{"request":request,"call":call,"disAlarmPros":disAlarmPros,"disAlarms":disAlarms,"serverUpdate":serverUpdate,"tickets":ticketDict,"servers":serverDict,"services":servicesDict,"widgetStatus":widgetConfDifCount})
     
 def home_center(request):
 
