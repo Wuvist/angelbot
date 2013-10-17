@@ -582,3 +582,35 @@ def update_widget_info(request):
     widget.remark = remark
     widget.save()
     return HttpResponse("ok")
+
+@login_required()
+def availability(request):
+    try:
+       s = request.GET["s"]
+       e = request.GET["e"]
+       time.strptime(s, "%Y-%m-%d")
+       time.strptime(e, "%Y-%m-%d")
+    except:
+       s = time.strftime("%Y-%m-%d",time.localtime(time.time()-86400))
+       e = time.strftime("%Y-%m-%d")
+    projects = Project.objects.all()
+    allServerSatus = {"Down":0,"Unstable":0,"Normal":0}
+    logs = ServerPing.objects.filter(created_time__gte=s+" 00:00:00",created_time__lte=e+" 23:59:59").values("mark","sign")
+    data = logs.annotate(Count=Count('sign')).order_by('mark')
+    for p in projects:
+        p.serverIds = list(Server.objects.filter(power_on="Y",project=p).values_list("id",flat=True))
+        p.serverData = {"Down":0,"Unstable":0,"Normal":0}
+        for d in data:
+            if d["mark"] in p.serverIds:
+                p.serverData[d["sign"]] += d["Count"]
+        alls = float(sum(p.serverData.values()))
+        if p.serverData["Down"] == 0:p.serverData["Down_p"] = 0
+        else:p.serverData["Down_p"] = "%0.2f" % (p.serverData["Down"] * 100 / alls)
+        if p.serverData["Unstable"] == 0:p.serverData["Unstable_p"] = 0
+        else:p.serverData["Unstable_p"] = "%0.2f" % (p.serverData["Unstable"] * 100 / alls)
+        if p.serverData["Normal"] == 0:p.serverData["Normal_p"] = 0
+        else:p.serverData["Normal_p"] = "%0.2f" % (p.serverData["Normal"] * 100 / alls)
+    for d in data:
+        allServerSatus[d["sign"]] += d["Count"]
+    
+    return render_to_response("html/report_availability.html",locals())
