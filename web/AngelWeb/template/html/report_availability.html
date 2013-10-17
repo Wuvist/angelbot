@@ -1,0 +1,94 @@
+{% extends "base_site.html" %}
+
+{% block content %}
+<!--<link rel="stylesheet" type="text/css" href="/media/css/forms.css" /> -->
+<link rel="stylesheet" type="text/css" href="/media/css/forms.css" />
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="/media/js/core.js"></script>
+<script type="text/javascript" src="/media/js/calendar.js"></script>
+<script type="text/javascript" src="/media/js/admin/DateTimeShortcuts.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script type="text/javascript" src="/media/js/jquery.min.js"></script>
+<script type="text/javascript" src="/media/js/jquery.init.js"></script> 
+<script type="text/javascript" src="/media/js/actions.min.js"></script>
+<script type="text/javascript" src="/media/js/highcharts.js"></script>
+<script type="text/javascript" src="/media/js/exporting.js"></script>
+
+<style>
+body{font-family: Verdana, helvetica, arial, sans-serif;}
+td{text-align:center;font-size:13px;}
+</style>
+<fieldset class="module aligned ">
+	<div>
+		<form action="">
+			Start:
+			<input name="s" value="{{s}}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
+			&nbsp;&nbsp;&nbsp;
+			End:
+			<input name="e" value="{{e}}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
+			&nbsp;&nbsp;&nbsp;
+		    <input type="submit" value = "Show Data" /><br/>
+		</form>
+	</div>
+</fieldset>
+<hr>
+<div id="serverSatus" style="width:500px; height: 350px;"></div>
+<table>
+	<tr><td>Project</td><td>Up time</td><td>Down time</td><td>Unstable</td></tr>
+	{%for p in projects%}
+	<tr><td>{{p.name}}</td><td>{{p.serverData.Normal_p}}%</td><td>{{p.serverData.Down_p}}%</td><td>{{p.serverData.Unstable_p}}%</td></tr>
+	{%endfor%}
+</table>
+<script type="text/javascript">
+$(function () {
+    $('#serverSatus').highcharts({
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false
+        },
+        title: {
+            text: 'All Server Status'
+        },
+        tooltip: {
+    	    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    color: '#000000',
+                    connectorColor: '#000000',
+                    format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+                }
+            }
+        },
+        series: [{
+            type: 'pie',
+            name: 'value',
+            data: [
+                {   name:'Normal',
+		    y:{{allServerSatus.Normal}},
+		    color:'green'
+		},
+                {
+                    name: 'Down',
+                    y: {{allServerSatus.Down}},
+                    sliced: true,
+                    selected: true,
+                    color: 'red'
+                },
+                {   name:'Unstable',
+		    y:{{allServerSatus.Unstable}},
+		    color:'yellow'}
+            ]
+        }]
+    });
+});
+    
+
+</script>
+
+{% endblock %}
