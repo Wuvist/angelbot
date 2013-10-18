@@ -614,3 +614,46 @@ def availability(request):
         allServerSatus[d["sign"]] += d["Count"]
     
     return render_to_response("html/report_availability.html",locals())
+
+@login_required()
+def availability_project_detail(request,pid):
+    try:
+       st = request.GET["s"]
+       ed = request.GET["e"]
+       time.strptime(st, "%Y-%m-%d")
+       time.strptime(ed, "%Y-%m-%d")
+    except:
+       st = time.strftime("%Y-%m-%d",time.localtime(time.time()-86400))
+       ed = time.strftime("%Y-%m-%d")
+    allServerSatus = {"Down":0,"Unstable":0,"Normal":0};dt = {};serverDt = {}
+    project = Project.objects.get(id=pid)
+    servers = Server.objects.filter(project=pid)
+    for s in servers:
+        serverDt[s.id] = s.ip
+    logs = ServerPing.objects.filter(mark__in=serverDt.keys(),created_time__gte=st+" 00:00:00",created_time__lte=ed+" 23:59:59").values("mark","sign").annotate(Count=Count('sign')).order_by('mark')
+    for l in logs:
+        if l["mark"] not in dt:dt[l["mark"]] = {"Down":0,"Unstable":0,"Normal":0}
+        dt[l["mark"]][l["sign"]]=l["Count"]
+        dt[l["mark"]]["mark"] = l["mark"]
+        allServerSatus[l["sign"]] += l["Count"]
+    ls = dt.values()
+    for d in ls:
+        alls = float(sum(d.values()))
+        d["ip"] = serverDt[d["mark"]]
+        if d["Down"] == 0:d["Down_p"] = 0
+        else:d["Down_p"] = "%0.2f" % (d["Down"] * 100 / alls)
+        if d["Unstable"] == 0:d["Unstable_p"] = 0
+        else:d["Unstable_p"] = "%0.2f" % (d["Unstable"] * 100 / alls)
+        if d["Normal"] == 0:d["Normal_p"] = 0
+        else:d["Normal_p"] = "%0.2f" % (d["Normal"] * 100 / alls)
+    ls = sorted(ls,key=lambda l:l["Unstable_p"],reverse = True)
+    ls = sorted(ls,key=lambda l:l["Down_p"],reverse = True)
+    allServerSatusCount = sum(allServerSatus.values())
+    if allServerSatus["Down"] == 0:allServerSatus["Down_p"] = 0
+    else:allServerSatus["Down_p"] = "%0.2f" % (allServerSatus["Down"] * 100.0 /allServerSatusCount)
+    if allServerSatus["Normal"] == 0:allServerSatus["Normal_p"] = 0
+    else:allServerSatus["Normal_p"] = "%0.2f" % (allServerSatus["Normal"] * 100.0 /allServerSatusCount)
+    if allServerSatus["Unstable"] == 0:allServerSatus["Unstable_p"] = 0
+    else:allServerSatus["Unstable_p"] = "%0.2f" % (allServerSatus["Unstable"] * 100.0 /allServerSatusCount)
+    
+    return render_to_response("html/report_availability_project_detail.html",locals())

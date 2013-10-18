@@ -16,16 +16,16 @@
 
 <style>
 body{font-family: Verdana, helvetica, arial, sans-serif;}
-td{text-align:center;font-size:13px;}
+td {text-align:center; font-size: 11px;line-height: 13px;border: 1px solid #000000;vertical-align: middle;padding: 5px;}
 </style>
 <fieldset class="module aligned ">
 	<div>
 		<form action="">
 			Start:
-			<input name="s" value="{{s}}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
+			<input name="s" value="{{st}}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
 			&nbsp;&nbsp;&nbsp;
 			End:
-			<input name="e" value="{{e}}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
+			<input name="e" value="{{ed}}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
 			&nbsp;&nbsp;&nbsp;
 		    <input type="submit" value = "Show Data" /><br/>
 		</form>
@@ -34,10 +34,11 @@ td{text-align:center;font-size:13px;}
 <hr>
 <div id="serverSatus" style="width:500px; height: 350px;"></div>
 <table>
-	<tr><td>Project</td><td>Up time %</td><td>Down time %</td><td>Unstable %</td></tr>
-	{%for p in projects%}
-	<tr><td><a href="/overview/report/availability/project/{{p.id}}/?s={{s}}&e={{e}}">{{p.name}}</a></td><td>{{p.serverData.Normal_p}}%</td><td>{{p.serverData.Down_p}}%</td><td>{{p.serverData.Unstable_p}}%</td></tr>
+	<tr><td>Project</td><td>Server</td><td>Up time %</td><td>Down time %</td><td>Unstable %</td></tr>
+	{%for l in ls%}
+	<tr>{%if forloop.counter == 1%}<td rowspan={{ls|length}}>{{project.name}}</td>{%endif%}<td>{{l.ip}}</td><td>{{l.Normal_p}}%</td><td>{{l.Down_p}}%</td><td>{{l.Unstable_p}}%</td></tr>
 	{%endfor%}
+	<tr><td>Average</td><td></td><td>{{allServerSatus.Normal_p}}%</td><td>{{allServerSatus.Down_p}}%</td><td>{{allServerSatus.Unstable_p}}%</td></tr>
 </table>
 <script type="text/javascript">
 $(function () {
@@ -48,7 +49,7 @@ $(function () {
             plotShadow: false
         },
         title: {
-            text: 'All Server Status'
+            text: '{{project.name}} Server Status'
         },
         tooltip: {
     	    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
