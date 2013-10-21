@@ -657,3 +657,73 @@ def availability_project_detail(request,pid):
     else:allServerSatus["Unstable_p"] = "%0.2f" % (allServerSatus["Unstable"] * 100.0 /allServerSatusCount)
     
     return render_to_response("html/report_availability_project_detail.html",locals())
+
+
+@login_required()
+def availability_server(request):
+    servers = Server.objects.all().order_by("ip")
+    
+    return render_to_response("html/report_server.html",{"servers":servers})
+
+@login_required()
+def availability_server_detail(request,sid):
+    try:
+       s = request.GET["s"]
+       e = request.GET["e"]
+       time.strptime(s, "%Y-%m-%d")
+       time.strptime(e, "%Y-%m-%d")
+    except:
+       s = time.strftime("%Y-%m-%d",time.localtime(time.time()-86400))
+       e = time.strftime("%Y-%m-%d")
+    allServerSatus = {"Down":0,"Unstable":0,"Normal":0};pingLoss = []; pingTime = []; pingMin = []; pingMax= []; pingAvg = [];pingCreatedOn = []
+    server = get_object_or_404(Server,id=sid)
+    logs = ServerPing.objects.filter(mark=sid,created_time__gte=s+" 00:00:00",created_time__lte=e+" 23:59:59").values("mark","sign").annotate(Count=Count('sign'))
+    for l in logs:
+        allServerSatus[l["sign"]] = l["Count"]
+    
+    avgData = {}
+    data = ServerPing.objects.filter(mark=sid,created_time__gte=s+" 00:00:00",created_time__lte=e+" 23:59:59")#.values("mark","sign").annotate(Count=Count('sign'))
+    for d in data:
+        key = str(d.created_time)[:13]
+        try:
+            v = eval(d.value)
+        except:continue
+        if key in avgData:
+            avgData[key]["time"].append(float(v["time"]))
+            avgData[key]["loss"].append(float(v["loss"]))
+            avgData[key]["max"].append(float(v["max"]))
+            avgData[key]["min"].append(float(v["min"]))
+            avgData[key]["avg"].append(float(v["avg"]))
+        else:
+            avgData[key]={"time":[float(v["time"])],"loss":[float(v["loss"])],"max":[float(v["max"])],"min":[float(v["min"])],"avg":[float(v["avg"])]}
+        '''
+        try:
+            v = eval(d.value)
+            pingLoss.append(float(v["loss"]))
+            pingTime.append(float(v["time"]))
+            pingMax.append(float(v["max"]))
+            pingMin.append(float(v["min"]))
+            pingAvg.append(float(v["avg"]))
+        except:
+            pingLoss.append(100)
+            pingTime.append(-1)
+            pingMax.append(-1)
+            pingMin.append(-1)
+            pingAvg.append(-1)
+        ''' 
+        #pingCreatedOn.append(str(d.created_time))
+    keys = avgData.keys()
+    keys = sorted(keys)
+    for i in keys:
+        d = avgData[i]
+        pingCreatedOn.append(i+":00:00")
+        pingLoss.append(float("%0.2f" % (sum(d["loss"])/len(d["loss"]))))
+        pingTime.append(float("%0.2f" % (sum(d["time"])/len(d["time"]))))
+        pingMax.append(float("%0.2f" % (sum(d["max"])/len(d["max"]))))
+        pingMin.append(float("%0.2f" % (sum(d["min"])/len(d["min"]))))
+        pingAvg.append(float("%0.2f" % (sum(d["avg"])/len(d["avg"]))))
+    interval = 0
+    if len(pingCreatedOn) > 11:
+        interval = len(pingCreatedOn) / 10
+    return render_to_response("html/report_server_detail.html",locals())
+    
