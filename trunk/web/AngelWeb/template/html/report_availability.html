@@ -47,7 +47,7 @@ $(function () {
                 type: 'area'
             },
             title: {
-                text: 'All Server Status Graph'
+                text: 'All server status area chart'
             },
             subtitle: {
                 text: 'Source: {{s}} ~ {{e}}'
@@ -96,39 +96,6 @@ $(function () {
             }]
         });
     });
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 $(function () {
     $('#serverSatus').highcharts({
         chart: {
@@ -137,8 +104,11 @@ $(function () {
             plotShadow: false
         },
         title: {
-            text: 'All Server Status'
+            text: 'All server status pie chart'
         },
+        subtitle: {
+                text: 'Source: {{s}} ~ {{e}}'
+            },
         tooltip: {
     	    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
         },
