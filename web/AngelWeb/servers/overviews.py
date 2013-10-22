@@ -626,7 +626,8 @@ def availability(request):
         unstableLs.append(u)
         dateLs.append(si)
     interval = 0
-    if len(dateLs) > 10:interval = len(dateLs) / 10
+    if len(dateLs) > 10:interval = len(dateLs) / 8
+    if interval == 1:interval = 2
     return render_to_response("html/report_availability.html",locals())
 
 @login_required()
