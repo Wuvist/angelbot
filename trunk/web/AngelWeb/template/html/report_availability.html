@@ -32,7 +32,8 @@ td{text-align:center;font-size:13px;}
 	</div>
 </fieldset>
 <hr>
-<div id="serverSatus" style="width:500px; height: 350px;"></div>
+<div id="serverSatus" style="width:50%; height: 350px;float: left;"></div>
+<div id="serverSatusGraph" style="width:50%; height: 350px; float: right;"></div>
 <table>
 	<tr><td>Project</td><td>Up time %</td><td>Down time %</td><td>Unstable %</td></tr>
 	{%for p in projects%}
@@ -40,6 +41,94 @@ td{text-align:center;font-size:13px;}
 	{%endfor%}
 </table>
 <script type="text/javascript">
+$(function () {
+        $('#serverSatusGraph').highcharts({
+            chart: {
+                type: 'area'
+            },
+            title: {
+                text: 'All Server Status Graph'
+            },
+            subtitle: {
+                text: 'Source: {{s}} ~ {{e}}'
+            },
+            xAxis: {
+                categories: {{dateLs|safe}},
+		tickInterval:{{interval}},
+                tickmarkPlacement: 'on',
+                title: {
+                    enabled: false
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'Percent',
+                },
+                min: 90,
+            },
+            tooltip: {
+                pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.percentage:.1f}%</b> ({point.y:,.0f})<br/>',
+                shared: true
+            },
+            plotOptions: {
+                area: {
+                    stacking: 'percent',
+                    lineColor: '#ffffff',
+                    lineWidth: 1,
+                    marker: {
+                        lineWidth: 1,
+                        lineColor: '#ffffff'
+                    }
+                }
+            },
+            series: [{
+                name: 'Down',
+		color:'red',
+                data: {{downLs|safe}}
+            }, {
+                name: 'Unstable',
+		color: 'yellow',
+                data: {{unstableLs|safe}}
+            }, {
+                name: 'Normal',
+		color:'green',
+                data: {{normalLs|safe}}
+            }]
+        });
+    });
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 $(function () {
     $('#serverSatus').highcharts({
         chart: {

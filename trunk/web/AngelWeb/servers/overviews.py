@@ -612,7 +612,21 @@ def availability(request):
         else:p.serverData["Normal_p"] = "%0.2f" % (p.serverData["Normal"] * 100 / alls)
     for d in data:
         allServerSatus[d["sign"]] += d["Count"]
-    
+    normalLs = [];downLs = [];unstableLs = [];dateLs = []
+    for i in range(int(time.mktime(time.strptime(s, "%Y-%m-%d"))),int(time.mktime(time.strptime(e, "%Y-%m-%d"))),86400):
+        si = time.strftime("%Y-%m-%d",time.localtime(i))
+        ei = time.strftime("%Y-%m-%d",time.localtime(i+86400))
+        n = 0;d = 0;u = 0
+        for i in ServerPing.objects.filter(created_time__gte=si+" 00:00:00",created_time__lte=ei+" 23:59:59").values("sign").annotate(Count=Count('sign')):
+            if i["sign"] == "Normal":n = i["Count"]
+            elif i["sign"] == "Down":d = i["Count"]
+            elif i["sign"] == "Unstable":u = i["Count"]
+        normalLs.append(n)
+        downLs.append(d)
+        unstableLs.append(u)
+        dateLs.append(si)
+    interval = 0
+    if len(dateLs) > 10:interval = len(dateLs) / 10
     return render_to_response("html/report_availability.html",locals())
 
 @login_required()
