@@ -676,7 +676,7 @@ def availability_project_detail(request,pid):
         si = time.strftime("%Y-%m-%d",time.localtime(i))
         ei = time.strftime("%Y-%m-%d",time.localtime(i+86400))
         n = 0;d = 0;u = 0
-        for i in ServerPing.objects.filter(created_time__gte=si+" 00:00:00",created_time__lte=ei+" 23:59:59").values("sign").annotate(Count=Count('sign')):
+        for i in ServerPing.objects.filter(mark__in=serverDt.keys(),created_time__gte=si+" 00:00:00",created_time__lte=ei+" 23:59:59").values("sign").annotate(Count=Count('sign')):
             if i["sign"] == "Normal":n = i["Count"]
             elif i["sign"] == "Down":d = i["Count"]
             elif i["sign"] == "Unstable":u = i["Count"]
@@ -763,7 +763,7 @@ def availability_server_detail(request,sid):
         si = time.strftime("%Y-%m-%d",time.localtime(i))
         ei = time.strftime("%Y-%m-%d",time.localtime(i+86400))
         n = 0;d = 0;u = 0
-        for i in ServerPing.objects.filter(created_time__gte=si+" 00:00:00",created_time__lte=ei+" 23:59:59").values("sign").annotate(Count=Count('sign')):
+        for i in ServerPing.objects.filter(mark=sid,created_time__gte=si+" 00:00:00",created_time__lte=ei+" 23:59:59").values("sign").annotate(Count=Count('sign')):
             if i["sign"] == "Normal":n = i["Count"]
             elif i["sign"] == "Down":d = i["Count"]
             elif i["sign"] == "Unstable":u = i["Count"]
