@@ -671,6 +671,23 @@ def availability_project_detail(request,pid):
     if allServerSatus["Unstable"] == 0:allServerSatus["Unstable_p"] = 0
     else:allServerSatus["Unstable_p"] = "%0.2f" % (allServerSatus["Unstable"] * 100.0 /allServerSatusCount)
     
+    normalLs = [];downLs = [];unstableLs = [];dateLs = []
+    for i in range(int(time.mktime(time.strptime(st, "%Y-%m-%d"))),int(time.mktime(time.strptime(ed, "%Y-%m-%d"))),86400):
+        si = time.strftime("%Y-%m-%d",time.localtime(i))
+        ei = time.strftime("%Y-%m-%d",time.localtime(i+86400))
+        n = 0;d = 0;u = 0
+        for i in ServerPing.objects.filter(created_time__gte=si+" 00:00:00",created_time__lte=ei+" 23:59:59").values("sign").annotate(Count=Count('sign')):
+            if i["sign"] == "Normal":n = i["Count"]
+            elif i["sign"] == "Down":d = i["Count"]
+            elif i["sign"] == "Unstable":u = i["Count"]
+        normalLs.append(n)
+        downLs.append(d)
+        unstableLs.append(u)
+        dateLs.append(si)
+    interval = 0
+    if len(dateLs) > 10:interval = len(dateLs) / 8
+    if interval == 1:interval = 2
+    
     return render_to_response("html/report_availability_project_detail.html",locals())
 
 
@@ -740,5 +757,21 @@ def availability_server_detail(request,sid):
     interval = 0
     if len(pingCreatedOn) > 11:
         interval = len(pingCreatedOn) / 10
+    
+    normalLs = [];downLs = [];unstableLs = [];dateLs = []
+    for i in range(int(time.mktime(time.strptime(s, "%Y-%m-%d"))),int(time.mktime(time.strptime(e, "%Y-%m-%d"))),86400):
+        si = time.strftime("%Y-%m-%d",time.localtime(i))
+        ei = time.strftime("%Y-%m-%d",time.localtime(i+86400))
+        n = 0;d = 0;u = 0
+        for i in ServerPing.objects.filter(created_time__gte=si+" 00:00:00",created_time__lte=ei+" 23:59:59").values("sign").annotate(Count=Count('sign')):
+            if i["sign"] == "Normal":n = i["Count"]
+            elif i["sign"] == "Down":d = i["Count"]
+            elif i["sign"] == "Unstable":u = i["Count"]
+        normalLs.append(n)
+        downLs.append(d)
+        unstableLs.append(u)
+        dateLs.append(si)
+    intervalArea = 0
+    if len(dateLs) > 10:intervalArea = len(dateLs) / 10
     return render_to_response("html/report_server_detail.html",locals())
     
