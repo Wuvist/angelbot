@@ -612,7 +612,7 @@ def availability(request):
         else:p.serverData["Normal_p"] = "%0.2f" % (p.serverData["Normal"] * 100 / alls)
     for d in data:
         allServerSatus[d["sign"]] += d["Count"]
-    normalLs = [];downLs = [];unstableLs = [];dateLs = []
+    normalLs = [];downLs = [];unstableLs = [];dateLs = [];minLs = []
     for i in range(int(time.mktime(time.strptime(s, "%Y-%m-%d"))),int(time.mktime(time.strptime(e, "%Y-%m-%d"))),86400):
         si = time.strftime("%Y-%m-%d",time.localtime(i))
         ei = time.strftime("%Y-%m-%d",time.localtime(i+86400))
@@ -625,9 +625,15 @@ def availability(request):
         downLs.append(d)
         unstableLs.append(u)
         dateLs.append(si)
+        perD = d * 100 / (n + d +u)
+        perU = u * 100 / (n + d +u)
+        if perD != 100 and perD != 0:minLs.append(perD)
+        if perU != 100 and perU != 0:minLs.append(perU)
     interval = 0
     if len(dateLs) > 10:interval = len(dateLs) / 8
     if interval == 1:interval = 2
+    try:minValue = 99 - max(minLs)
+    except:minValue = 99
     return render_to_response("html/report_availability.html",locals())
 
 @login_required()
@@ -653,12 +659,12 @@ def availability_project_detail(request,pid):
         allServerSatus[l["sign"]] += l["Count"]
     ls = dt.values()
     for d in ls:
-        alls = float(sum(d.values()))
+        alls = float(sum(d.values())-d["mark"])
         d["ip"] = serverDt[d["mark"]]
         if d["Down"] == 0:d["Down_p"] = 0
-        else:d["Down_p"] = "%0.2f" % (d["Down"] * 100 / alls)
+        else:d["Down_p"] = float("%0.2f" % (d["Down"] * 100 / alls))
         if d["Unstable"] == 0:d["Unstable_p"] = 0
-        else:d["Unstable_p"] = "%0.2f" % (d["Unstable"] * 100 / alls)
+        else:d["Unstable_p"] = float("%0.2f" % (d["Unstable"] * 100 / alls))
         if d["Normal"] == 0:d["Normal_p"] = 0
         else:d["Normal_p"] = "%0.2f" % (d["Normal"] * 100 / alls)
     ls = sorted(ls,key=lambda l:l["Unstable_p"],reverse = True)
@@ -671,7 +677,7 @@ def availability_project_detail(request,pid):
     if allServerSatus["Unstable"] == 0:allServerSatus["Unstable_p"] = 0
     else:allServerSatus["Unstable_p"] = "%0.2f" % (allServerSatus["Unstable"] * 100.0 /allServerSatusCount)
     
-    normalLs = [];downLs = [];unstableLs = [];dateLs = []
+    normalLs = [];downLs = [];unstableLs = [];dateLs = [];minLs = []
     for i in range(int(time.mktime(time.strptime(st, "%Y-%m-%d"))),int(time.mktime(time.strptime(ed, "%Y-%m-%d"))),86400):
         si = time.strftime("%Y-%m-%d",time.localtime(i))
         ei = time.strftime("%Y-%m-%d",time.localtime(i+86400))
@@ -684,18 +690,45 @@ def availability_project_detail(request,pid):
         downLs.append(d)
         unstableLs.append(u)
         dateLs.append(si)
+        perD = d * 100 / (n + d +u)
+        perU = u * 100 / (n + d +u)
+        if perD != 100 and perD != 0:minLs.append(perD)
+        if perU != 100 and perU != 0:minLs.append(perU)
     interval = 0
     if len(dateLs) > 10:interval = len(dateLs) / 8
     if interval == 1:interval = 2
+    try:minValue = 99 - max(minLs)
+    except:minValue = 99
     
     return render_to_response("html/report_availability_project_detail.html",locals())
 
 
 @login_required()
 def availability_server(request):
+    st = time.strftime("%Y-%m-%d",time.localtime(time.time()-86400))
+    ed = time.strftime("%Y-%m-%d")
+    serverDt = {};dt = {}
     servers = Server.objects.all().order_by("ip")
-    
-    return render_to_response("html/report_server.html",{"servers":servers})
+    for s in servers:
+        serverDt[s.id] = s.ip
+    logs = ServerPing.objects.filter(created_time__gte=st+" 00:00:00",created_time__lte=ed+" 23:59:59").values("mark","sign").annotate(Count=Count('sign'))
+    for l in logs:
+        if l["mark"] not in dt:dt[l["mark"]] = {"Down":0,"Unstable":0,"Normal":0}
+        dt[l["mark"]][l["sign"]]=l["Count"]
+        dt[l["mark"]]["mark"] = l["mark"]
+    ls = dt.values()
+    for d in ls:
+        alls = float(sum(d.values())-d["mark"])
+        d["ip"] = serverDt[d["mark"]]
+        if d["Down"] == 0:d["Down_p"] = 0
+        else:d["Down_p"] = float("%0.2f" % (d["Down"] * 100 / alls))
+        if d["Unstable"] == 0:d["Unstable_p"] = 0
+        else:d["Unstable_p"] = float("%0.2f" % (d["Unstable"] * 100 / alls))
+        if d["Normal"] == 0:d["Normal_p"] = 0
+        else:d["Normal_p"] = "%0.2f" % (d["Normal"] * 100 / alls)
+    ls = sorted(ls,key=lambda l:l["Unstable_p"],reverse = True)
+    ls = sorted(ls,key=lambda l:l["Down_p"],reverse = True)
+    return render_to_response("html/report_server.html",locals())
 
 @login_required()
 def availability_server_detail(request,sid):
@@ -758,7 +791,7 @@ def availability_server_detail(request,sid):
     if len(pingCreatedOn) > 11:
         interval = len(pingCreatedOn) / 10
     
-    normalLs = [];downLs = [];unstableLs = [];dateLs = []
+    normalLs = [];downLs = [];unstableLs = [];dateLs = [];minLs = []
     for i in range(int(time.mktime(time.strptime(s, "%Y-%m-%d"))),int(time.mktime(time.strptime(e, "%Y-%m-%d"))),86400):
         si = time.strftime("%Y-%m-%d",time.localtime(i))
         ei = time.strftime("%Y-%m-%d",time.localtime(i+86400))
@@ -771,7 +804,13 @@ def availability_server_detail(request,sid):
         downLs.append(d)
         unstableLs.append(u)
         dateLs.append(si)
+        perD = d * 100 / (n + d +u)
+        perU = u * 100 / (n + d +u)
+        if perD != 100 and perD != 0:minLs.append(perD)
+        if perU != 100 and perU != 0:minLs.append(perU)
     intervalArea = 0
     if len(dateLs) > 10:intervalArea = len(dateLs) / 10
+    try:minValue = 99 - max(minLs)
+    except:minValue = 99
     return render_to_response("html/report_server_detail.html",locals())
     
