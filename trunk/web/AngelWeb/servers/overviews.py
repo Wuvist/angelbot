@@ -719,6 +719,7 @@ def availability_server(request):
     ls = dt.values()
     for d in ls:
         alls = float(sum(d.values())-d["mark"])
+        if d["mark"] not in serverDt:continue
         d["ip"] = serverDt[d["mark"]]
         if d["Down"] == 0:d["Down_p"] = 0
         else:d["Down_p"] = float("%0.2f" % (d["Down"] * 100 / alls))
