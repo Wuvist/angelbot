@@ -713,13 +713,13 @@ def availability_server(request):
         serverDt[s.id] = s.ip
     logs = ServerPing.objects.filter(created_time__gte=st+" 00:00:00",created_time__lte=ed+" 23:59:59").values("mark","sign").annotate(Count=Count('sign'))
     for l in logs:
+        if l["mark"] not in serverDt:continue
         if l["mark"] not in dt:dt[l["mark"]] = {"Down":0,"Unstable":0,"Normal":0}
         dt[l["mark"]][l["sign"]]=l["Count"]
         dt[l["mark"]]["mark"] = l["mark"]
     ls = dt.values()
     for d in ls:
         alls = float(sum(d.values())-d["mark"])
-        if d["mark"] not in serverDt:continue
         d["ip"] = serverDt[d["mark"]]
         if d["Down"] == 0:d["Down_p"] = 0
         else:d["Down_p"] = float("%0.2f" % (d["Down"] * 100 / alls))
