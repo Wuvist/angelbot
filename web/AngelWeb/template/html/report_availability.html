@@ -72,7 +72,7 @@ $(function () {
                 
                 $.each(this.points, function(i, point) {
                     s += '<br/>'+ point.series.name +': '+
-                        (point.y * 100 / point.total).toFied(2) +'%';
+                        (point.y * 100 / point.total).toFixed(2) +'%';
                 });
                 
                 return s;
