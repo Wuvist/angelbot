@@ -1090,6 +1090,7 @@ def alarm(request):
     import threading
     from django.contrib.auth.models import User
     contact_users = {1:"firstcontact",2:"secondcontact",3:"thirdcontact",4:"fourthcontact",5:"fifthcontact",6:"sixthcontact"}
+    resultDt = {}
     def createTicket(errorType,widget,result,users,assign="no"):
         
         timeNow = '\''+str(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()))+'\''
@@ -1223,7 +1224,7 @@ def alarm(request):
         
         return alarmError,result
         
-    def contrastLog(alarm,widget,alarmlog,ifCall):
+    def contrastLog(alarm,widget,alarmlog):
         rrdTime = 0
         alarmDataDef = eval(alarm.alarm_def.replace("\n", "").replace("\r", ""))
         
@@ -1259,6 +1260,7 @@ def alarm(request):
                     alarmError,result = rrdAlarm(widget,int(rrdTime))
             
             if alarmError:
+                dt = {}
                 try:
                     if alarmlog.overdue == "2" or alarmDataDef.get(int(alarmlog.alarmlevel)+1,"") == "":
                         ticketId = ""
@@ -1266,45 +1268,14 @@ def alarm(request):
                         ticketId = alarmlog.ticketid
                 except:
                     ticketId = ""
-                resultAlarm = ""
-                if "ticket" in alarmMode:
-                    try:
-                        assign = eval(alarmDataDef[i])["assign"]
-                    except:
-                        assign = "no"
-                    ticketId,resultAlarm,contactReault = createTicket("[long_time]",widget,result,contactUsers,assign)
-                if "email" in alarmMode:
-                    resultAlarm,contactReault = sendMail(contactUsers,widget.title,result,ticketId)
-                if "sms" in alarmMode:
-                    contactReault = sendSMS(contactUsers,widget.title,"ticketID: "+str(ticketId))
-                if "call" in alarmMode and ifCall:
-                    if callUseApi(contactUsers,widget.title + " error happen"):
-                        contactReault = "call ok"
-                    else:
-                        try:
-                            if doCall():contactReault = "call ok"
-                            else:contactReault = "call error"
-                        except:
-                            contactReault = "error"
-                if "cmd" in alarmMode:
-                    cmd = alarmMode.split(":")[1]
-                    try:
-                        contactReault = executeCmd(widget,cmd)
-                    except Exception,e:
-                        contactReault = "execute cmd fail"
-                logs = AlarmLog()
-                logs.title = alarm
-                logs.widget = widget
-                logs.alarmlevel = alarmLevel
-                logs.alarmmode = alarmMode
-                logs.ticketid = ticketId
-                logs.overdue = "1"
-                logs.save()
-                logs.alarmuser = contactUsers
-                logs.save()
-                logs.result = result+"\n\n"+resultAlarm
-                logs.contact_result = contactReault
-                logs.save()
+                dt["alarmlog"] = alarmlog
+                dt["ticketId"] = ticketId
+                dt["widget"] = widget
+                dt["result"] = result
+                dt["contactUsers"] = contactUsers
+                dt["alarmMode"] = alarmMode
+                dt["alarmLevel"] = alarmLevel
+                resultDt[alarm.id]["alarmWidgets"].append(dt)
     def frequentrrdAlarm(widget):
         import rrdtool
         rrd_path = widget.rrd.path()
@@ -1419,26 +1390,118 @@ def alarm(request):
     class mythread(threading.Thread):
         def __init__(self,alarm,ifCall):
             self.alarm = alarm
-            self.call = ifCall
+            self.alarm.ifCall = ifCall
             threading.Thread.__init__(self)
         def run(self):
-            for widget in self.alarm.widget.filter(project__in = Project.objects.filter(alarm = "True"),dashboard__id=1).annotate():
+            widgets = self.alarm.widget.filter(project__in = Project.objects.filter(alarm = "True"),dashboard__id=1).annotate()
+            self.alarm.widgetCount = widgets.count()
+            for widget in widgets:
                 try:
                     alarmlog = AlarmLog.objects.filter(widget = widget.id, title = self.alarm).order_by("-created_on")[0]
                 except:
                     alarmlog = ""
                 try:
-                    contrastLog(self.alarm,widget,alarmlog,self.call) 
+                    contrastLog(self.alarm,widget,alarmlog) 
                 except:
                     pass
+
+    def doReport(alarm,widget,alarmMode,contactUsers,result,ticketId,alarmLevel,ifAlarm=False):
+        resultAlarm = ""
+        contactReault = ""
+        if widget:title = widget.title
+        else:title = alarm.title + "(all widgets error)"
+        if "ticket" in alarmMode:
+            ticketId,resultAlarm,contactReault = createTicket("[long_time]",widget,result,contactUsers)
+        if "email" in alarmMode:
+            resultAlarm,contactReault = sendMail(contactUsers,title,result,ticketId)
+        if "sms" in alarmMode:
+            contactReault = sendSMS(contactUsers,title,"ticketID: "+str(ticketId))
+        if "call" in alarmMode and alarm.ifCall:
+            if callUseApi(contactUsers,title + " error happen"):
+                contactReault = "call ok"
+            else:
+                try:
+                    if doCall():contactReault = "call ok"
+                    else:contactReault = "call error"
+                except:
+                    contactReault = "error"
+        if "cmd" in alarmMode:
+            cmd = alarmMode.split(":")[1]
+            try:
+                contactReault = executeCmd(widget,cmd)
+            except Exception,e:
+                contactReault = "execute cmd fail"
+        logs = AlarmLog()
+        if ifAlarm:logs.merger = 1
+        logs.title = alarm
+        logs.widget = widget
+        logs.alarmlevel = alarmLevel
+        logs.alarmmode = alarmMode
+        logs.ticketid = ticketId
+        logs.overdue = "1"
+        logs.save()
+        logs.alarmuser = contactUsers
+        logs.save()
+        logs.result = result+"\n\n"+resultAlarm
+        logs.contact_result = contactReault
+        logs.save()
     try:
         log = ExtraLog.objects.filter(type=6)[0]
         ifCall = True if log.value == "on" else False
     except:ifCall = True
+    thLs = []
     for alarm in Alarm.objects.all():
         if alarm.enable == "True":
+            resultDt[alarm.id] = {"alarm":alarm,"alarmWidgets":[]}
             t = mythread(alarm,ifCall)
             t.start()
+            thLs.append(t)
+    for t in thLs:
+        t.join()
+    
+    for x,y in resultDt.items():
+        if len(y["alarmWidgets"]) not in [0,1] and y["alarm"].widgetCount == len(y["alarmWidgets"]):
+            alarm = y["alarm"]
+            try:
+                alarmlog = AlarmLog.objects.filter(title = alarm, merger = 1).order_by("-created_on")[0]
+                ticketId = alarmlog.ticketid
+            except:
+                alarmlog = ""
+                ticketId = ""
+            rrdTime = 0
+            alarmDataDef = eval(alarm.alarm_def.replace("\n", "").replace("\r", ""))
+            
+            if alarmlog == "":
+                rrdTime = eval(alarmDataDef[1])["time"]
+                alarmLevel = 1
+                alarmMode = eval(alarmDataDef[1])["mode"]
+                contactUsers = alarm.firstcontact.all()
+            elif alarmlog.overdue == "2" or alarmDataDef.get(int(alarmlog.alarmlevel)+1,"") == "":
+                if int(eval(alarmDataDef[int(alarmlog.alarmlevel)])["interval"])<(datetime.now()-alarmlog.created_on).seconds/60:
+                    rrdTime = eval(alarmDataDef[1])["time"]
+                    alarmLevel = 1
+                    alarmMode = eval(alarmDataDef[1])["mode"]
+                    contactUsers = alarm.firstcontact.all()
+            elif (datetime.now()-alarmlog.created_on).seconds/60+int(eval(alarmDataDef[int(alarmlog.alarmlevel)])["time"])>int(eval(alarmDataDef[int(alarmlog.alarmlevel)+1])["time"]):
+                rrdTime = eval(alarmDataDef[int(alarmlog.alarmlevel)+1])["time"]
+                alarmLevel = int(alarmlog.alarmlevel)+1
+                alarmMode = eval(alarmDataDef[int(alarmlog.alarmlevel)+1])["mode"]
+                contactUsers = eval("alarm."+contact_users[int(alarmlog.alarmlevel)+1]).all()
+            if rrdTime != 0:
+                doReport(y["alarm"],None,alarmMode,contactUsers,y["alarm"].title+" all widgets error.",ticketId,alarmLevel,ifAlarm=True)
+        else:
+            try:
+                l = AlarmLog.objects.filter(title = y["alarm"], merger = 1).order_by("-created_on")[0]
+                l.overdue="2"
+                l.save()
+            except:
+                pass
+            for i in y["alarmWidgets"]:
+                try:
+                    doReport(y["alarm"],i["widget"],i["alarmMode"],i["contactUsers"],i["result"],i["ticketId"],i["alarmLevel"])
+                except:pass
+        
+           
     
     for alarm in FrequentAlarm.objects.all():
         if eval(alarm.enable):
