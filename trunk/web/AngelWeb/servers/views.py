@@ -1091,15 +1091,17 @@ def alarm(request):
     from django.contrib.auth.models import User
     contact_users = {1:"firstcontact",2:"secondcontact",3:"thirdcontact",4:"fourthcontact",5:"fifthcontact",6:"sixthcontact"}
     resultDt = {}
-    def createTicket(errorType,widget,result,users,assign="no"):
-        
+    def createTicket(errorType,widget,result,users,alarm,assign="no",ifAlarm=False):
         timeNow = '\''+str(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()))+'\''
         ticketId = ""
         try:
             ticket = Ticket()
-            ticket.widget = widget
+            if ifAlarm:
+                ticket.title = errorType + alarm.title
+            else:
+                ticket.title = errorType + str(widget.title)
+                ticket.widget = widget
             ticket.service = widget.service_type
-            ticket.title = errorType + str(widget.title)
             ticket.recorder = User.objects.get(username="angel")
             ticket.status = "New"
             ticket.incident = result
@@ -1111,6 +1113,7 @@ def alarm(request):
             result = ""
             contactReault = "suc"
         except:
+            raise
             result = "created ticket failed !"
             contactReault = "fail"
             
@@ -1328,7 +1331,7 @@ def alarm(request):
                     assign = eval(alarmDataDef[alarmLevel])["assign"]
                 except:
                     assign = "no"
-                ticketId,resultAlarm,contactReault = createTicket("[frequent]",widget,result,contactUsers,assign)
+                ticketId,resultAlarm,contactReault = createTicket("[frequent]",widget,result,contactUsers,"",assign=assign)
                 frequentAlarmLog = saveFrequentLog(frequentAlarmLog,alarmLevel,alarmMode,ticketId,contactReault,result,contactUsers)
             if "email" in str(alarmMode):
                 resultAlarm,contactReault = sendMail(contactUsers,widget.title,result,frequentAlarmLog.ticketid)
@@ -1405,13 +1408,14 @@ def alarm(request):
                 except:
                     pass
 
-    def doReport(alarm,widget,alarmMode,contactUsers,result,ticketId,alarmLevel,ifAlarm=False):
+    def doReport(alarm,widgets,alarmMode,contactUsers,result,ticketId,alarmLevel,ifAlarm=False):
         resultAlarm = ""
         contactReault = ""
-        if widget:title = widget.title
-        else:title = alarm.title + "(all widgets error)"
+        if ifAlarm:title = alarm.title + "(all widgets error)"
+        else:
+            title = widgets[0].title
         if "ticket" in alarmMode:
-            ticketId,resultAlarm,contactReault = createTicket("[long_time]",widget,result,contactUsers)
+            ticketId,resultAlarm,contactReault = createTicket("[long_time]",widgets[0],result,contactUsers,alarm,ifAlarm=True)
         if "email" in alarmMode:
             resultAlarm,contactReault = sendMail(contactUsers,title,result,ticketId)
         if "sms" in alarmMode:
@@ -1426,15 +1430,16 @@ def alarm(request):
                 except:
                     contactReault = "error"
         if "cmd" in alarmMode:
-            cmd = alarmMode.split(":")[1]
-            try:
-                contactReault = executeCmd(widget,cmd)
-            except Exception,e:
-                contactReault = "execute cmd fail"
+            for widget in widgets:
+                try:
+                    cmd = alarmMode.split(":")[1]
+                    contactReault = executeCmd(widget,cmd)
+                except Exception,e:
+                    contactReault = "execute cmd fail"
         logs = AlarmLog()
         if ifAlarm:logs.merger = 1
+        if not ifAlarm:logs.widget = widgets[0]
         logs.title = alarm
-        logs.widget = widget
         logs.alarmlevel = alarmLevel
         logs.alarmmode = alarmMode
         logs.ticketid = ticketId
@@ -1488,7 +1493,7 @@ def alarm(request):
                 alarmMode = eval(alarmDataDef[int(alarmlog.alarmlevel)+1])["mode"]
                 contactUsers = eval("alarm."+contact_users[int(alarmlog.alarmlevel)+1]).all()
             if rrdTime != 0:
-                doReport(y["alarm"],None,alarmMode,contactUsers,y["alarm"].title+" all widgets error.",ticketId,alarmLevel,ifAlarm=True)
+                doReport(y["alarm"],[i["widget"] for i in y["alarmWidgets"]],alarmMode,contactUsers,y["alarm"].title+" all widgets error.",ticketId,alarmLevel,ifAlarm=True)
         else:
             try:
                 l = AlarmLog.objects.filter(title = y["alarm"], merger = 1).order_by("-created_on")[0]
@@ -1498,7 +1503,7 @@ def alarm(request):
                 pass
             for i in y["alarmWidgets"]:
                 try:
-                    doReport(y["alarm"],i["widget"],i["alarmMode"],i["contactUsers"],i["result"],i["ticketId"],i["alarmLevel"])
+                    doReport(y["alarm"],[i["widget"]],i["alarmMode"],i["contactUsers"],i["result"],i["ticketId"],i["alarmLevel"])
                 except:pass
         
            
