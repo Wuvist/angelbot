@@ -369,19 +369,19 @@ ALARMLOG_OVERDUE_CHOICES = (
 
 class AlarmLog(models.Model):
     title = models.ForeignKey(Alarm)
-    widget = models.ForeignKey(Widget)
+    widget = models.ForeignKey(Widget,null = True, blank = True)
     alarmlevel = models.IntegerField(max_length=1)
-    alarmmode = models.CharField(max_length=16)
+    alarmmode = models.CharField(max_length=512)
     ticketid = models.CharField(max_length=16, null = True, blank = True)
     alarmuser = models.ManyToManyField(AlarmUser, null = True, blank = True)
     result = models.TextField(null = True, blank = True)
     contact_result = models.TextField(null = True, blank = True)
     overdue = models.CharField(max_length=1, choices=ALARMLOG_OVERDUE_CHOICES)
+    merger = models.IntegerField(max_length=1,null = True, blank = True)
     created_on = models.DateTimeField(auto_now_add = True)
     
     def __unicode__(self):
         return str(self.title) + ": "  + str(self.alarmlevel) +" level "+ str(self.widget) + " (" + str(self.created_on)  +")"
-
 
 class FrequentAlarm(models.Model):
     title = models.CharField(max_length=50)

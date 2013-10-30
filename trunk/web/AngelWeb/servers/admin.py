@@ -44,7 +44,7 @@ class RrdAdmin(admin.ModelAdmin):
     ordering = ('name',)
 
 class AlarmLogAdmin(admin.ModelAdmin):
-    list_display = ('title', 'widget', 'created_on')
+    list_display = ('title', 'widget', 'created_on','alarmmode')
     ordering = ('-created_on',)
 
 class AlarmAdmin(admin.ModelAdmin):
