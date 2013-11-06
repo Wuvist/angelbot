@@ -1,0 +1,30 @@
+{% extends "html/html_home.html" %}
+
+{% block content %}
+<style>
+body{font-family: Verdana, helvetica, arial, sans-serif;}
+td{text-align:center;font-size:13px;}
+td.rights {border-bottom:1px solid #000;border-right:1px solid #000;}
+</style>
+<div id="data" style="width:50%;float:left;">
+<table border="1" cellspacing="0" cellpadding="1">
+<tr><th>Server</th><th>Server Status</th><th>Service Name</th><th>Services Status</th><th>Action</th></tr>
+{%for s in widgets1%}
+<tr><td>{{s.server.ip}}</td><td>{{s.serverStatus.sign}}</td><td>{{s.title}}</td><td style="align:center;">{{s.serviceStatus.widgetStatus}}
+	</td><td style="font-size:10px;"><a href="/dashboard/1/widget/{{s.id}}/graph">Graph</a> | <a href="/overview/show_widget/{{s.id}}">Service Details</a></td></tr>
+{% endfor %}
+</table>
+</div>
+{%if widgets2%}
+<div id="imgall" style="width:50%;float:right;">
+<table border="1" cellspacing="0" cellpadding="1">
+<tr><th>Server</th><th>Services Status</th><th>Service Name</th><th style="width:100px;">Action</th></tr>
+{%for s in widgets2%}
+<tr><td>{{s.server.ip}}</td><td>{{s.serverStatus.sign}}</td><td>{{s.title}}</td><td style="align:center;">{{s.serviceStatus.widgetStatus}}
+	</td><td style="font-size:10px;"><a href="/dashboard/1/widget/{{s.id}}/graph">Graph</a> | <a href="/overview/show_widget/{{s.id}}">Service Details</a></td></tr>
+{% endfor %}
+</table>
+</div>
+{%endif%}
+
+{% endblock %}

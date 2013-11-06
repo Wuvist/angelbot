@@ -1,0 +1,47 @@
+{% extends "html/html_home.html" %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="/media/css/base.css" />
+<style>
+body{font-family: Verdana, helvetica, arial, sans-serif;}
+td {font-size: 11px;line-height: 13px;border: 1px solid #000000;vertical-align: middle;padding: 5px;}
+td.rights {border-bottom:1px solid #000;border-right:1px solid #000;}
+</style>
+<div id="data" style="width:50%;float:left;">
+<table border="1" cellspacing="0" cellpadding="1">
+<tr><th>Service</th><th>Status</th><th>Action</th></tr>
+{%for w in wsts1%}
+<tr><td>{{w.name}}</td><td>
+	<table>
+		<tr><td>{{w.widgetStatus.ok}}  Ok</td></tr>
+		<tr><td {%if w.widgetStatus.warning > 0 %}style="background:#FFFF37;"{%endif%}>{{w.widgetStatus.warning}}  Warning</td></tr>
+		<tr><td {%if w.widgetStatus.error > 0%}style="background:#FF0000;"{%endif%}>{{w.widgetStatus.error}}  Error</td></tr>
+		<tr><td {%if w.widgetStatus.noUpdate > 0%}style="background:#FF0000;"{%endif%}>{{w.widgetStatus.noUpdate}}  no update</td></tr>
+		<tr><td {%if w.widgetStatus.unknown > 0 %}style="background:#FFFF37;"{%endif%}>{{w.widgetStatus.unknown}}  unknown</td></tr>
+	</table>
+	</td>
+	<td><a href="/overview/services/services_detail/{{w.id}}">Service Details</a></td></tr>
+{% endfor %}
+</table>
+</div>
+{%if wsts2%}
+<div id="imgall" style="width:50%;float:right;">
+<table border="1" cellspacing="0" cellpadding="1">
+<tr><th>Service</th><th>Status</th><th>Action</th></tr>
+{%for w in wsts2%}
+<tr><td>{{w.name}}</td><td>
+	<table>
+		<tr><td>{{w.widgetStatus.ok}}  Ok</td></tr>
+		<tr><td {%if w.widgetStatus.warning > 0 %}style="background:#FFFF37;"{%endif%}>{{w.widgetStatus.warning}}  Warning</td></tr>
+		<tr><td {%if w.widgetStatus.error > 0%}style="background:#FF0000;"{%endif%}>{{w.widgetStatus.error}}  Error</td></tr>
+		<tr><td {%if w.widgetStatus.noUpdate > 0%}style="background:#FF0000;"{%endif%}>{{w.widgetStatus.noUpdate}}  no update</td></tr>
+		<tr><td {%if w.widgetStatus.unknown > 0 %}style="background:#FFFF37;"{%endif%}>{{w.widgetStatus.unknown}}  unknown</td></tr>
+	</table>
+	</td>
+	<td><a href="/overview/services/services_detail/{{w.id}}">Service Details</a></td></tr>
+{% endfor %}
+</table>
+</div>
+{%endif%}
+
+{% endblock %}

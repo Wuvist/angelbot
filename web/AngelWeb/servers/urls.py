@@ -27,4 +27,8 @@ urlpatterns = patterns('',
     (r'widget/diff_conf/$','servers.overviews.widget_diff_conf'),
     (r'quickview$','servers.overviews.quick_view'),
     (r'quickview/img/$','servers.overviews.quick_view_img'),
+    (r'services/$','servers.overviews.overviews_services'),
+    (r'services/services_detail/(\d+)$','servers.overviews.services_detail'),
+    (r'services/(\d+)/$','servers.overviews.services_type'),
+    (r'show_widget/(\d+)/$','servers.overviews.services_type_widget'),
 )

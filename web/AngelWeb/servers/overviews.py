@@ -118,8 +118,8 @@ def getdata(projectId="all"):
     serverStatus = cache.get("serverStatus")
     if serverStatus == None:
         serverStatus = {}
-        t = time.strftime("%Y%m%d%H%M",time.localtime(time.time()-60))
-        remarkLogs = RemarkLog.objects.filter(type=2,label=t).values("mark","sign")
+        t = time.strftime("%Y-%m-%d %H:%M:00",time.localtime(time.time()-60))
+        remarkLogs = ServerPing.objects.filter(created_time=t).values("mark","sign")
         for x in remarkLogs:
             serverStatus[x["mark"]] = x["sign"]
     if projectId == "all":
@@ -335,7 +335,7 @@ def home_left(request):
         "dashboards":request.user.dashboard_set.all().order_by("-sequence"),
         "error_dashboards":request.user.dashboarderror_set.all(),
         "projects":Project.objects.all().order_by("-sequence"),
-        "services":ServiceType.objects.all(),
+        "services":WidgetServiceType.objects.all(),
         "graph_aiders":GraphAider.objects.filter(user=request.user.id).all().order_by("-sequence"),
     })
     return render_to_response('html/left.html',c)
@@ -421,13 +421,14 @@ def problem_server(request):
 def problem_service(request,did):
     if not request.user.is_staff:
         raise Http404
+    t = time.strftime("%Y-%m-%d %H:%M:00",time.localtime(time.time()-60))
     servers  = Server.objects.filter(power_on="Y").values_list("id",flat=True)
     for i in settings.EXCLUDE_IPS:
         servers = servers.exclude(ip__contains=i.replace("*",""))
     def get_server_info(w):
         try:
             if w.server.id not in servers:w.serverInfo = {"sign":"Unknown"}
-            else:w.serverInfo = RemarkLog.objects.filter(mark=w.server.id,type=2).order_by("-id")[0]
+            else:w.serverInfo = ServerPing.objects.filter(mark=w.server.id,created_time=t)[0]
         except:pass
         return w
     result = []
@@ -814,4 +815,47 @@ def availability_server_detail(request,sid):
     try:minValue = 99 - max(minLs)
     except:minValue = 99
     return render_to_response("html/report_server_detail.html",locals())
+
+def overviews_services(request):
+    widgets = Widget.objects.filter(dashboard=1)
+    wsts = WidgetServiceType.objects.all()
+    if len(widgets) > 0 and cache.get("widgetData_"+str(widgets[0].id)) == None:
+        myResult,servicesDict,widgetStatusProjects = getdata()
+    for wst in wsts:
+        dt = {"ok":0,"warning":0,"unknown":0,"noUpdate":0,"error":0}
+        for w in widgets.filter(service_type=wst.id):
+            try:
+                data = cache.get("widgetData_"+str(w.id))
+                dt[data["widgetStatus"]] += 1
+            except:pass
+        wst.widgetStatus = dt
+    interval = len(wsts) / 2
+    wsts1 = wsts[:interval]
+    wsts2 = wsts[interval:]
+    return render_to_response("html/overview_services.html",{"wsts1":wsts1,"wsts2":wsts2}) 
+
+def services_detail(request,wstid):
+    widgets = Widget.objects.filter(service_type=wstid,dashboard=1)
+    return render_to_response("html/show_widget_as_dashboard.html",{"widgets":widgets})
     
+    
+def services_type(request,sid):
+    t = time.strftime("%Y-%m-%d %H:%M:00",time.localtime(time.time()-60))
+    widgets = Widget.objects.filter(service_type=sid,dashboard=1)
+    if len(widgets) > 0 and cache.get("widgetData_"+str(widgets[0].id)) == None:
+        myResult,servicesDict,widgetStatusProjects = getdata()
+    for w in widgets:
+        w.serviceStatus = cache.get("widgetData_"+str(w.id))
+        if w.server:
+            try:w.serverStatus = ServerPing.objects.get(mark=w.server.id,created_time=t)
+            except:pass
+    if len(widgets) > 20:
+        interval = len(widgets) / 2
+        widgets1 = widgets[:interval]
+        widgets2 = widgets[interval:]
+    else:widgets1 = widgets
+    return render_to_response("html/overview_service_detail.html",locals())
+
+def services_type_widget(request,wid):
+    widgets = Widget.objects.filter(id=wid)
+    return render_to_response("html/show_widget_as_dashboard.html",{"widgets":widgets})
