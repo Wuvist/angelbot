@@ -266,8 +266,10 @@ def showdetail_services(request,pid):
 
 @login_required()
 def myhome(request):
-
-    return render_to_response('html/main.html') 
+    url = None
+    if "url" in request.GET:
+        url = request.GET["url"]
+    return render_to_response('html/main.html',{"url":url}) 
     
 def home_top(request):
     if request.GET.has_key("action"):
@@ -319,8 +321,10 @@ def home_top(request):
     return render_to_response('html/top.html',{"request":request,"call":call,"disAlarmPros":disAlarmPros,"disAlarms":disAlarms,"serverUpdate":serverUpdate,"tickets":ticketDict,"servers":serverDict,"services":servicesDict,"widgetStatus":widgetConfDifCount})
     
 def home_center(request):
-
-    return render_to_response('html/center.html',{"request":request})
+    url = None
+    if "url" in request.GET:
+        url = request.GET["url"]
+    return render_to_response('html/center.html',{"request":request,"url":url})
 
 def home_down(request):
 
