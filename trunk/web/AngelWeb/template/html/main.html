@@ -4,10 +4,10 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Mozat angel</title>
 </head>
-<frameset rows="87,*,11" frameborder="no" border="0" framespacing="0">
+<frameset rows="82,*,11" frameborder="no" border="0" framespacing="0">
 	<frame src="/home/top" name="topFrame" scrolling="No"
 		noresize="noresize" id="topFrame" />
-	<frame src="/home/center" name="mainFrame" id="mainFrame" />
+	<frame src="/home/center/{%if url%}?url={{url}}{%endif%}" name="mainFrame" id="mainFrame" />
 	<frame src="/home/down" name="bottomFrame" scrolling="No"
 		noresize="noresize" id="bottomFrame" />
 </frameset>

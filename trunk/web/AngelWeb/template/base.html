@@ -9,6 +9,11 @@
 <script type="text/javascript">window.__admin_media_prefix__ = "{% filter escapejs %}{% admin_media_prefix %}{% endfilter %}";</script>
 {% block extrahead %}{% endblock %}
 {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
+        <script type="text/javascript">
+                if (window.top == window.self) {
+                        window.top.location.href = "/?url=" + window.location.pathname;
+                }
+        </script>
 </head>
 {% load i18n %}
 

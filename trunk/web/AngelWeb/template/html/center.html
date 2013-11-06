@@ -21,7 +21,11 @@ body {
     <td width="147" valign="top"><iframe height="100%" width="100%" border="0" frameborder="0" src="/home/left" name="leftFrame" id="leftFrame" title="leftFrame"></iframe></td>
     <td width="10" bgcolor="#add2da">&nbsp;</td>
 	{%if request.user.is_staff%}
+		{%if url%}
+    <td valign="top"><iframe height="100%" width="100%" border="0" frameborder="0" src="{{url}}" name="rightFrame" id="rightFrame" title="rightFrame"></iframe></td>
+		{%else%}
     <td valign="top"><iframe height="100%" width="100%" border="0" frameborder="0" src="/overview/problem/service/1" name="rightFrame" id="rightFrame" title="rightFrame"></iframe></td>
+	{%endif%}
 	{%else%}
 	<td valign="top"><iframe height="100%" width="100%" border="0" frameborder="0" src="/dashboard/{{request.user.dashboard_set.all.0.id}}" name="rightFrame" id="rightFrame" title="rightFrame"></iframe></td>
 	{%endif%}
