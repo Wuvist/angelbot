@@ -290,11 +290,9 @@ def home_top(request):
         widgetConfDifCount = cache.get("widgetConfDifCount")
         if widgetConfDifCount == None:
             widgetConfDifCount,widgetConfDifListId = get_widget_diff_conf()
-    try:
-        t = datetime.now() - ServerPing.objects.all().order_by("-created_time")[0].created_time
-        serverUpdate = t.days*86400+t.seconds
-    except:
-        serverUpdate = 10000
+    st = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(time.time()-180))
+    ed = time.strftime("%Y-%m-%d %H:%M:%S")
+    serverUpdate = ServerPing.objects.filter(created_time__gte=st,created_time__lte=ed).count()
     try:
         log = ExtraLog.objects.filter(type=6)[0]
         call = log.value
