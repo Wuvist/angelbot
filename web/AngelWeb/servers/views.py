@@ -1188,7 +1188,7 @@ def alarm(request):
         rrd_path = widget.rrd.path()
         info = rrdtool.info(rrd_path)
         last_update = info["last_update"]
-        result = ""
+        result = "";valueError = {}
         alarmError = False
         if time.time() - last_update > rrdTime*60:
             alarmError = True
@@ -1204,16 +1204,16 @@ def alarm(request):
                 errorValues = ""
                 for i in range(0, len(ds)):
                     if data_def.has_key(ds[i]):
+                        valueError[ds[i]] = False
                         field_def = data_def[ds[i]]
                         try:
                             ls_data = [ str(x[i]) for x in data_rrds[2] if x[i] != None ]
                             if False not in [eval( x + field_def[2]) for x in ls_data] and len(ls_data) > 0:
                                 alarmError = True
                                 errorRrdValue += ds[i]+","
-                                if len(data_rrds[2])<=10:
-                                    data_rrd = ["None" if x[i] == None else str('%.2f' % x[i]) for x in data_rrds[2]]
-                                else:
-                                    data_rrd = ["None" if x[i] == None else str('%.2f' % x[i]) for x in data_rrds[2]][-10:]
+                                valueError[ds[i]] = True
+                                if len(data_rrds[2])<=10:data_rrd = ["None" if x[i] == None else str('%.2f' % x[i]) for x in data_rrds[2]]
+                                else:data_rrd = ["None" if x[i] == None else str('%.2f' % x[i]) for x in data_rrds[2]][-10:]
                                 errorValues += "Lastest " + ds[i] + " values: " + ",".join(data_rrd)+"\n"
                         except:
                             pass
@@ -1225,7 +1225,7 @@ def alarm(request):
             except:
                 return widget.data_def
         
-        return alarmError,result
+        return alarmError,result,valueError
         
     def contrastLog(alarm,widget,alarmlog):
         rrdTime = 0
@@ -1248,7 +1248,7 @@ def alarm(request):
             alarmMode = eval(alarmDataDef[int(alarmlog.alarmlevel)+1])["mode"]
             contactUsers = eval("alarm."+contact_users[int(alarmlog.alarmlevel)+1]).all()
         if int(rrdTime) !=0:
-            alarmError,result = rrdAlarm(widget,int(rrdTime))
+            alarmError,result,valueError = rrdAlarm(widget,int(rrdTime))
             if alarmError == False:
                 try:
                     alarmlog.overdue = "2"
@@ -1260,7 +1260,7 @@ def alarm(request):
                     alarmLevel = 1
                     alarmMode = eval(alarmDataDef[1])["mode"]
                     contactUsers = alarm.firstcontact.all()
-                    alarmError,result = rrdAlarm(widget,int(rrdTime))
+                    alarmError,result,valueError = rrdAlarm(widget,int(rrdTime))
             
             if alarmError:
                 dt = {}
@@ -1271,6 +1271,7 @@ def alarm(request):
                         ticketId = alarmlog.ticketid
                 except:
                     ticketId = ""
+                widget.valueError = valueError
                 dt["alarmlog"] = alarmlog
                 dt["ticketId"] = ticketId
                 dt["widget"] = widget
@@ -1432,8 +1433,18 @@ def alarm(request):
         if "cmd" in alarmMode:
             for widget in widgets:
                 try:
-                    cmd = alarmMode.split(":")[1]
-                    contactReault = executeCmd(widget,cmd)
+                    exeDef = {"exe":True,"cmd":None}
+                    cmd = ":".join(alarmMode.split(":")[1:])
+                    cmd = [x for x in cmd.split(",") if x != ""]
+                    if len(cmd) == 1:contactReault = executeCmd(widget,cmd[0].split(":")[1])
+                    else:
+                        for c in cmd:
+                            x,y = c.split(":")
+                            if x == "def":exeDef["cmd"] = y
+                            elif x in widget.valueError:
+                                contactReault = executeCmd(widget,y)
+                                exeDef["exe"] = False
+                        if exeDef["exe"]:contactReault = executeCmd(widget,exeDef["cmd"])
                 except Exception,e:
                     contactReault = "execute cmd fail"
         logs = AlarmLog()
@@ -1502,8 +1513,7 @@ def alarm(request):
             except:
                 pass
             for i in y["alarmWidgets"]:
-                try:
-                    doReport(y["alarm"],[i["widget"]],i["alarmMode"],i["contactUsers"],i["result"],i["ticketId"],i["alarmLevel"])
+                try:doReport(y["alarm"],[i["widget"]],i["alarmMode"],i["contactUsers"],i["result"],i["ticketId"],i["alarmLevel"])
                 except:pass
         
            
