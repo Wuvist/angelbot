@@ -628,8 +628,10 @@ def availability(request):
         downLs.append(d)
         unstableLs.append(u)
         dateLs.append(si)
-        perD = d * 100 / (n + d +u)
-        perU = u * 100 / (n + d +u)
+        try:perD = d * 100 / (n + d +u)
+        except:perD = 0
+        try:perU = u * 100 / (n + d +u)
+        except:perU = 0
         if perD != 100 and perD != 0:minLs.append(perD)
         if perU != 100 and perU != 0:minLs.append(perU)
     interval = 0
@@ -708,8 +710,14 @@ def availability_project_detail(request,pid):
 
 @login_required()
 def availability_server(request):
-    st = time.strftime("%Y-%m-%d",time.localtime(time.time()-86400))
-    ed = time.strftime("%Y-%m-%d")
+    try:
+        st = request.GET["st"]
+        ed = request.GET["ed"]
+        time.strptime(st,"%Y-%m-%d")
+        time.strptime(ed,"%Y-%m-%d")
+    except:
+        st = time.strftime("%Y-%m-%d",time.localtime(time.time()-86400))
+        ed = time.strftime("%Y-%m-%d")
     serverDt = {};dt = {}
     servers = Server.objects.all().order_by("ip")
     for s in servers:
@@ -861,3 +869,172 @@ def services_type(request,sid):
 def services_type_widget(request,wid):
     widgets = Widget.objects.filter(id=wid)
     return render_to_response("html/show_widget_as_dashboard.html",{"widgets":widgets})
+
+def paser_widget_error_time(widget,start,end):
+    result = {"error":0,"warning":0,"ok":0,"all":0}
+    if widget.data_def:
+        try:
+            current = rrdtool.fetch(widget.rrd.path(), "-s", str(start) + "-1", "-e", str(end), "LAST")
+            data_def = eval(widget.data_def.replace("\n", "").replace("\r", ""))
+            ds = current[1]
+            for i in range(0, len(ds)):
+                if data_def.has_key(ds[i]):
+                    field_def = data_def[ds[i]]
+                    try:
+                        for x in current[2]:
+                            if x[i] == None:continue
+                            elif eval(str(x[i])+field_def[2]):result["error"] += 1
+                            elif eval(str(x[i])+field_def[1]):result["warning"] += 1
+                            else:result["ok"] += 1
+                    except:
+                        raise
+        except:
+            pass
+    result["all"] = result["error"] + result["warning"] + result["ok"]
+    return result
+
+@login_required()
+def availability_service(requst):
+    try:
+        s = requst.GET["s"]
+        e = requst.GET["e"]
+    except:
+        s = time.strftime("%Y-%m-%d",time.localtime(time.time()-86400))
+        e = time.strftime("%Y-%m-%d")
+    error = [];warning = [];ok = [];ip = [];allData = []
+    start = time.mktime(time.strptime(s,"%Y-%m-%d"))
+    end = time.mktime(time.strptime(e,"%Y-%m-%d"))
+    projects = Project.objects.all().order_by("name")
+    services = WidgetServiceType.objects.all().order_by("name")
+    try:
+        project = int(requst.GET["p"])
+        service = int(requst.GET["st"])
+        widgets = Widget.objects.filter(project = project,service_type = service).order_by("server__ip")
+        for w in widgets:
+            data = paser_widget_error_time(w,int(start),int(end))
+            error.append(data["error"])
+            warning.append(data["warning"])
+            ok.append(data["ok"])
+            if w.server:ip.append(str(w.server.ip))
+            else:ip.append("")
+            if data["error"] == 0:data["error_p"] = 0
+            else:data["error_p"] = data["error"] * 100 / data["all"]
+            if data["warning"] == 0:data["warning_p"] = 0
+            else:data["warning_p"] = data["warning"] * 100 / data["all"]
+            if data["ok"] == 0:data["ok_p"] = 0
+            else:data["ok_p"] = data["ok"] * 100 / data["all"]
+            w.serviceStatus = data
+    except:
+        pass
+    return render_to_response("html/report_availability_service.html",locals())
+
+
+def get_rrd_line_value(rrd,start,end,line):
+    import rrdtool
+    current = rrdtool.fetch(rrd, "-s", str(start) + "-1", "-e", str(end), "LAST")
+    for i in range(0,len(current[1])):
+        if current[1][i] == line:
+            break
+    return map(lambda x:x[i],current[2])
+    
+    
+@login_required()
+def availability_trends_perf(request):
+    import re
+    import json
+    data = cache.get("quick_view_widgets")
+    if data == None:
+        result = {}
+        widgets = Widget.objects.exclude(project=None).filter(dashboard__id=1)
+        projects = Project.objects.filter(widget__in=widgets).annotate().order_by("-sequence").values("id","name")
+        for p in projects:
+            result[p["name"]] = {}
+            categorys = WidgetCategory.objects.filter(widget__in=widgets.filter(project__id=p["id"])).values("id","title").annotate()
+            for c in categorys:
+                cc = {}
+                try:
+                    widget = widgets.filter(project__id=p["id"],category__id=c["id"])[0]
+                    data = re.findall(r"DS:(\S+):G",widget.rrd.setting)
+                    for i in data:
+                        cc[i] = i
+                    result[p["name"]][c["title"]]=cc
+                except:pass
+        data = json.dumps(result,ensure_ascii=False)
+        cache.set("quick_view_widgets",data,300)
+    p = request.GET.get("v_",None)
+    c = request.GET.get("v__",None)
+    v = request.GET.get("v",None)
+    now = 1342261200#int(time.time())
+    tmp = now % 86400
+    end = now - tmp + 86400
+    start = end - 86400 * 7
+    startTime = time.strftime("%Y-%m-%d",time.localtime(start))
+    endTime = time.strftime("%Y-%m-%d",time.localtime(end))
+    if v != None:
+        widgets = Widget.objects.filter(project__name=p,category__title=c)
+        for w in widgets:
+            w.line=[]
+            dataTemp = get_rrd_line_value(w.rrd.path(),int(start),int(end),v)
+            for i in range(0,len(dataTemp),60):
+                for d in dataTemp[i:i+60]:
+                    count = 0;total = 0.0
+                    if d != None:
+                        count += 1
+                        total += d
+                if total != 0:w.line.append(total / count)
+                else:w.line.append(0)
+    return render_to_response("html/report_availability_trend_perf.html",locals())
+
+def get_widget_alert_times(widget,start,end):
+    result = {"error":0,"warning":0,"ok":0,"all":0}
+    field_def = {}
+    if widget.data_def:
+        try:
+            current = rrdtool.fetch(widget.rrd.path(), "-s", str(start) + "-1", "-e", str(end), "LAST")
+            data_def = eval(widget.data_def.replace("\n", "").replace("\r", ""))
+            ds = current[1]
+            for i in range(0, len(ds)):
+                if data_def.has_key(ds[i]):
+                    field_def[i] = data_def[ds[i]]
+            flag = False; flat = True
+            for l in current[2]:
+                for x,y in field_def.items():
+                    if l[x] == None or eval(str(l[x])+field_def[2]):
+                        flag = True
+                    else:
+                        flag = False
+                        flat = True
+                if flag  and flat:
+                    result["error"] += 1
+                    flat = False
+        except:
+            pass
+    return result
+
+@login_required()
+def availability_trends_alert(request):
+    projects = Project.objects.all().order_by("name")
+    if "p" in request.GET:
+        project = int(request.GET["p"])
+        widgets = Widget.objects.filter(project=project)
+    else:widgets = []
+    ls = [];lsData = {}
+    now = int(time.time())
+    startTime = time.strftime("%Y-%m-%d",time.localtime(now - now % 86400 - 86400 * 6))
+    endTime = time.strftime("%Y-%m-%d",time.localtime(now - now % 86400))
+    for i in range(7):
+        end = now - now % 86400 - 86400 * i
+        start = end - 86400
+        result = {}
+        for w in widgets:
+            if w.category:
+                data = get_widget_alert_times(w,start,end)
+                errorCount = data["error"]
+                if w.category.title in result:result[w.category.title] += errorCount
+                else:result[w.category.title] = errorCount
+        for x,y in result.items():
+            if x in lsData:lsData[x].append(y)
+            else:lsData[x] = [y]
+    for x,y in lsData.items():
+        ls.append({"category":x,"line":y})
+    return render_to_response("html/report_availability_trend_alert.html",locals())

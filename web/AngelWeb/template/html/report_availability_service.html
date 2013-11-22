@@ -1,0 +1,103 @@
+{% extends "base_site.html" %}
+
+{% block content %}
+<!--<link rel="stylesheet" type="text/css" href="/media/css/forms.css" /> -->
+<link rel="stylesheet" type="text/css" href="/media/css/forms.css" />
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="/media/js/core.js"></script>
+<script type="text/javascript" src="/media/js/calendar.js"></script>
+<script type="text/javascript" src="/media/js/admin/DateTimeShortcuts.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script type="text/javascript" src="/media/js/jquery.min.js"></script>
+<script type="text/javascript" src="/media/js/jquery.init.js"></script> 
+<script type="text/javascript" src="/media/js/actions.min.js"></script>
+<script type="text/javascript" src="/media/js/highcharts.js"></script>
+<script type="text/javascript" src="/media/js/exporting.js"></script>
+
+<style>
+body{font-family: Verdana, helvetica, arial, sans-serif;}
+td{text-align:center;font-size:13px;}
+</style>
+<fieldset class="module aligned ">
+	<div>
+		<form action="">
+			Project:<select name="p">
+				{%for p in projects%}
+				<option value="{{p.id}}" {%if p.id == project%}selected="selected"{%endif%}>{{p.name}}</option>
+				{%endfor%}
+				</select>
+			Service:<select name="st">
+				{%for s in services%}
+				<option value="{{s.id}}" {%if s.id == service%}selected="selected"{%endif%}>{{s.name}}</option>
+				{%endfor%}
+				</select>
+			Start:
+			<input name="s" value="{{s}}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
+			&nbsp;&nbsp;&nbsp;
+			End:
+			<input name="e" value="{{e}}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
+			&nbsp;&nbsp;&nbsp;
+		    <input type="submit" value = "Show Data" /><br/>
+		</form>
+	</div>
+</fieldset>
+<hr>
+<div id="serviceSatus" style="width:80%; height: 350px;"></div>
+<table>
+	<tr><td>Server</td><td>Service</td><td>Ok time %</td><td>Warning time %</td><td>Critical %</td></tr>
+	{%for w in widgets%}
+	<tr><td>{{w.server.ip}}</td><td>{{w.title}}</td><td>{{w.serviceStatus.ok_p}}%</td><td>{{w.serviceStatus.warning_p}}%</td><td>{{w.serviceStatus.error_p}}%</td></tr>
+	{%endfor%}
+</table>
+<script type="text/javascript">
+$(function () {
+        $('#serviceSatus').highcharts({
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Service Status'
+            },
+            xAxis: {
+                categories: {{ip|safe}}
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Percent'
+                }
+            },
+            tooltip: {
+		formatter: function() {
+                var s = '<b>'+ this.x +'</b>';
+                
+                $.each(this.points, function(i, point) {
+                    s += '<br/>'+ point.series.name +': '+
+                        (point.y * 100 / point.total).toFixed(2) +'%';
+                });
+                
+                return s;
+		 },
+                shared: true
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'percent'
+                }
+            },
+                series: [{
+                name: 'error',
+                data: {{error|safe}}
+            }, {
+                name: 'warning',
+                data: {{warning|safe}}
+            }, {
+                name: 'ok',
+                data: {{ok|safe}}
+            }]
+        });
+    }); 
+
+</script>
+
+{% endblock %}

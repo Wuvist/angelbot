@@ -12,7 +12,7 @@ from django.db.models import Count
 import time
 
 @login_required
-def ticket(request):
+def ticket_all(request):
     after_range_num = 5
     bevor_range_num = 4
     page = 1
@@ -43,6 +43,130 @@ def ticket(request):
 
     return render_to_response("servers/ticket.html",c)
     
+@login_required
+def ticket_new(request):
+    after_range_num = 5
+    bevor_range_num = 4
+    page = 1
+    try:
+        st = request.GET["st"]
+        et = request.GET["et"]
+        tickets = Ticket.objects.filter(starttime__gte=st,starttime__lte=et+" 23:59:59").order_by("-id")
+    except:
+        st = ""
+        et = ""
+        tickets = Ticket.objects.filter(status="New").order_by("-id")
+    paginator = Paginator(tickets, 20)
+    try:
+        page = int(request.GET.get('page'))
+        tickets = paginator.page(page)
+    except:
+        tickets = paginator.page(1)
+    if page >= after_range_num:
+        page_range = paginator.page_range[page-after_range_num:page+bevor_range_num]
+    else:
+        page_range = paginator.page_range[0:int(page)+bevor_range_num]
+    c = RequestContext(request,{
+        "st":st,
+        "et":et,
+        "tickets":tickets,
+        "page_range":page_range,
+    })
+    return render_to_response("servers/ticket_new.html",c)
+
+@login_required
+def ticket_processing(request):
+    after_range_num = 5
+    bevor_range_num = 4
+    page = 1
+    try:
+        st = request.GET["st"]
+        et = request.GET["et"]
+        tickets = Ticket.objects.filter(starttime__gte=st,starttime__lte=et+" 23:59:59").order_by("-id")
+    except:
+        st = ""
+        et = ""
+        tickets = Ticket.objects.filter(status="Processing").order_by("-id")
+    paginator = Paginator(tickets, 20)
+    try:
+        page = int(request.GET.get('page'))
+        tickets = paginator.page(page)
+    except:
+        tickets = paginator.page(1)
+    if page >= after_range_num:
+        page_range = paginator.page_range[page-after_range_num:page+bevor_range_num]
+    else:
+        page_range = paginator.page_range[0:int(page)+bevor_range_num]
+    c = RequestContext(request,{
+        "st":st,
+        "et":et,
+        "tickets":tickets,
+        "page_range":page_range,
+    })
+    return render_to_response("servers/ticket_processing.html",c)
+
+@login_required
+def ticket_closed(request):
+    after_range_num = 5
+    bevor_range_num = 4
+    page = 1
+    try:
+        st = request.GET["st"]
+        et = request.GET["et"]
+        tickets = Ticket.objects.filter(starttime__gte=st,starttime__lte=et+" 23:59:59").order_by("-id")
+    except:
+        st = ""
+        et = ""
+        tickets = Ticket.objects.filter(status="Closed").order_by("-id")
+    paginator = Paginator(tickets, 20)
+    try:
+        page = int(request.GET.get('page'))
+        tickets = paginator.page(page)
+    except:
+        tickets = paginator.page(1)
+    if page >= after_range_num:
+        page_range = paginator.page_range[page-after_range_num:page+bevor_range_num]
+    else:
+        page_range = paginator.page_range[0:int(page)+bevor_range_num]
+    c = RequestContext(request,{
+        "st":st,
+        "et":et,
+        "tickets":tickets,
+        "page_range":page_range,
+    })
+    return render_to_response("servers/ticket_closed.html",c)
+
+@login_required
+def ticket_done(request):
+    after_range_num = 5
+    bevor_range_num = 4
+    page = 1
+    try:
+        st = request.GET["st"]
+        et = request.GET["et"]
+        tickets = Ticket.objects.filter(starttime__gte=st,starttime__lte=et+" 23:59:59").order_by("-id")
+    except:
+        st = ""
+        et = ""
+        tickets = Ticket.objects.filter(status="Done").order_by("-id")
+    paginator = Paginator(tickets, 20)
+    try:
+        page = int(request.GET.get('page'))
+        tickets = paginator.page(page)
+    except:
+        tickets = paginator.page(1)
+    if page >= after_range_num:
+        page_range = paginator.page_range[page-after_range_num:page+bevor_range_num]
+    else:
+        page_range = paginator.page_range[0:int(page)+bevor_range_num]
+    c = RequestContext(request,{
+        "st":st,
+        "et":et,
+        "tickets":tickets,
+        "page_range":page_range,
+    })
+    return render_to_response("servers/ticket_done.html",c)
+
 def ticket_show(request,ticketID):
     def sendMail(ruser,suser,ticket):
         import smtplib
