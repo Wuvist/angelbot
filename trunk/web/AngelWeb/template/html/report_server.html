@@ -2,6 +2,37 @@
 
 {% block content %}
 
+<link rel="stylesheet" type="text/css" href="/media/css/forms.css" />
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="/media/js/core.js"></script>
+<script type="text/javascript" src="/media/js/calendar.js"></script>
+<script type="text/javascript" src="/media/js/admin/DateTimeShortcuts.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script type="text/javascript" src="/media/js/jquery.min.js"></script>
+<script type="text/javascript" src="/media/js/jquery.init.js"></script>
+<script type="text/javascript" src="/media/js/actions.min.js"></script>
+<script type="text/javascript" src="/media/js/highcharts.js"></script>
+<script type="text/javascript" src="/media/js/exporting.js"></script>
+
+<style>
+body{font-family: Verdana, helvetica, arial, sans-serif;}
+td{text-align:center;font-size:13px;}
+</style>
+<fieldset class="module aligned ">
+        <div>
+                <form action="">
+                        Start:
+                        <input name="st" value="{{st}}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
+                        &nbsp;&nbsp;&nbsp;
+                        End:
+                        <input name="ed" value="{{ed}}" class="vDateField" type="text" id="id_date" size="11"><span class="datetimeshortcuts"></span>
+                        &nbsp;&nbsp;&nbsp;
+                    <input type="submit" value = "Show Data" /><br/>
+                </form>
+        </div>
+</fieldset>
+<hr>
+
 <table>
         <tr><td>Server</td><td>Up time %</td><td>Down time %</td><td>Unstable %</td></tr>
         {%for l in ls%}

@@ -15,7 +15,7 @@
         </form>
     </fieldset>
 	<table>
-		<tr><th>ticket id</th><th>grade</th><th>status</th><th>operator</th><th>keyword</th><th style="width:120px;">start time</th><th style="width:120px;">last update</th><th>Action taken</th></tr>
+		<tr><th>ticket id</th><th>grade</th><th>status</th><th>operator</th><th style="width:200px;">keyword</th><th style="width:120px;">start time</th><th style="width:120px;">last update</th><th>Action taken</th></tr>
 		{% for ticket in tickets.object_list %}
 		<tr><td><a href="/ticket/show/{{ ticket.id }}">{{  ticket.id }}</a></td><td>{{ ticket.incidentgrade }}</td><td>{{ ticket.status }}</td>
 			<td>{% for p in ticket.project.all %}{{ p.name }}&nbsp;{% endfor %}</td><td>{{ ticket.title }}</td>
