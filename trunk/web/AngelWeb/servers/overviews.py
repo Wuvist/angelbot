@@ -998,12 +998,15 @@ def get_widget_alert_times(widget,start,end):
                     field_def[i] = data_def[ds[i]]
             flag = False; flat = True
             for l in current[2]:
+                tmp = False
                 for x,y in field_def.items():
-                    if l[x] == None or eval(str(l[x])+field_def[2]):
-                        flag = True
-                    else:
-                        flag = False
-                        flat = True
+                    if eval(str(l[x])+y[2]):
+                        tmp = True
+                if tmp:
+                    flag = True
+                else:
+                    flag = False
+                    flat = True
                 if flag  and flat:
                     result["error"] += 1
                     flat = False
@@ -1022,7 +1025,7 @@ def availability_trends_alert(request):
     now = int(time.time())
     startTime = time.strftime("%Y-%m-%d",time.localtime(now - now % 86400 - 86400 * 6))
     endTime = time.strftime("%Y-%m-%d",time.localtime(now - now % 86400))
-    for i in range(7):
+    for i in range(3):
         end = now - now % 86400 - 86400 * i
         start = end - 86400
         result = {}
