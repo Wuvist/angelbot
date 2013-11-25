@@ -1021,11 +1021,12 @@ def availability_trends_alert(request):
         project = int(request.GET["p"])
         widgets = Widget.objects.filter(project=project)
     else:widgets = []
+    defaultShowDays = 3
     ls = [];lsData = {}
     now = int(time.time())
-    startTime = time.strftime("%Y-%m-%d",time.localtime(now - now % 86400 - 86400 * 6))
+    startTime = time.strftime("%Y-%m-%d",time.localtime(now - now % 86400 - 86400 * (defaultShowDays - 1)))
     endTime = time.strftime("%Y-%m-%d",time.localtime(now - now % 86400))
-    for i in range(3):
+    for i in range(defaultShowDays):
         end = now - now % 86400 - 86400 * i
         start = end - 86400
         result = {}
