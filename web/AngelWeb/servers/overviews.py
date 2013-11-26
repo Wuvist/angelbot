@@ -961,13 +961,14 @@ def availability_trends_perf(request):
                 except:pass
         data = json.dumps(result,ensure_ascii=False)
         cache.set("quick_view_widgets",data,300)
+    widgets = []
     p = request.GET.get("v_",None)
     c = request.GET.get("v__",None)
     v = request.GET.get("v",None)
-    now = 1342261200#int(time.time())
+    now = int(time.time())
     tmp = now % 86400
     end = now - tmp + 86400
-    start = end - 86400 * 7
+    start = end - 86400 * 6
     startTime = time.strftime("%Y-%m-%d",time.localtime(start))
     endTime = time.strftime("%Y-%m-%d",time.localtime(end))
     if v != None:
