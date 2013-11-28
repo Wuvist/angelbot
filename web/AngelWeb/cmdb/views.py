@@ -237,34 +237,36 @@ def cmdbDeployment(request):
                             if sss.service_type not in colorDict:
                                 colorDict[sss.dep_type] = sss.dep_type_color
                         xxservice += w
-                    xserver = x
-                    if yls == []:
-                        yserver -= 6 * h
-                    else:
-                        yserver = min(yls) - 3 * h
-                        yls = []
-                    wserver = w*(wx-n)
-                    if wx > n:
+                    for ti in range(0,len(serviceServers[n:]),10):
+                        xxservice = x
+                        xserver = x
+                        if yls == []:
+                            yserver -= 6 * h
+                        else:
+                            yserver = min(yls) - 3 * h
+                            yls = []
+                        if ti == len(serviceServers[n:]) - (len(serviceServers[n:]) % 10):
+                            wserver = w * (len(serviceServers[n:]) % 10)
+                        else:wserver = w * 10
                         drawRect(c,'',"white",xserver,yserver,wserver,2.5*h)
                         c.drawCentredString(xserver+wserver/2,yserver+h*4/7,s.name.capitalize()+'('+s.ip[8:]+')')
                         c.drawCentredString(xserver+wserver/2,yserver+h*1/7,'['+str(s.core)+'-'+s.ram+'-'+s.hard_disk+']')
-                    xxservice = x
-                    for ss in serviceServers[n:]:
-                        yservice = yserver - 2.5*h
-                        if ss.idle == 'Y':serverColor = 'lightgreen'
-                        elif ss.power_on == 'N':serverColor = 'lightgrey'
-                        else:serverColor = 'white'
-                        drawRect(c,ss.name.capitalize()+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+'];cpu:;mem:;io :',serverColor,xxservice,yservice,w,2.5*h)
-                        ss = filterServer(ss,c,xxservice,yservice,w)
-                        for sss in services.filter(server = ss).exclude(service_type__type__name__contains="IDC"):
-                            sss = filterWidget(sss)
-                            wservices = w
-                            yservice -= h
-                            yls.append(yservice)
-                            drawRect(c,re.sub('\(\d+\.\d+\)','',sss.title),sss.dep_type_color,xxservice,yservice,wservices,h)
-                            if sss.service_type not in colorDict:
-                                colorDict[sss.dep_type] = sss.dep_type_color
-                        xxservice += w
+                        for ss in serviceServers[n:][ti:ti+10]:
+                            yservice = yserver - 2.5*h
+                            if ss.idle == 'Y':serverColor = 'lightgreen'
+                            elif ss.power_on == 'N':serverColor = 'lightgrey'
+                            else:serverColor = 'white'
+                            drawRect(c,ss.name.capitalize()+'('+ss.ip[8:]+');['+str(ss.core)+'-'+ss.ram+'-'+ss.hard_disk+'];cpu:;mem:;io :',serverColor,xxservice,yservice,w,2.5*h)
+                            ss = filterServer(ss,c,xxservice,yservice,w)
+                            for sss in services.filter(server = ss).exclude(service_type__type__name__contains="IDC"):
+                                sss = filterWidget(sss)
+                                wservices = w
+                                yservice -= h
+                                yls.append(yservice)
+                                drawRect(c,re.sub('\(\d+\.\d+\)','',sss.title),sss.dep_type_color,xxservice,yservice,wservices,h)
+                                if sss.service_type not in colorDict:
+                                    colorDict[sss.dep_type] = sss.dep_type_color
+                            xxservice += w
                 else:
                     xxservice = xserver
                     for ss in serviceServers:
