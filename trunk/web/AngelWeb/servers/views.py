@@ -1441,7 +1441,7 @@ def alarm(request):
                         for c in cmd:
                             x,y = c.split(":")
                             if x == "def":exeDef["cmd"] = y
-                            elif x in widget.valueError:
+                            elif x in widget.valueError and widget.valueError[x]:
                                 contactReault = executeCmd(widget,y)
                                 exeDef["exe"] = False
                         #if exeDef["exe"]:contactReault = executeCmd(widget,exeDef["cmd"])
