@@ -1436,7 +1436,7 @@ def alarm(request):
                     exeDef = {"exe":True,"cmd":None}
                     cmd = ":".join(alarmMode.split(":")[1:])
                     cmd = [x for x in cmd.split(",") if x != ""]
-                    if len(cmd) == 1:contactReault = executeCmd(widget,cmd[0].split(":")[1])
+                    if len(cmd) == 1 and "def:" in cmd[0]:contactReault = executeCmd(widget,cmd[0].split(":")[1])
                     else:
                         for c in cmd:
                             x,y = c.split(":")
@@ -1444,7 +1444,7 @@ def alarm(request):
                             elif x in widget.valueError:
                                 contactReault = executeCmd(widget,y)
                                 exeDef["exe"] = False
-                        if exeDef["exe"]:contactReault = executeCmd(widget,exeDef["cmd"])
+                        #if exeDef["exe"]:contactReault = executeCmd(widget,exeDef["cmd"])
                 except Exception,e:
                     contactReault = "execute cmd fail"
         logs = AlarmLog()
