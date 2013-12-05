@@ -132,7 +132,7 @@ th {width:100px;}
 {% if dashboard.des %}
 	<div class="system-message">{{ dashboard.des|safe }}</div>
 {% endif %}
-{% regroup dashboard.widget_set.all|dictsort:"category.title" by category as widgets %}
+{% regroup widgetList|dictsort:"category.title" by category as widgets %}
 	
 {% for category in widgets %}
 	<h2>{{ category.grouper }}</h2>

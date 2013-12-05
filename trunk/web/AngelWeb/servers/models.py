@@ -298,7 +298,7 @@ class Widget(models.Model):
     dashboard = models.ManyToManyField(Dashboard)
     server = models.ForeignKey(Server, null = True, blank=True)
     rrd = models.ForeignKey(Rrd, null = True, blank=True)
-    category = models.ForeignKey(WidgetCategory, null = True, blank=True)
+    category = models.ForeignKey(WidgetCategory)
     grade = models.ForeignKey(WidgetGrade,null = True, blank=True)
     widget_type = models.CharField(max_length=1, choices=WIDGET_TYPE_CHOICES)
     project = models.ManyToManyField(Project)
@@ -312,7 +312,7 @@ class Widget(models.Model):
     update_time = models.DateTimeField(null = True, blank = True)
     created_on = models.DateTimeField(auto_now_add = True)
     def __unicode__(self):
-        return self.title + "-----" + self.rrd.name
+        return self.title
     
     class Meta:
         ordering = ["title"]

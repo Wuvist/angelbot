@@ -55,6 +55,7 @@ def dashboard_show(request, dashboard_id):
         "alarmlogs":alarmlogs,
         "showAlarms":showAlarms,
         "frequentAlarmLogs":frequentAlarmLogs,
+        "widgetList":dashboard.widget_set.all().exclude(rrd=None),
         })
     return render_to_response('servers/show_dashboard.html',c)
 
@@ -2044,6 +2045,7 @@ def widget_reg_or_update(request):
     try:
         widget_name = request.GET["widget_name"]
         ip = request.GET["ip"]
+        category = request.GET["category"]
         identify = request.GET["identify"]
         info = request.GET["info"]
         service_type = request.GET["service_type"]
@@ -2055,11 +2057,10 @@ def widget_reg_or_update(request):
         serviceType = WidgetServiceType.objects.get(name=service_type)
     except ObjectDoesNotExist:
         result["err_code"] = 1
-        result["err_msg"] = "service_type does not exist. "
+        result["err_msg"] = "service_type does not exist. see service_type_list"
         result["service_type"] = list(WidgetServiceType.objects.all().values_list("name",flat=True))
         return HttpResponse(json.dumps(result))
         
-    '''
     try:
         c = WidgetCategory.objects.get(title=category)
     except ObjectDoesNotExist:
@@ -2067,10 +2068,9 @@ def widget_reg_or_update(request):
         result["err_msg"] = "Category does not exist. see category_list"
         result["category_list"] = list(WidgetCategory.objects.all().values_list("title",flat=True))
         return HttpResponse(json.dumps(result))
-    '''
     widgets = Widget.objects.filter(identify=identify)
+    result["res"]["rrd_name"] = None
     if widgets.count() == 0:
-        result["res"]["rrd_name"] = None
         #if not c.template:
         #    result["err_code"] = 1
         #    result["err_msg"] = "the category template is null." 
@@ -2087,13 +2087,14 @@ def widget_reg_or_update(request):
         widget.title = widget_name
         widget.server = s
         #widget.rrd = r
-        #widget.category = c
+        widget.category = c
         widget.service_type = serviceType
         widget.grade = WidgetGrade.objects.get(title="minor")
         widget.widget_type = 1
         widget.graph_def = ""#c.template.widget_graph
         #widget.data_def = c.template.widget_data
         #widget.data_default = c.template.widget_data
+        widget.identify = identify
         widget.save()
         widget.dashboard.add(Dashboard.objects.get(id=settings.DETECTOR_CREATE_DASHBOARD_ID))
         widget.project.add(Project.objects.get(id=settings.DETECTOR_CREATE_PROJECT_ID))
