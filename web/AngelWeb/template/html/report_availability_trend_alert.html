@@ -56,21 +56,17 @@ $(function () {
             },
             tooltip: {
 		formatter: function() {
-                var ar = new Array();
                 var arData = new Array();
-                var s = '<b>'+ this.x +'</b>';
-                var flag = 0;
+                var s = '';
                 $.each(this.points, function(i, point) {
-                    ar[flag] = point.y;
-		    arData[flag] = point.series.name;
-		    flag += 1;
+		    arData.push({"n":point.series.name,"v":point.y});
                 });
-		ar = ar.sort(function(a,b){
-			return a-b;
+		arData = arData.sort(function(a,b){
+			return b.v-a.v;
+			
 		});
-		ar.reverse();
-		$.each(ar, function(x, y) {
-			s += arData[x] +':'+ y + '<br/>';
+		$.each(arData, function(x, y) {
+			s += y.n +':'+ y.v + '<br/>';
 		});
                 return s;
                  },
