@@ -1042,4 +1042,5 @@ def availability_trends_alert(request):
             else:lsData[x] = [y]
     for x,y in lsData.items():
         ls.append({"category":x,"line":y})
+    ls = sorted(ls,key=lambda k:k["line"][0],reverse = True)
     return render_to_response("html/report_availability_trend_alert.html",locals())
