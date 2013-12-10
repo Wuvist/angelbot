@@ -2042,25 +2042,28 @@ def widget_reg_or_update(request):
     '''{"widget_name":"xxx","ip":"xxx","identify":"xxx","info:"xxx","service_type":"xxxx"}'''
     import json
     result =  {"err_code":0,"err_msg":"","res":{}}
+    c = None; serviceType = None 
     try:
         widget_name = request.GET["widget_name"]
         ip = request.GET["ip"]
-        category = request.GET["category"]
         identify = request.GET["identify"]
         info = request.GET["info"]
-        service_type = request.GET["service_type"]
     except:
         result["err_code"] = 1
-        result["err_msg"] = "required parameters:ip,widget_name,service_type,identify,info"
+        result["err_msg"] = "required parameters:ip,widget_name,identify,info"
         return HttpResponse(json.dumps(result))
-    try:
-        serviceType = WidgetServiceType.objects.get(name=service_type)
-    except ObjectDoesNotExist:
-        result["err_code"] = 1
-        result["err_msg"] = "service_type does not exist. see service_type_list"
-        result["service_type"] = list(WidgetServiceType.objects.all().values_list("name",flat=True))
-        return HttpResponse(json.dumps(result))
-        
+    if "service_type" in request.GET:
+        service_type = request.GET["service_type"]
+        if service_type != "":
+            try:
+                serviceType = WidgetServiceType.objects.get(name=service_type)
+            except ObjectDoesNotExist:
+                result["err_code"] = 1
+                result["err_msg"] = "service_type does not exist. see service_type_list"
+                result["service_type"] = list(WidgetServiceType.objects.all().values_list("name",flat=True))
+                return HttpResponse(json.dumps(result))
+    category = request.GET.get("category","14. Others")
+    if category == "":category = "14. Others"
     try:
         c = WidgetCategory.objects.get(title=category)
     except ObjectDoesNotExist:
