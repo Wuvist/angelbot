@@ -78,6 +78,8 @@ def cmdbDeployment(request):
     import re
     
     myTime = datetime.date.today() + datetime.timedelta(-1)
+    detectTime = datetime.datetime.now() + datetime.timedelta(-settings.CMDB_DETECT_DAY)
+    fileNewPath = settings.CMDB_SERVICE_MARK_NEW_FILE_PATH
     def filterWidget(w):
         if w.service_type == None:
             w.dep_type = "---"
@@ -86,7 +88,6 @@ def cmdbDeployment(request):
 	    w.dep_type = w.service_type.type.name
 	    w.dep_type_color = str(w.service_type.type.color)
         return w
-            
     
     def drawRect(c,rectStr,color,x,y,w,h):
         c.setStrokeColor("black")
@@ -219,7 +220,8 @@ def cmdbDeployment(request):
                         ssss = filterWidget(ssss)
                         yservicea -= h
                         yls.append(yservicea)
-                        drawRect(c,re.sub('\(\d+\.\d+\)','',ssss.title),ssss.dep_type_color,xserver,yservicea,w,h)
+                        drawRect(c,re.sub('\(\d+.*\d+\)','',ssss.title),ssss.dep_type_color,xserver,yservicea,w,h)
+                        if ssss.created_on > detectTime:c.drawImage(fileNewPath, xserver+w-15,yservicea+5, width=15,height=10,mask=None)
                         if ssss.service_type not in colorDict:
                             colorDict[ssss.dep_type] = ssss.dep_type_color
                 elif flag:
@@ -233,7 +235,8 @@ def cmdbDeployment(request):
                             wservices = w
                             yservice -= h
                             yls.append(yservice)
-                            drawRect(c,re.sub('\(\d+\.\d+\)','',sss.title),sss.dep_type_color,xxservice,yservice,wservices,h)
+                            drawRect(c,re.sub('\(\d+.*\d+\)','',sss.title),sss.dep_type_color,xxservice,yservice,wservices,h)
+                            if sss.created_on > detectTime:c.drawImage(fileNewPath, xxservice+wservices-15,yservice+5, width=15,height=10,mask=None)
                             if sss.service_type not in colorDict:
                                 colorDict[sss.dep_type] = sss.dep_type_color
                         xxservice += w
@@ -263,7 +266,8 @@ def cmdbDeployment(request):
                                 wservices = w
                                 yservice -= h
                                 yls.append(yservice)
-                                drawRect(c,re.sub('\(\d+\.\d+\)','',sss.title),sss.dep_type_color,xxservice,yservice,wservices,h)
+                                drawRect(c,re.sub('\(\d+.*\d+\)','',sss.title),sss.dep_type_color,xxservice,yservice,wservices,h)
+                                if sss.created_on > detectTime:c.drawImage(fileNewPath, xxservice+wservices-15,yservice+5, width=15,height=10,mask=None)
                                 if sss.service_type not in colorDict:
                                     colorDict[sss.dep_type] = sss.dep_type_color
                             xxservice += w
@@ -282,6 +286,7 @@ def cmdbDeployment(request):
                             yservice -= h
                             yls.append(yservice)
                             drawRect(c,re.sub('\(.*\)','',sss.title),sss.dep_type_color,xxservice,yservice,wservices,h)
+                            if sss.created_on > detectTime:c.drawImage(fileNewPath, xxservice+wservices-15,yservice+5, width=15,height=10,mask=None)
                             if sss.service_type not in colorDict:
                                 colorDict[sss.dep_type] = sss.dep_type_color
                         xxservice += w
@@ -300,7 +305,7 @@ def cmdbDeployment(request):
                 yp -= hp
             if logo == len(projects):
                 c.setFillColor("black")
-                c.drawCentredString(maxX/2,5,'(c) Mozat Pte Ltd. All rights reserved.')
+                c.drawCentredString(maxX/2,5,'\xc2\xa9 Mozat Pte Ltd. All rights reserved.')
             c.showPage()    
         c.save()
         
