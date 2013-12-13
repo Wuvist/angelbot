@@ -103,10 +103,12 @@ def dba_show_backup(request):
             except:pass
             result.append(i)
             try:
+                timeDay = int(time.strftime("%w"))
+                if timeDay == 0:timeDay = 7
                 timeDiff = time.time() - time.mktime(time.strptime(i[6], "%Y-%m-%d %H:%M:%S"))
                 if i[14] == "full":timeDiffConf = 30*24*60*60+1200
                 else:timeDiffConf = 2*24*60*60+1200
-                if "ERROR" in i[5] or "ERROR" in i[7] or i[9] > 95 or timeDiff > timeDiffConf or i[11].count("N") - int(time.strftime("%w")) > 1:
+                if "ERROR" in i[5] or "ERROR" in i[7] or i[9] > 95 or timeDiff > timeDiffConf or timeDay - i[11].count("Y")> 1:
                     addError(i[3]+"-"+i[4],edit=True)
                     if len(errorData[i[3]+"-"+i[4]]["times"]) > settings.DB_ERROR_TIME and errorData[i[3]+"-"+i[4]]["send"] == False:
                         sendmail(i[3]+"-"+i[4],settings.DB_RECEIVER,i[3]+"-"+i[4])
