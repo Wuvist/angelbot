@@ -177,7 +177,7 @@ def cmdbDeployment(request):
             c.setFillColor("white")
             c.rect(maxX-250,maxY-35,160,15,stroke=1,fill=1)
             c.setFillColor("black")
-            c.drawString(maxX-247,maxY-30,"Server(ip) Rock [cores-RAM-HD]")
+            c.drawString(maxX-247,maxY-30,"Server(ip) Rack [cores-RAM-HD]")
             try:c.drawString(x+20,maxY-50,"IDC: " + pservers[0].idc.name)
             except:pass
             for s in pservers:
@@ -308,8 +308,8 @@ def cmdbDeployment(request):
                 c.drawCentredString(maxX/2,5,'\xc2\xa9 Mozat Pte Ltd. All rights reserved.')
             c.showPage()    
         c.save()
-        
-        return temp,min(ylist)
+        if ylist == []:return temp,500
+        else:return temp,min(ylist)
     
     x = 1000;y = 500;
     services = Widget.objects.all()

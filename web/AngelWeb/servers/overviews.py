@@ -719,7 +719,7 @@ def availability_server(request):
         st = time.strftime("%Y-%m-%d",time.localtime(time.time()-86400))
         ed = time.strftime("%Y-%m-%d")
     serverDt = {};dt = {}
-    servers = Server.objects.all().order_by("ip")
+    servers = Server.objects.all().exclude(idc__name="ALI").order_by("ip")
     for s in servers:
         serverDt[s.id] = s.ip
     logs = ServerPing.objects.filter(created_time__gte=st+" 00:00:00",created_time__lte=ed+" 23:59:59").values("mark","sign").annotate(Count=Count('sign'))
@@ -909,7 +909,7 @@ def availability_service(requst):
     try:
         project = int(requst.GET["p"])
         service = int(requst.GET["st"])
-        widgets = Widget.objects.filter(project = project,service_type = service).order_by("server__ip")
+        widgets = Widget.objects.filter(project = project,service_type = service,dashboard__id__in=settings.REPORTS_AVAILABILITY_SERVICE_DASHBOARD_ID).order_by("server__ip")
         for w in widgets:
             data = paser_widget_error_time(w,int(start),int(end))
             error.append(data["error"])
