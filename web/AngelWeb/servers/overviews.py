@@ -984,7 +984,7 @@ def availability_trends_perf(request):
                         total += d
                 if total != 0:w.line.append(total / count)
                 else:w.line.append(0)
-    widgets = sorted(widgets,key=lambda k:k["line"][0],reverse = True)
+    widgets = sorted(widgets,key=lambda k:k.line[0],reverse = True)
     return render_to_response("html/report_availability_trend_perf.html",locals())
 
 def get_widget_alert_times(widget,start,end):
