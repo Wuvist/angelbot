@@ -961,7 +961,7 @@ def availability_trends_perf(request):
                 except:pass
         data = json.dumps(result,ensure_ascii=False)
         cache.set("quick_view_widgets",data,300)
-    widgets = [];allData = []
+    widgets = []
     p = request.GET.get("v_",None)
     c = request.GET.get("v__",None)
     v = request.GET.get("v",None)
@@ -984,9 +984,7 @@ def availability_trends_perf(request):
                         total += d
                 if total != 0:w.line.append(total / count)
                 else:w.line.append(0)
-            allData += w.line
-    try:startLineNum = max(allData) / 2
-    except:startLineNum = 0
+    widgets = sorted(widgets,key=lambda k:k["line"][0],reverse = True)
     return render_to_response("html/report_availability_trend_perf.html",locals())
 
 def get_widget_alert_times(widget,start,end):
