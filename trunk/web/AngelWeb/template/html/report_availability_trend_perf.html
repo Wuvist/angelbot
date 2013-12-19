@@ -36,8 +36,8 @@ $(function () {
             },
             xAxis: {
                 categories: ['','','','','','','','',''],
-			tickInterval: 10000,
-				
+                tickInterval: 10000,
+
             },
             yAxis: {
                 title: {
@@ -48,10 +48,25 @@ $(function () {
                         return this.value
                     },
                 },
-		min: {{startLineNum}},
-				
+                min:0,
+
             },
             tooltip: {
+                formatter: function() {
+                var arData = new Array();
+                var s = '';
+                $.each(this.points, function(i, point) {
+                    arData.push({"n":point.series.name,"v":point.y});
+                });
+                arData = arData.sort(function(a,b){
+                        return b.v-a.v;
+
+                });
+                $.each(arData, function(x, y) {
+                        s += y.n +': '+ y.v.toFixed(2) + '<br/>';
+                });
+                return s;
+                 },
                 crosshairs: true,
                 shared: true
             },
@@ -65,16 +80,16 @@ $(function () {
                 }
             },
             series: [
-		{%for w in widgets%}
-		{
+                {%for w in widgets%}
+                {
                 name: '{%if w.server%}{{w.server.ip}}{%else%}{{w.title}}{%endif%}',
                 marker: {
                     symbol: 'diamond'
                 },
                 data: {{w.line}}
             },
-		{%endfor%}
-		]
+                {%endfor%}
+                ]
         });
     });
 
@@ -103,3 +118,4 @@ $(function () {
 
 
 {% endblock %}
+
