@@ -2017,6 +2017,8 @@ def server_ping(request):
     servers = Server.objects.filter(power_on="Y")
     for i in settings.EXCLUDE_IPS:
         servers = servers.exclude(ip__contains=i.replace("*",""))
+    for i in settings.EXCLUDE_IDC:
+        servers = servers.exclude(idc__name=i)
     for s in servers:
         a = mythreads(s)
         t.append(a)

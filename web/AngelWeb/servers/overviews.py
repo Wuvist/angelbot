@@ -400,7 +400,7 @@ def problem_server(request):
     myTime = time.strftime("%Y-%m-%d %H:%M:00",time.localtime(time.time()-60))
     logs = ServerPing.objects.filter(created_time=myTime)
     for i in logs:tDt[i.mark] = i
-    servers = Server.objects.all().order_by("ip")
+    servers = Server.objects.all().exclude(idc__name="ALI").order_by("ip")
     for i in settings.EXCLUDE_IPS:
         servers = servers.exclude(ip__contains=i.replace("*",""))
     for s in servers:
@@ -601,7 +601,7 @@ def availability(request):
     logs = ServerPing.objects.filter(created_time__gte=s+" 00:00:00",created_time__lte=e+" 23:59:59").values("mark","sign")
     data = logs.annotate(Count=Count('sign')).order_by('mark')
     for p in projects:
-        p.serverIds = list(Server.objects.filter(power_on="Y",project=p).values_list("id",flat=True))
+        p.serverIds = list(Server.objects.filter(power_on="Y",project=p).exclude(idc__name="ALI").values_list("id",flat=True))
         p.serverData = {"Down":0,"Unstable":0,"Normal":0}
         for d in data:
             if d["mark"] in p.serverIds:
