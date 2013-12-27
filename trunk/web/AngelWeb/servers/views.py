@@ -2210,4 +2210,4 @@ def project_detector(request):
             thLs.append(t)
         for t in thLs:
             t.join()
-    return render_to_response("html/cmd_to_project.html",locals())
+    return render_to_response("html/project_detector.html",locals())

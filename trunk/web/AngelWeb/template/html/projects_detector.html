@@ -1,0 +1,43 @@
+{% extends "html/html_home.html" %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="/media/css/base.css" />
+<style>
+body{font-family: Verdana, helvetica, arial, sans-serif;}
+td{text-align:center;font-size:13px;}
+td.rights {border-bottom:1px solid #000;border-right:1px solid #000;}
+</style>
+
+<br>
+<form action="">
+Project: <select name="p">
+		{%for pj in projects%}
+		<option value="{{pj.id}}" {%if project == pj.id%}selected="seleected"{%endif%}>{{pj.name}}</option>
+		{%endfor%}
+	</select>
+Cmd: <select name="c">
+		<option value="1">update or insert detector</option>
+	</select>
+<input type="submit" value="Execute">
+
+</form>
+<br>
+<hr>
+<br>
+<table>
+<tr><th>Ip</th><th>result</th></tr>
+{%for s in servers%}
+<tr><td>{{s.ip}}</td><td>{{s.cmdResult}}</td></tr>
+{%endfor%}
+</table>
+
+<div id="serviceChart" style="width:100%;"></div>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script type="text/javascript" src="/media/js/highcharts.js"></script>
+<script type="text/javascript" src="/media/js/exporting.js"></script>
+<script type="text/javascript" src="/media/js/optionTree.js"></script>
+<script>
+</script>
+
+
+{% endblock %}
