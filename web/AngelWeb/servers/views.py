@@ -2173,3 +2173,41 @@ def api_show_services(request):
     indexData = {"title":["Project","Title","IP","System","Service Type"],"titleKey":["project","title","ip","system","service_type"],"data":ls}
     result["index"] = indexData
     return HttpResponse(json.dumps(result))
+
+def executeCmd(ip,cmd):
+    import urllib2
+    from django.utils.http import urlencode
+    url = settings.BOT_URL + urlencode({"host": ip, "cmd":cmd})
+    
+    return urllib2.urlopen(url).read()
+
+@login_required()
+def project_detector(request):
+    import threading
+    from urllib2 import URLError
+    class mythread(threading.Thread):
+        def __init__(self,server,cmd):
+            self.s = server
+            self.cmd = cmd
+            threading.Thread.__init__(self)
+        def run(self):
+            try:self.s.cmdResult = executeCmd(self.s.ip,self.cmd)
+            except URLError,e:self.s.cmdResult = e.reason
+    dt = {"1":"svn --username %s --password %s --no-auth-cache co %s ~/angel_agent/angel_detector;python ~/angel_agent/angel_detector/angel_detector.py" % (settings.SVN_USERNAME,settings.SVN_PASSWORD,settings.DETECTOR_SVN_URL)}
+    thLs = []
+    projects = Project.objects.all().order_by("name")
+    try:
+        project = int(request.GET["p"])
+        cmd = request.GET["c"]
+    except:
+        project = None
+        cmd = None
+    if project:
+        servers = Server.objects.filter(project=project)
+        for s in servers:
+            t = mythread(s,dt[request.GET["c"]])
+            t.start()
+            thLs.append(t)
+        for t in thLs:
+            t.join()
+    return render_to_response("html/cmd_to_project.html",locals())
