@@ -27,7 +27,7 @@ Cmd: <select name="c">
 <table>
 <tr><th>Ip</th><th>result</th></tr>
 {%for s in servers%}
-<tr><td>{{s.ip}}</td><td>{{s.cmdResult}}</td></tr>
+<tr><td>{{s.ip}}</td><td>{{s.cmdResult|safe}}</td></tr>
 {%endfor%}
 </table>
 
