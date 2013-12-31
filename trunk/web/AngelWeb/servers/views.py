@@ -2191,7 +2191,7 @@ def project_detector(request):
             self.cmd = cmd
             threading.Thread.__init__(self)
         def run(self):
-            try:self.s.cmdResult = executeCmd(self.s.ip,self.cmd)
+            try:self.s.cmdResult = executeCmd(self.s.ip,self.cmd).replace("\n","<br>")
             except URLError,e:self.s.cmdResult = e.reason
     dt = {"1":"svn --username %s --password %s --no-auth-cache co %s %s;python %s/angel_detector.py" % (settings.SVN_USERNAME,settings.SVN_PASSWORD,settings.DETECTOR_SVN_URL,settings.DETECTOR_INSTALL_PATH,settings.DETECTOR_INSTALL_PATH)}
     thLs = []
