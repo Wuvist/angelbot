@@ -2203,11 +2203,15 @@ def project_detector(request):
         project = None
         cmd = None
     if project:
-        servers = Server.objects.filter(project=project)
+        servers = Server.objects.filter(project=project,server_type="L")
         for s in servers:
             t = mythread(s,dt[request.GET["c"]])
             t.start()
             thLs.append(t)
-        for t in thLs:
-            t.join()
+        time.sleep(20)
+        for i in range(len(thLs)):
+            if thLs[i].is_alive():
+                thLs[i]._Thread__stop()
+                servers[i].cmdResult = "username or password or server type incorrect."
+            
     return render_to_response("html/project_detector.html",locals())
