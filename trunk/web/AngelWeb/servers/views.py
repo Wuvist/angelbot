@@ -2193,7 +2193,7 @@ def project_detector(request):
         def run(self):
             try:self.s.cmdResult = executeCmd(self.s.ip,self.cmd)
             except URLError,e:self.s.cmdResult = e.reason
-    dt = {"1":"svn --username %s --password %s --no-auth-cache co %s ~/angel_agent/angel_detector;python ~/angel_agent/angel_detector/angel_detector.py" % (settings.SVN_USERNAME,settings.SVN_PASSWORD,settings.DETECTOR_SVN_URL)}
+    dt = {"1":"svn --username %s --password %s --no-auth-cache co %s %s;python %s/angel_detector.py" % (settings.SVN_USERNAME,settings.SVN_PASSWORD,settings.DETECTOR_SVN_URL,settings.DETECTOR_INSTALL_PATH,settings.DETECTOR_INSTALL_PATH)}
     thLs = []
     projects = Project.objects.all().order_by("name")
     try:
