@@ -2208,7 +2208,14 @@ def project_detector(request):
             t = mythread(s,dt[request.GET["c"]])
             t.start()
             thLs.append(t)
-        time.sleep(20)
+        for i in range(10):
+            sp = False
+            for t in thLs:
+                if t.is_alive():
+                    sp = True
+                    break
+            if sp:time.sleep(2)
+            else:break
         for i in range(len(thLs)):
             if thLs[i].is_alive():
                 thLs[i]._Thread__stop()
