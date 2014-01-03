@@ -67,7 +67,7 @@ def show_services(request):
     return render_to_response('cmdb/show_services.html',{
     "pageSize":int(log.label),
     "services_name":WidgetServiceType.objects.values_list("id","name").order_by("name"),
-    "projects":Project.objects.all().values_list("name",flat=True)})
+    "projects":Project.objects.all().order_by("-sequence").values_list("name",flat=True)})
 
 def cmdbDeployment(request):
     from cStringIO import StringIO
