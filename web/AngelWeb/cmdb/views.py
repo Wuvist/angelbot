@@ -306,7 +306,7 @@ def cmdbDeployment(request):
             if logo == len(projects):
                 c.setFillColor("black")
                 c.drawCentredString(maxX/2,5,'\xc2\xa9 Mozat Pte Ltd. All rights reserved.')
-            c.showPage()    
+            c.showPage() 
         c.save()
         if ylist == []:return temp,500
         else:return temp,min(ylist)
@@ -316,15 +316,20 @@ def cmdbDeployment(request):
     servers = Server.objects.all()
     servers_p = servers.filter(physical_server = "Y")
     projects =  request.GET.getlist("ps")    
-    if len(projects) == 0:
-        projects = Project.objects.filter(server__in=servers_p).annotate().order_by("-sequence").values_list("name",flat=True)
-    temp = StringIO()
-    temp,yy = main(x,y)
-    if yy < 0:
-        temp.reset()
-        temp,yy = main(x,-1*yy + y + 30)
-    
-    response = HttpResponse(temp.getvalue())
+    if len(projects) == 0:projects = Project.objects.filter(server__in=servers_p).annotate().order_by("-sequence").values_list("name",flat=True)
+    try:
+        ff = open("%sdeployment_%s_%s.pdf" % (settings.CMDB_DEPLOYMENT_TEMP_FILE_PATH,"_".join(projects),datetime.date.today())).read()
+    except:
+        temp = StringIO()
+        temp,yy = main(x,y)
+        if yy < 0:
+            temp.reset()
+            temp,yy = main(x,-1*yy + y + 30)
+        f = open("%sdeployment_%s_%s.pdf" % (settings.CMDB_DEPLOYMENT_TEMP_FILE_PATH,"_".join(projects),datetime.date.today()),"w")
+        f.write(temp.getvalue())
+        f.close()
+        ff = temp.getvalue()
+    response = HttpResponse(ff)
     response["conten-type"] = "application/pdf"
     response["Content-Disposition"] = ("attachment;filename=mozat_deployment_%s.pdf" % datetime.date.today())
     
