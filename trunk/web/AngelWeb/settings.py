@@ -127,6 +127,7 @@ DETECTOR_INSTALL_PATH=""
 CMDB_SHOW_WIDGET_DASHBOARD_ID=[]
 CMDB_DETECT_DAY=5 #when you create one widget, it will be mark "new" in how many days
 CMDB_SERVICE_MARK_NEW_FILE_PATH=""
+CMDB_DEPLOYMENT_TEMP_FILE_PATH="" #deployment temp file path
 
 #DB INFO
 DB_RECEIVER="xx@xx.com;zz@zz.com"
