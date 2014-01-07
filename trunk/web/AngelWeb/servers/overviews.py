@@ -85,6 +85,11 @@ def paser_widget(widget):
             data_def = eval(widget.data_def.replace("\n", "").replace("\r", ""))
             if int(data_def["interval"]) * 60 < time.time() - info["last_update"]:
                 result["widgetStatus"] = "noUpdate"
+            if "noupdate" in data_def:
+                noUpdateTime = info["last_update"] - int(data_def["noupdate"]) * 60
+                noUpdateData = rrdtool.fetch(rrd_path, "-s", str(noUpdateTime) +"-1", "-e", last_update + "-1", "LAST")
+                if len(noUpdateData[2]) == noUpdateData[2].count(noUpdateData[2][-1]):
+                    result["widgetStatus"] = "noUpdate"
             data = list(current[2][0])
             ds = current[1]
             for i in range(0, len(ds)):
@@ -103,8 +108,7 @@ def paser_widget(widget):
                 else:
                     result[ds[i]] = {"status":"unknown","value":str(data[i])}
         except:
-            raise
-            return widget.data_def
+            pass
     else:
         result["widgetStatus"] = "unknown"
         for x,y in zip(current[1],current[2][0]):
