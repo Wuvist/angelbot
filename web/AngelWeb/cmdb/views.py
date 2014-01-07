@@ -318,6 +318,7 @@ def cmdbDeployment(request):
     projects =  request.GET.getlist("ps")    
     if len(projects) == 0:projects = Project.objects.filter(server__in=servers_p).annotate().order_by("-sequence").values_list("name",flat=True)
     try:
+        if "update_cache" in request.GET:raise
         ff = open("%sdeployment_%s_%s.pdf" % (settings.CMDB_DEPLOYMENT_TEMP_FILE_PATH,"_".join(projects),datetime.date.today())).read()
     except:
         temp = StringIO()

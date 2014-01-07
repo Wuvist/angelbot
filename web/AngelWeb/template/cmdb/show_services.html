@@ -60,13 +60,14 @@ body{background:#ffffff;font-size:12px;font-family:Verdana, Geneva, sans-serif;}
 			<input type="button" value = "Download Deployment" id="download" name="download"/><br/>
 		</div>
 	</div>
-<div id="download_div" style="display:none;width:800px">
+<div id="download_div" style="display:none;width:900px">
 	<form action="/cmdb/deployment/" method="GET">
 		{% for p in projects %}
 			<h><input type='checkbox' class='usercheck' name = 'ps' value ='{{p}}' />{{p}}</h>&nbsp;
 			{% endfor %}
 			<h><input type='checkbox' id='chkAll' value = "checkall"  onclick='select_all()'/>All</h></h><br>
 			<input type="submit" value="Download"  />
+			<input type="submit" name="update_cache" value="Download And Update Cache"  />
 	</form>
 </div>
 
