@@ -1203,8 +1203,8 @@ def alarm(request):
                     noUpdateData = rrdtool.fetch(rrd_path, "-s", str(noUpdateTime) +"-1", "-e", str(last_update) + "-1", "LAST")
                     if len(noUpdateData[2]) == noUpdateData[2].count(noUpdateData[2][-1]):
                         alarmError = True
-                        lastedTime = "from " + time.strftime("%m-%d %H:%M",time.localtime(int(last_update)))+" to "+time.strftime("%m-%d %H:%M",time.localtime())
-                        result = lastedTime +", \n" + widget.title + " no update sustained "+str(int(time.time() - last_update)/60)+" minutes !\n"
+                        lastedTime = "from " + time.strftime("%m-%d %H:%M",time.localtime(last_update-rrdTime*60))+" to "+time.strftime("%m-%d %H:%M",time.localtime(last_update))
+                        result = lastedTime +", \n" + widget.title + " no update sustained "+str(rrdTime)+" minutes !\n"
                         return alarmError,result,valueError
                 data_rrds = rrdtool.fetch(rrd_path, "-s", str(int(last_update)-int(rrdTime) * 60), "-e", str(last_update) + "-1", "LAST")
                 data = list(data_rrds[2][0])
