@@ -209,7 +209,7 @@ def rrd_img(request, widget_id):
     stdout, stderr = p.communicate()
     
     if len(stderr) > 0:
-        response = HttpResponse(cmd + "\n" + stderr)
+        response = HttpResponse(stderr)
         response["content-type"] = "text/plain"
         return response
     response = HttpResponse(stdout)
