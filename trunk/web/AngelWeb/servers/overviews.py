@@ -565,9 +565,12 @@ def api_show_widget_detail(request,wid):
     import json
     ls = [];lines = []
     w = get_object_or_404(Widget,id=wid)
-    widgetStatus = paser_widget(w)
+    try:
+        widgetStatus = paser_widget(w)
+        ls.append(["widget status",widgetStatus["widgetStatus"]])
+    except:
+        ls.append(["widget status","unknown"])
     ls.append(["title",w.title])
-    ls.append(["widget status",widgetStatus["widgetStatus"]])
     try:
         d = w.detectorinfo_set.all().order_by("-id")[0]
         detectorInfo = json.loads(d.data)
