@@ -13,6 +13,7 @@ urlpatterns = patterns('',
     # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     # Uncomment the next line to enable the admin:
+    (r'^admin/changewidgets/$', 'servers.views.change_widgets'),
     (r'^admin/', include(admin.site.urls)),
     (r'^overview/', include('servers.urls')),
     
