@@ -10,6 +10,10 @@ Copyright (c) 2010 . All rights reserved.
 from django.contrib import admin
 from AngelWeb.servers.models import *
 from django.forms import ModelForm, PasswordInput
+from django.http import HttpResponse, HttpResponseRedirect
+from subprocess import Popen, PIPE
+from django.conf import settings
+import time
 
 
 
@@ -29,6 +33,10 @@ def projectChangeAlarmOn(self, request, queryset):
     self.message_user(request, "%s successfully changed alarm On." % ms)
 projectChangeAlarmOn.short_description = "Change selected projects alarm On"
 
+def ChangeWidgets(self, request, queryset):
+    return HttpResponseRedirect("/admin/changewidgets/?wid=%s" % ",".join([str(i.id) for i in queryset]))
+ChangeWidgets.short_description = "Change selected widgets"
+
 class DashboardAdmin(admin.ModelAdmin):
     list_display = ('title', 'sequence')
     ordering = ('title',)
@@ -37,11 +45,27 @@ class WidgetAdmin(admin.ModelAdmin):
     list_display = ('title', 'rrd', 'category')
     search_fields = ('title','server__ip' )
     ordering = ('title',)
+    actions = [ChangeWidgets]
 
 class RrdAdmin(admin.ModelAdmin):
     list_display = ('name', 'des')
     search_fields = ('name', )
     ordering = ('name',)
+    
+    def save_model(self, request, obj, form, change):
+        obj.save()
+        start_time = '2010-06-01 00:00'
+        start_time = time.strptime(start_time, "%Y-%m-%d %H:%M")
+        start_time = int(time.mktime(start_time))
+        cmd = 'rrdtool create %s --start %d %s' % (settings.RRD_PATH + obj.name + ".rrd", start_time, obj.setting.replace("\n", "").replace("\r", " "))
+        p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = p.communicate()
+    
+    def delete_model(self,request,obj):
+        cmd = 'rm %s.rrd' % (settings.RRD_PATH + obj.name)
+        p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = p.communicate()
+        obj.delete()       
 
 class AlarmLogAdmin(admin.ModelAdmin):
     list_display = ('title', 'widget', 'created_on','alarmmode')
