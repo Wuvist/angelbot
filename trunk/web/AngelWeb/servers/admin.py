@@ -51,6 +51,7 @@ class RrdAdmin(admin.ModelAdmin):
     list_display = ('name', 'des')
     search_fields = ('name', )
     ordering = ('name',)
+    actions = ['delete_selected_rrds']
     
     def save_model(self, request, obj, form, change):
         obj.save()
@@ -65,7 +66,21 @@ class RrdAdmin(admin.ModelAdmin):
         cmd = 'rm %s.rrd' % (settings.RRD_PATH + obj.name)
         p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
-        obj.delete()       
+        obj.delete()
+    
+    def get_actions(self, request):
+        actions = super(RrdAdmin, self).get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
+    
+    def delete_selected_rrds(self, request, queryset):
+        for obj in queryset:
+            cmd = 'rm %s.rrd' % (settings.RRD_PATH + obj.name)
+            p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+            stdout, stderr = p.communicate()
+            obj.delete()
+    delete_selected_rrds.short_description = 'Delete selected rrds'
 
 class AlarmLogAdmin(admin.ModelAdmin):
     list_display = ('title', 'widget', 'created_on','alarmmode')
