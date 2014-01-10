@@ -2109,11 +2109,12 @@ def widget_reg_or_update(request):
         #widget.data_default = c.template.widget_data
         widget.identify = identify
         widget.save()
-        widget.dashboard.add(Dashboard.objects.get(id=settings.DETECTOR_CREATE_DASHBOARD_ID))
-        widget.project.add(Project.objects.get(id=settings.DETECTOR_CREATE_PROJECT_ID))
+        widget.dashboard.add(settings.DETECTOR_CREATE_DASHBOARD_ID)
         result["res"]["widget_id"] = widget.id
         result["res"]["widget_name"] = widget.title
         if widget.rrd:result["res"]["rrd_name"] = widget.rrd.name
+        if s:widget.project = s.project.all().values_list("id",flat=True)
+        else:widget.project.add(settings.DETECTOR_CREATE_PROJECT_ID)
     else:
         widget = widgets[0]
         result["res"]["widget_id"] = widget.id
