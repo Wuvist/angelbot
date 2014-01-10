@@ -1052,3 +1052,11 @@ def availability_trends_alert(request):
         ls.append({"category":x,"line":y})
     ls = sorted(ls,key=lambda k:k["line"][0],reverse = True)
     return render_to_response("html/report_availability_trend_alert.html",locals())
+
+@login_required()
+def control_widgetconfig(request,pid):
+    widgets = Widget.objects.filter(project__id=pid).order_by("category__title")
+    for w in widgets:
+        if w.data_def:w.data_def = w.data_def.replace("\n","<br>")
+        else:w.data_def = ""
+    return render_to_response("html/widget_config.html",locals())
