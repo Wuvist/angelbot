@@ -294,9 +294,11 @@ def home_top(request):
         widgetConfDifCount = cache.get("widgetConfDifCount")
         if widgetConfDifCount == None:
             widgetConfDifCount,widgetConfDifListId = get_widget_diff_conf()
-    st = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(time.time()-180))
-    ed = time.strftime("%Y-%m-%d %H:%M:%S")
-    serverUpdate = ServerPing.objects.filter(created_time__gte=st,created_time__lte=ed).count()
+    try:
+        serverUpdate = ServerPing.objects.all().order_by("-created_time")[0]
+        if time.time() - time.mktime(serverUpdate.created_time.timetuple()) < 180:
+            serverUpdate = False
+    except:serverUpdate = True
     try:
         log = ExtraLog.objects.filter(type=6)[0]
         call = log.value
