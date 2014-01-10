@@ -40,7 +40,7 @@ td{text-align:center;font-size:11px;}
 		{%if request.user.is_staff%}
 		<table><tr><td>
 			<table width="250px" border="1" cellspacing="0" cellpadding="0" bgcolor="#FCFCFC">
-				{%if serverUpdate < 1%}
+				{%if serverUpdate%}
 				<tr><td colspan="5" align="center" style="background:#FA8072;"><a href="/overview/problem/server" target="rightFrame">Server Status Totals</a></td></tr>
 				{%else%}
 				<tr><td colspan="5" align="center">Server Status Totals</td></tr>
