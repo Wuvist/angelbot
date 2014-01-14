@@ -5,6 +5,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import Context, loader, RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.cache import cache_page
+from django.views.decorators.csrf import csrf_protect
 from django.core.cache import cache
 from django.db.models import Count
 from servers.models import *
@@ -2245,3 +2246,18 @@ def change_widgets(request):
             return HttpResponseRedirect("/admin/servers/widget/")
             
     return render_to_response("servers/change_widgets.html",locals())
+
+@csrf_protect
+@login_required
+def use_template_create_widget(request,wid):
+    widget = get_object_or_404(Widget,id=wid)
+    servers = Server.objects.all().order_by("id")
+    rrds = Rrd.objects.all().order_by("name")
+    categorys = WidgetCategory.objects.all().order_by("title")
+    widgetGrades = WidgetGrade.objects.all().order_by("title")
+    serviceTypes = WidgetServiceType.objects.all().order_by("name")
+    dashboards = Dashboard.objects.all().order_by("title")
+    projects = Project.objects.all().order_by("name")
+    user = request.user
+    return render_to_response("servers/use_template_create_widget.html",locals(),context_instance = RequestContext(request))
+    

@@ -33,6 +33,11 @@ def projectChangeAlarmOn(self, request, queryset):
     self.message_user(request, "%s successfully changed alarm On." % ms)
 projectChangeAlarmOn.short_description = "Change selected projects alarm On"
 
+def AsTemplateCreateNew(self, request, queryset):
+    if queryset.count() > 1:self.message_user(request, "Just can selected 1 item, you selected %s items" % queryset.count())
+    else:return HttpResponseRedirect("/admin/usetpcreatewidget/%s" % queryset[0].id)
+AsTemplateCreateNew.short_description = "Use selected as template create widget"
+
 def ChangeWidgets(self, request, queryset):
     return HttpResponseRedirect("/admin/changewidgets/?wid=%s" % ",".join([str(i.id) for i in queryset]))
 ChangeWidgets.short_description = "Change selected widgets"
@@ -45,7 +50,7 @@ class WidgetAdmin(admin.ModelAdmin):
     list_display = ('title', 'rrd', 'category')
     search_fields = ('title','server__ip' )
     ordering = ('title',)
-    actions = [ChangeWidgets]
+    actions = [ChangeWidgets,AsTemplateCreateNew]
 
 class RrdAdmin(admin.ModelAdmin):
     list_display = ('name', 'des')
