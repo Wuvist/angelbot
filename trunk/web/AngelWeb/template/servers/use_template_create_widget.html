@@ -1,0 +1,375 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_modify adminmedia %}
+{% load url from future %}
+
+{% block extrahead %}{{ block.super }}
+{% url 'admin:jsi18n' as jsi18nurl %}
+<script type="text/javascript" src="{{ jsi18nurl|default:"../../../jsi18n/" }}"></script>
+{{ media }}
+{% endblock %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% admin_media_prefix %}css/forms.css" />{% endblock %}
+
+{% block coltype %}{% if ordered_objects %}colMS{% else %}colM{% endif %}{% endblock %}
+
+{% block bodyclass %}{{ opts.app_label }}-{{ opts.object_name.lower }} change-form{% endblock %}
+
+{% block breadcrumbs %}{% if not is_popup %}
+<div class="breadcrumbs">
+     <a href="../">{% trans "Home" %}</a> &rsaquo;
+     <a href="/admin/servers/">Servers</a> &rsaquo;
+     <a href="/admin/servers/widget">Widgets</a> &rsaquo; Change widgets
+</div>
+{% endif %}{% endblock %}
+{% block content %}<div id="content-main">
+
+<h1>Use template to add widget</h1>
+ <div id="content-main">
+
+
+
+<form enctype="multipart/form-data" action="/admin/servers/widget/add/" method="post" id="widget_form">{% csrf_token %}
+<div>
+
+
+
+
+
+  <fieldset class="module aligned ">
+    
+    
+    
+        <div class="form-row title">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_title" class="required">Title:</label>
+                        
+                            <input id="id_title" type="text" class="vTextField" name="title" value="{{widget.title}}" maxlength="50" />
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row server">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_server">Server:</label>
+                        
+                            <select name="server" id="id_server">
+<option value="" {%if not widget.server%}selected="selected"{%endif%}>---------</option>
+{%for s in servers%}
+<option value="{{s.id}}" {%if s.id == widget.server.id%}selected="selected"{%endif%}>{{s.name}}({{s.ip}})</option>
+{%endfor%}
+</select><a href="/admin/servers/server/add/" class="add-another" id="add_id_server" onclick="return showAddAnotherPopup(this);"> <img src="/media/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another"/></a>
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row rrd">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_rrd">Rrd:</label>
+                        
+                            <select name="rrd" id="id_rrd">
+<option value="" selected="selected">---------</option>
+{%for r in rrds%}
+<option value="{{r.id}}">{{r.name}} {{r.des}}</option>
+{%endfor%}
+</select><a href="/admin/servers/rrd/add/" class="add-another" id="add_id_rrd" onclick="return showAddAnotherPopup(this);"> <img src="/media/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another"/></a>
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row category">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_category" class="required">Category:</label>
+                        
+                            <select name="category" id="id_category">
+<option value="" {%if not widget.category%}selected="selected"{%endif%}>---------</option>
+{%for c in categorys%}
+<option value="{{c.id}}" {%if widget.category.id == c.id%}selected="selected"{%endif%}>{{c.title}}</option>
+{%endfor%}
+</select><a href="/admin/servers/widgetcategory/add/" class="add-another" id="add_id_category" onclick="return showAddAnotherPopup(this);"> <img src="/media/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another"/></a>
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row grade">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_grade">Grade:</label>
+                        
+                            <select name="grade" id="id_grade">
+<option value="" {%if not widget.grade%}selected="selected"{%endif%}>---------</option>
+{%for g in widgetGrades%}
+<option value="{{g.id}}" {%if widget.grade.id == g.id%}selected="selected"{%endif%}>{{g.title}}</option>
+{%endfor%}
+</select><a href="/admin/servers/widgetgrade/add/" class="add-another" id="add_id_grade" onclick="return showAddAnotherPopup(this);"> <img src="/media/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another"/></a>
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row widget_type">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_widget_type" class="required">Widget type:</label>
+                        
+                            <select name="widget_type" id="id_widget_type">
+<option value="">---------</option>
+<option value="1" {%if widget.widget_type == "1"%}selected="selected"{%endif%}>Show Current Value Only</option>
+<option value="2" {%if widget.widget_type == "2"%}selected="selected"{%endif%}>Show Current / Yesterday / Last Week Value</option>
+</select>
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row service_type">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_service_type">Service type:</label>
+                        
+                            <select name="service_type" id="id_service_type">
+<option value="" {%if not widget.service_type%}selected="selected"{%endif%}>---------</option>
+{%for s in serviceTypes%}
+<option value="{{s.id}}"{%if widget.service_type.id == s.id%}selected="selected"{%endif%}>{{s.name}}</option>
+{%endfor%}
+</select><a href="/admin/servers/widgetservicetype/add/" class="add-another" id="add_id_service_type" onclick="return showAddAnotherPopup(this);"> <img src="/media/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another"/></a>
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row graph_def">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_graph_def">Graph def:</label>
+                        
+                            <textarea id="id_graph_def" rows="10" cols="40" name="graph_def" class="vLargeTextField">{%if widget.graph_def%}{{widget.graph_def}}{%endif%}</textarea>
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row data_def">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_data_def">Data def:</label>
+                        
+                            <textarea id="id_data_def" rows="10" cols="40" name="data_def" class="vLargeTextField">{%if widget.data_def%}{{widget.data_def}}{%endif%}</textarea>
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row data_default">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_data_default">Data default:</label>
+                        
+                            <textarea id="id_data_default" rows="10" cols="40" name="data_default" class="vLargeTextField">{%if widget.data_default%}{{widget.data_default}}{%endif%}</textarea>
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row path">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_path">Path:</label>
+                        
+                            <input id="id_path" type="text" class="vTextField" name="path" {%if widget.path%}{{widget.path}}{%endif%} maxlength="128" />
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row identify">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_identify">Identify:</label>
+                        
+                            <textarea id="id_identify" rows="10" cols="40" name="identify" class="vLargeTextField">{%if widget.identify%}{{widget.identify}}{%endif%}</textarea>
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row remark">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_remark">Remark:</label>
+                        
+                            <textarea id="id_remark" rows="10" cols="40" name="remark" class="vLargeTextField">{%if widget.remark%}{{widget.remark}}{%endif%}</textarea>
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row update_time">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_update_time_0">Update time:</label>
+                        
+                            <p class="datetime">Date: <input id="id_update_time_0" type="text" class="vDateField" name="update_time_0" size="10" /><br />Time: <input id="id_update_time_1" type="text" class="vTimeField" name="update_time_1" size="8" /></p>
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row dashboard">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_dashboard" class="required">Dashboard:</label>
+                        
+                            <select multiple="multiple" name="dashboard" id="id_dashboard">
+{%for d in dashboards%}
+<option value="{{d.id}}" {%if d in widget.dashboard.all%}selected="selected"{%endif%}>{{d.title}}</option>
+{%endfor%}
+</select><a href="/admin/servers/dashboard/add/" class="add-another" id="add_id_dashboard" onclick="return showAddAnotherPopup(this);"> <img src="/media/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another"/></a>
+                        
+                    
+                    
+                        <p class="help"> Hold down "Control", or "Command" on a Mac, to select more than one.</p>
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row project">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_project" class="required">Project:</label>
+                        
+                            <select multiple="multiple" name="project" id="id_project">
+			{%for p in projects%}
+			<option value="{{p.id}}" {%if p in widget.project.all%}selected="selected"{%endif%}>{{p.name}}</option>
+			{%endfor%}
+</select><a href="/admin/servers/project/add/" class="add-another" id="add_id_project" onclick="return showAddAnotherPopup(this);"> <img src="/media/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another"/></a>
+                        
+                    
+                    
+                        <p class="help"> Hold down "Control", or "Command" on a Mac, to select more than one.</p>
+                    
+                </div>
+            
+        </div>
+    
+</fieldset>
+
+
+
+
+
+
+
+
+
+
+<div class="submit-row" >
+<input type="submit" value="Save" class="default" name="_save" />
+
+</div>
+
+
+
+   <script type="text/javascript">document.getElementById("id_title").focus();</script>
+
+
+
+<script type="text/javascript">
+(function($) {
+    var field = null;
+
+
+})(django.jQuery);
+</script>
+
+
+</div>
+</form></div>
+
+
+
+{% endblock %}

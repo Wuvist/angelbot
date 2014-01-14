@@ -14,6 +14,7 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     (r'^admin/changewidgets/$', 'servers.views.change_widgets'),
+    (r'^admin/usetpcreatewidget/(\d+)', 'servers.views.use_template_create_widget'),
     (r'^admin/', include(admin.site.urls)),
     (r'^overview/', include('servers.urls')),
     
