@@ -278,7 +278,14 @@ class WidgetServiceType(models.Model):
     remark = models.CharField(max_length=256, null = True, blank = True)
     
     def __unicode__(self):
-        return self.name
+        try:
+            import json
+            info = DetectorInfo.objects.filter(widget__in=Widget.objects.filter(service_type = self.id)).order_by("-id")[0]
+            data = json.loads(info.data)
+            keys = ",".join(data.keys())
+            return self.name + " (key: " + keys + ")"
+        except:
+            return self.name
     
     class Meta:
         ordering = ["name"]
