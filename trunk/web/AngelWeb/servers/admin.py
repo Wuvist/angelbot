@@ -124,6 +124,11 @@ class ServerServerAdmin(admin.ModelAdmin):
 class StatisticsDayAdmin(admin.ModelAdmin):
     list_display = ('widget', 'date')
     ordering = ('-date',)
+
+class WidgetServiceTypeAdmin(admin.ModelAdmin):
+    list_display = ("show_name",)
+    ordering = ('name',)
+
 admin.site.register(Server,ServerServerAdmin)
 admin.site.register(CmdLog)
 admin.site.register(Cmd)
@@ -144,7 +149,7 @@ admin.site.register(DashboardError)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(IDC)
 admin.site.register(ServiceType,ServicesTypeAdmin)
-admin.site.register(WidgetServiceType)
+admin.site.register(WidgetServiceType,WidgetServiceTypeAdmin)
 admin.site.register(WidgetGrade)
 admin.site.register(StatisticsDay,StatisticsDayAdmin)
 admin.site.register(Ticket)
