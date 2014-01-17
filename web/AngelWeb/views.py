@@ -84,10 +84,14 @@ def dba_show_backup(request):
         try:data = open(detailLog).read().split("\n\n")
         except:data = []
         for i in open(infoLog).readlines():
+            ifBreak = False
             i = ["","",""] + i.split(",")
             if len(i) < 7:continue
             i[3] = i[3].replace("_",":")
             i[4] = i[4].replace("_",":")
+            for b in settings.DB_IGNORE_ALARM_IP:
+                if b in i[3] or b in i[4]:ifBreak = True
+            if ifBreak:continue
             try:
                 log = ExtraLog.objects.get(type=2,label=i[3]+"_"+i[4])
                 i[0] = log.value
