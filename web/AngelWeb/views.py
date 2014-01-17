@@ -76,7 +76,7 @@ def dba_show_backup(request):
         return HttpResponseRedirect("/dba/backlog/")
     t = time.strftime("%Y%m%d%H%M")
     try:
-        errorDataLog = ExtraLog.objects.get(type=4)
+        errorDataLog = ExtraLog.objects.filter(type=4)[0]
         errorData = json.loads(errorDataLog.value)
     except:errorData = {}
     def parserLog(infoLog,detailLog):
