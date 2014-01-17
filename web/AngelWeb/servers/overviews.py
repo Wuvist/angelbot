@@ -563,7 +563,7 @@ def get_show_key(data):
 
 def api_show_widget_detail(request,wid):
     import json
-    ls = [];lines = [];widgetStatus = {}
+    ls = [];lines = [];widgetStatus = {'valueList':[]}
     w = get_object_or_404(Widget,id=wid)
     try:
         widgetStatus = paser_widget(w)
