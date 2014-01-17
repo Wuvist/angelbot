@@ -2171,6 +2171,7 @@ def api_show_services(request):
                  det = s.detectorinfo_set.all().order_by("-id")[0]
                  searchKey = ""
                  values = json.loads(det.data)
+                 values.update(dt)
                  for k in result[s.service_type.id]["titleKey"][:-1]:
                      searchKey += values[k] + "__"
                  values["update_time"] = det.created_time.strftime("%Y-%m-%d %H:%M")
