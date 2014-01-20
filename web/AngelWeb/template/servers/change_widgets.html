@@ -27,23 +27,47 @@
 <input type="hidden" name="wid" value="{{wid}}">
 <div>
   <fieldset class="module aligned ">
+        <div class="form-row category">
+                <div>
+                        <label for="id_category" class="required">Category:</label>
+                        
+                            <select name="category" id="id_category">
+				{%for c in categorys%}
+				<option value="{{c.id}}">{{c.title}}</option>
+				{%endfor%}
+</select><a href="/admin/servers/widgetcategory/add/" class="add-another" id="add_id_category" onclick="return showAddAnotherPopup(this);"> <img src="/media/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another"/></a>
+                </div>
+        </div>
+
+        <div class="form-row service_type">
+                <div>
+                        <label for="id_service_type">Service type:</label>
+                        
+                            <select name="service_type" id="id_service_type">
+				{%for s in serviceTypes%}
+				<option value="{{s.id}}" {%if widget.service_type == s%}selected="selected"{%endif%}>{{s.name}}</option>
+				{%endfor%}
+</select><a href="/admin/servers/widgetservicetype/add/" class="add-another" id="add_id_service_type" onclick="return showAddAnotherPopup(this);"> <img src="/media/img/admin/icon_addlink.gif" width="10" height="10" alt="Add Another"/></a>
+                </div>
+        </div>
+
         <div class="form-row graph_def">
                 <div>
-                        <label for="id_graph_def" class="required">Graph def:</label>
+                        <label for="id_graph_def">Graph def:</label>
                             <textarea id="id_graph_def" rows="10" cols="40" name="graph_def" class="vLargeTextField">{%if widget.graph_def%}{{widget.graph_def}}{%endif%}</textarea>
                 </div>
         </div>
 
         <div class="form-row data_def">
                 <div>
-                        <label for="id_data_def" class="required">Data def:</label>
+                        <label for="id_data_def">Data def:</label>
                             <textarea id="id_data_def" rows="10" cols="40" name="data_def" class="vLargeTextField">{%if widget.data_def%}{{widget.data_def}}{%endif%}</textarea>
                 </div>
         </div>
 	
         <div class="form-row data_default">
                 <div>
-                        <label for="id_data_default" class="required">Data default:</label>
+                        <label for="id_data_default">Data default:</label>
                             <textarea id="id_data_default" rows="10" cols="40" name="data_default" class="vLargeTextField">{%if widget.data_default%}{{widget.data_default}}{%endif%}</textarea>
                 </div>
         </div>
