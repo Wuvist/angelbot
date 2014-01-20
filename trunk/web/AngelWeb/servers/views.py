@@ -2239,11 +2239,17 @@ def change_widgets(request):
     wid = request.GET["wid"]
     wids = wid.split(",")
     user = request.user
+    serviceTypes = WidgetServiceType.objects.all().order_by("name")
+    categorys = WidgetCategory.objects.all().order_by("title")
     if wids:
         widgets = Widget.objects.filter(id__in=wids)
         widget = widgets[0]
         if "save" in request.GET:
-            widgets.update(graph_def=request.GET["graph_def"],data_def=request.GET["data_def"],data_default=request.GET["data_default"])
+            widgets.update(graph_def=request.GET["graph_def"],
+			data_def=request.GET["data_def"],
+			data_default=request.GET["data_default"],
+			service_type=request.GET["service_type"],
+			category=request.GET["category"])
             return HttpResponseRedirect("/admin/servers/widget/")
             
     return render_to_response("servers/change_widgets.html",locals())
