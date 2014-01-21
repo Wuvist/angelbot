@@ -122,7 +122,7 @@ def dba_show_backup(request):
                     if len(errorData[i[3]+"-"+i[4]]["times"]) > settings.DB_ERROR_TIME and errorData[i[3]+"-"+i[4]]["send"] == False:
                         sendmail(i[3]+"-"+i[4],settings.DB_RECEIVER,i[3]+"-"+i[4])
                         errorData[i[3]+"-"+i[4]]["send"] = True
-                        log = RunLog(type=1,value="data: %s\n" % l).save()
+                        log = RunLog(type="db info error data",value="data: %s\n" % l).save()
                 else:addError(i[3]+"-"+i[4])
             except:
                 pass

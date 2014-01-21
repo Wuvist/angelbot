@@ -46,10 +46,6 @@ WIDGET_TYPE_CHOICES = (
     ('2', 'Show Current / Yesterday / Last Week Value'),
 )
 
-RUN_LOG_CHOICES = (
-    (1, 'db_info_alarm_log'),
-)
-
 class Project(models.Model):
     name = models.CharField(max_length=50)
     alarm = models.CharField(max_length=8, choices=ALARM_TYPE_CHOICES)
@@ -121,12 +117,12 @@ class ExtraLog(models.Model):
         return str(self.type) + " " + str(self.created_time)
 
 class RunLog(models.Model):
-    type = models.IntegerField(max_length=8,choices=RUN_LOG_CHOICES)
+    type = models.CharField(max_length=256)
     label = models.CharField(max_length=256,null = True, blank = True)
     value = models.TextField(null = True, blank = True)
     created_time = models.DateTimeField(auto_now_add = True)
     def __unicode__(self):
-        return str(self.type) + "(" + str(self.created_time) + ")"
+        return self.type + "(" + str(self.created_time) + ")"
 
 class DisableAlarmLog(models.Model):
     name = models.CharField(max_length=256)
