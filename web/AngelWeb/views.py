@@ -84,8 +84,8 @@ def dba_show_backup(request):
         result = []
         try:data = open(detailLog).read().split("\n\n")
         except:data = []
-        for i in open(infoLog).readlines():
-            i = ["","",""] + i.split(",")
+        for l in open(infoLog).readlines():
+            i = ["","",""] + l.split(",")
             if len(i) < 7:continue
             i[3] = i[3].replace("_",":")
             i[4] = i[4].replace("_",":")
@@ -101,7 +101,7 @@ def dba_show_backup(request):
                 if i[4] in d and i[4] != "":
                     i[2] = d.replace(" ","&nbsp;&nbsp;").replace("\n","<br>")
                     continue
-            try:i[9] = int(i[9][:-1])
+            try:i[9]=i[9][:-1]
             except:pass
             result.append(i)
             try:
@@ -117,11 +117,12 @@ def dba_show_backup(request):
                         backupDay = backupDay.split(":")
                         backupDayDt[int(backupDay[0])] = backupDay[1]
                     if backupDayDt[timeDay] == "N" and backupDayDt[timeDay-1] == "N":backupDayResult = True
-                if "ERROR" in i[5] or "ERROR" in i[7] or i[9] > 95 or timeDiff > timeDiffConf or backupDayResult:
+                if "ERROR" in i[5] or "ERROR" in i[7] or int(i[9]) > 95 or timeDiff > timeDiffConf or backupDayResult:
                     addError(i[3]+"-"+i[4],edit=True)
                     if len(errorData[i[3]+"-"+i[4]]["times"]) > settings.DB_ERROR_TIME and errorData[i[3]+"-"+i[4]]["send"] == False:
                         sendmail(i[3]+"-"+i[4],settings.DB_RECEIVER,i[3]+"-"+i[4])
                         errorData[i[3]+"-"+i[4]]["send"] = True
+                        log = RunLog(type=1,value="data: %s\n" % l).save()
                 else:addError(i[3]+"-"+i[4])
             except:
                 pass
