@@ -111,12 +111,12 @@ def dba_show_backup(request):
                 if i[14] == "full":timeDiffConf = 31*24*60*60+1200
                 else:timeDiffConf = 2*24*60*60+1200
                 backupDayResult = False
-                if timeDay >=2:
+                if timeDay >2:
                     backupDayDt = {}
                     for backupDay in i[11].split("-"):
                         backupDay = backupDay.split(":")
                         backupDayDt[int(backupDay[0])] = backupDay[1]
-                    if backupDayDt[timeDay] == "N" and backupDayDt[timeDay-1] == "N":backupDayResult = True
+                    if backupDayDt[timeDay-1] == "N" and backupDayDt[timeDay-2] == "N":backupDayResult = True
                 if "ERROR" in i[5] or "ERROR" in i[7] or i[9] > settings.DB_ERROR_BACKUP_USED or timeDiff > timeDiffConf or backupDayResult:
                     addError(i[3]+"-"+i[4],edit=True)
                     if len(errorData[i[3]+"-"+i[4]]["times"]) > settings.DB_ERROR_TIME and errorData[i[3]+"-"+i[4]]["send"] == False:
