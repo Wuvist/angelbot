@@ -291,7 +291,7 @@ class WidgetServiceType(models.Model):
     def show_name(self):
         try:
             import json
-            info = DetectorInfo.objects.filter(widget__in=Widget.objects.filter(service_type = self.id)).order_by("-id")[0]
+            info = DetectorInfo.objects.filter(widget__in=Widget.objects.filter(service_type = self.id)).exclude(data=None).order_by("-id")[0]
             data = json.loads(info.data)
             keys = ", ".join(data.keys())
             return self.name + " (key: " + keys + ")"
