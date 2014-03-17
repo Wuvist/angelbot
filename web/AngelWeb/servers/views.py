@@ -2258,7 +2258,7 @@ def change_widgets(request):
 @login_required
 def use_template_create_widget(request,wid):
     widget = get_object_or_404(Widget,id=wid)
-    servers = Server.objects.all().order_by("id")
+    servers = Server.objects.all().order_by("ip")
     rrds = Rrd.objects.all().order_by("name")
     categorys = WidgetCategory.objects.all().order_by("title")
     widgetGrades = WidgetGrade.objects.all().order_by("title")
