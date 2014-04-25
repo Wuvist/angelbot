@@ -89,7 +89,6 @@ def dba_show_backup(request):
             if len(i) < 7:continue
             i[3] = i[3].replace("_",":")
             i[4] = i[4].replace("_",":")
-            if i[3] in DB_IGNORE_ALARM_IP or i[4] in DB_IGNORE_ALARM_IP:continue
             try:
                 log = ExtraLog.objects.get(type=2,label=i[3]+"_"+i[4])
                 i[0] = log.value
@@ -104,6 +103,7 @@ def dba_show_backup(request):
             try:i[9]=int(i[9][:-1])
             except:pass
             result.append(i)
+            if i[3] in DB_IGNORE_ALARM_IP or i[4] in DB_IGNORE_ALARM_IP:continue
             try:
                 timeDay = int(time.strftime("%w"))
                 if timeDay == 0:timeDay = 7
