@@ -1556,7 +1556,10 @@ def alarm_test(request):
     data = '''<br><br>
         <form action="">
         <input type="submit" name="test" value="Test Alarm">
-        <input type="submit" name="stop" value="Stop Alarm">
+        <input type="submit" name="stop" value="Stop Alarm"><br>
+        phone number:
+        <input type="text" name="phone_num" value="">
+        <input type="submit" name="test_call_api" value="Test call use api">
         </form><br>
         Test result:<hr>%s
     '''
@@ -1579,6 +1582,14 @@ def alarm_test(request):
             smsUrl = settings.SMS_API % (settings.RING_PHONE_NUMBER, "%E6%92%A4%E9%98%B2")
             smsResult = urllib2.urlopen(smsUrl.replace(" ","%20")).read()
             if smsResult != "{ret:0}":result = "stop fail"
+        except Exception, e:
+            result = str(e.reason)
+    elif request.GET.has_key("test_call_api"):
+        try:
+            result = "ok"
+            callUrl = settings.CALL_API % (str(request.GET['phone_num']), "This is a test.")
+            callResult = urllib2.urlopen(callUrl.replace(" ","%20")).read()
+            if '"ret":0' not in callResult:result = "error"
         except Exception, e:
             result = str(e.reason)
     else:
