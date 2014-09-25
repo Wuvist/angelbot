@@ -320,7 +320,7 @@ class Widget(models.Model):
     grade = models.ForeignKey(WidgetGrade,null = True, blank=True)
     widget_type = models.CharField(max_length=1, choices=WIDGET_TYPE_CHOICES)
     project = models.ManyToManyField(Project)
-    service_type = models.ForeignKey(WidgetServiceType, null = True, blank = True)
+    service_type = models.ForeignKey(WidgetServiceType)
     graph_def = models.TextField(max_length =512, null = True, blank=True)
     data_def = models.TextField(max_length =512, null = True, blank=True)
     data_default = models.TextField(max_length =512, null = True, blank=True)

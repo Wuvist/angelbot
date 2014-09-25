@@ -1017,7 +1017,7 @@ def graph_aiders(request,aiderid):
     import time
     
     graph_aider = get_object_or_404(GraphAider,id=aiderid)
-    graphs = graph_aider.graphs.all()
+    graphs = graph_aider.graphs.all().order_by("id")
     def_time = time.strftime("%H:%M:%S")
     
     start = request.GET.get("start",time.strftime("%Y-%m-%d"))
